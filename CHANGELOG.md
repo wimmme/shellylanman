@@ -5,6 +5,31 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Phase 4: device controls
+- Command column with the controls of ShellyScanner, drawn per model like its cell
+  editor: relays (ON/OFF, input indicator), covers (open/stop/close, position slider
+  when calibrated), dimmers and white lights, RGB/RGBW/RGBCCT (gain, white),
+  thermostats (Wall Display, LinkedGo XT1, BLU TRV: enable, target ▲▼ and slider;
+  Gen1 TRV: profile and target), circuit breaker (with confirmation, locked state),
+  camera privacy, input event buttons (the server calls the configured action URLs /
+  webhooks, as the original does).
+- Lights editor: switch, brightness/gain, red/green/blue/white, preset colours,
+  colour temperature with 3000/4500/6000 K, white/colour mode, all channels on/off.
+- Reboot of selected devices (confirmation; `confirm: true` in the API), refresh
+  paused 3 s like the original.
+- API: `POST /api/v1/devices/{id}/command`, `POST /api/v1/devices/reboot`; Gen2+
+  commands with the same GET/POST-RPC calls as ShellyScanner, including the JSON-RPC
+  `auth` object for protected devices.
+- Simulator: logs every request and keeps relay state, so commands are tested end to end.
+
+### Fixed — Phase 3 readings found while porting the controls
+- Gen1 Bulb and DUO RGBW are RGBCCT lights (colour/white mode), not RGBW.
+- Wall Display shows its thermostat or its relay, as the original.
+- The Pro Sensor Add-on digital output appears as an extra relay (Pro 1/1PM/2/2PM,
+  Pro Dimmer, Pro EM).
+- LinkedGo XT1 (ST1820, ST802) temperature, humidity and thermostat are read.
+- Gen1 roller with a position above 100 is shown as not calibrated.
+
 ### Added — Phase 3: read-only device information
 - All 17 device-table columns of ShellyScanner: status, type, device, name, keyword,
   MAC, IP, SSID, RSSI, cloud and MQTT (enabled/connected), uptime, internal

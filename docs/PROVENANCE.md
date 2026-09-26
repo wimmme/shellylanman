@@ -26,6 +26,12 @@ header. Update this table in the same commit as the code.
 | `internal/parse/gen2.go` | 2 | `AbstractG2Device`, fillStatus/meters of `model/device/g2`, `g3`, `g4` classes, `g2/modules/SensorAddOn(Pro)`, `g2/meters/*`, g2 modules |
 | `internal/parse/blu.go` | 2 | `blu/modules/Sensor`, `SensorsCollection`, `blu/BluTRV` |
 | `internal/service/info.go` | 2 | `getInfoRequests()` per class, `DialogDeviceLogsG1/G2`, `LoginManagerG2.getAuthString` |
+| `internal/parse/gen2_ctl.go` | 2 | `g2/modules/SensorAddOnPro.getDigitalOut`, `g3/PbSXT1St1820`, `g3/PbSXT1St802`, `g3/modules/XT1Thermostat` |
+| `internal/parse/actions.go` | 2 | `g1/modules/Actions` (fillSettings, Action.isActive) |
+| `internal/service/control.go` | 2 | commands of `g1/modules/*`, `g2/modules/*`, `g3/modules/*`, `blu/BluTRV`; `MainView.rebootAction`, `Devices.reboot`, `Webhooks.execute`, `Actions.execute` |
+| `internal/shelly/rpc.go` | 2 | `AbstractG2Device.executeRPC/postCommand`, `LoginManagerG2.getAuthNode` |
+| `web/src/command.ts`, `web/src/commandlogic.ts` | 2 | `view/DevicesCommandCellEditor`, `DevicesCommandCellRenderer`, `view/util/ColorUtil`, event labels of `LabelsBundle.properties` |
+| `web/src/panels/lights.ts` | 2 | `view/lightsEditor/*` |
 | `web/src/format.ts` | 2 | `METER_LBL_*`, `METER_VAL_*`, uptime formats of `LabelsBundle.properties` |
 | `internal/store` | 4 | — |
 | `internal/hub` | 4 | — |

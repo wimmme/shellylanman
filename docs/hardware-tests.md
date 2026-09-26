@@ -45,3 +45,22 @@ Same setup (dockerhostvm, host networking, port 3099).
 
 Not yet on hardware: Sensor Add-on and BLU readings, battery devices' stored data,
 the Gen1 log files of a device with debug enabled, protected devices' live log.
+
+## Phase 4 — device controls (2026-09-26)
+
+Same setup. Writes only to the agreed test device **Grondwaterpomp** (PlugS Gen1,
+192.168.0.86); all other devices were only looked at.
+
+| Check | Result |
+|---|---|
+| Relay toggle (Grondwaterpomp) | `POST …/command {"key":"relay/0","action":"toggle"}` → device `ison` false → true, source `http`; the table showed the new state in the same request (status read after the command). Toggled back to the original state (off) |
+| Reboot (Grondwaterpomp) | without `confirm` → 428; with `confirm` → 202, row "reading", back on line after ~6 s with uptime 4 s |
+| Layouts of the real devices | relays → `relay`; Dimmer G3 (single light) → slider panel; RGBW2 white ×4, Plus RGBW PM ×4, Pro RGBWW PM ×5 → one line per channel with the lights-editor button on the last, as the Java cell editor |
+| Input actions | Shelly i3: 8 Gen1 actions per input, all disabled → only labels (more than 5 events: disabled ones hidden); i4 G3: `Webhook.List` empty → labels only |
+| Input indicator | Dimmer G3 (.76) and Shelly 1L (.88) with input on: ON/OFF text highlighted |
+| Lights editor | opens with "All channels" and one panel per channel (Plus RGBW PM), no console errors |
+
+Not tested on hardware (no such device here, or writes not allowed): covers, RGB/RGBW/
+RGBCCT colour commands, thermostats (Wall Display, XT1, BLU TRV, Gen1 TRV), circuit
+breaker, camera, executing input actions, Gen2+ commands with authentication (covered
+by simulator tests with Digest and JSON-RPC auth).
