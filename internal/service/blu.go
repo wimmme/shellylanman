@@ -152,6 +152,7 @@ func (m *Devices) newBTHome(ctx context.Context, gw *entry, c component) *entry 
 	kb, _ := json.Marshal(keys)
 	e.blu.keys = url.QueryEscape(string(kb))
 	applyBTHomeStatus(&e.dev, c.Status)
+	m.refreshBLU(ctx, e, true) // init: sensors, status and button webhooks
 	return e
 }
 
@@ -181,7 +182,7 @@ func (m *Devices) newTRV(ctx context.Context, gw *entry, c component) *entry {
 	if err := gw.conn.GetJSON(ctx, "/rpc/BluTrv.GetRemoteDeviceInfo?id="+index, &info); err == nil && info.DeviceInfo.ID != "" {
 		e.dev.Hostname = info.DeviceInfo.ID
 	}
-	m.refreshBLU(ctx, e, false)
+	m.refreshBLU(ctx, e, true) // AbstractBTHomeDevice.init: refreshSettings + refreshStatus
 	return e
 }
 
@@ -232,9 +233,18 @@ func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 			}
 			e.rawStatus, e.rawPeriph = st, remote
 			applyBTHomeStatus(d, st)
-			d.ApplyReadings(parse.BluTRV(parse.BluTRVInput{Name: d.Name, Status: st, RemoteStatus: remote, RemoteConfig: e.rawConfig}))
+			r := parse.BluTRV(parse.BluTRVInput{Name: d.Name, Status: st, RemoteStatus: remote, RemoteConfig: e.rawConfig})
+			if t := e.blu.trvTarget; t != nil && len(r.Modules) == 1 { // BluTRV.tempChanged
+				r.Modules[0].Target = t
+				e.blu.trvTarget = nil
+			}
+			d.ApplyReadings(r)
 		})
 		return
+	}
+	var hooks []byte
+	if config { // BTHomeDevice.refreshSettings: webhooks.fillBTHomesensorSettings
+		hooks, _ = e.blu.gw.Get(ctx, "/rpc/Webhook.List")
 	}
 	comps, err := getComponents(ctx, e.blu.gw, "?keys="+e.blu.keys)
 	m.apply(e, func(d *model.Device) {
@@ -261,7 +271,10 @@ func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 		}
 		raw, _ := json.Marshal(map[string]any{"components": comps})
 		e.rawStatus = raw
-		d.ApplyReadings(parse.BTHome(parse.BTHomeInput{Index: e.blu.index, KnownObjects: e.blu.known, Components: raw}))
+		if hooks != nil {
+			e.blu.hooks = hooks
+		}
+		d.ApplyReadings(parse.BTHome(parse.BTHomeInput{Index: e.blu.index, KnownObjects: e.blu.known, Components: raw, Webhooks: e.blu.hooks}))
 	})
 }
 

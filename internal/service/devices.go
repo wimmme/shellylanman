@@ -15,6 +15,7 @@ import (
 	"log/slog"
 	"math/rand/v2"
 	"net"
+	"net/url"
 	"reflect"
 	"sort"
 	"strconv"
@@ -82,16 +83,18 @@ type Devices struct {
 }
 
 type entry struct {
-	dev    model.Device
-	conn   *shelly.Conn // nil for ghosts and unmanaged-with-error devices
-	info   shelly.Info
-	blu    *bluLink
-	ext    bool // Gen2+ range extender enabled
-	cancel context.CancelFunc
-	now    chan struct{} // request an immediate full refresh
-	paused bool          // refresh paused by the user (logs dialog)
+	dev       model.Device
+	conn      *shelly.Conn // nil for ghosts and unmanaged-with-error devices
+	info      shelly.Info
+	blu       *bluLink
+	ext       bool // Gen2+ range extender enabled
+	cancel    context.CancelFunc
+	now       chan struct{} // request an immediate full refresh
+	paused    bool          // refresh paused by the user (logs dialog)
+	rebooting bool          // refresh paused after a reboot command
 
 	rawConfig, rawStatus, rawPeriph json.RawMessage // last answers: table fields and "stored data" of sleeping devices
+	rawActions, rawHooks, rawComps  json.RawMessage // Gen1 /settings/actions, Gen2+ Webhook.List, XT1 components
 }
 
 // bluLink connects a BLU device to its gateway.
@@ -102,6 +105,9 @@ type bluLink struct {
 	trv   bool
 	keys  string // Shelly.GetComponents keys for BTHome devices
 	known []byte // BTHomeDevice.GetKnownObjects
+	hooks []byte // the gateway's Webhook.List (BTHome button actions)
+
+	trvTarget *float64 // TRV target just set: kept over the next remote status read
 }
 
 // NewDevices creates the service. emit receives events for the browsers.
@@ -464,7 +470,7 @@ func (m *Devices) poll(ctx context.Context, e *entry) {
 			tics = 1 << 30 // force a configuration refresh
 		}
 		m.mu.Lock()
-		paused := e.paused
+		paused := e.paused || e.rebooting
 		m.mu.Unlock()
 		if paused {
 			continue
@@ -602,7 +608,13 @@ func (m *Devices) refreshConfig(ctx context.Context, e *entry) {
 		path = "/settings"
 	}
 	raw, err := e.conn.Get(ctx, path)
-	var periph []byte
+	var periph, actions, hooks []byte
+	if err == nil && e.info.Gen == 0 && inputActionModels[e.dev.TypeID] {
+		actions, _ = e.conn.Get(ctx, "/settings/actions") // Actions.fillSettings
+	}
+	if err == nil && e.info.Gen != 0 && inputActionModels[e.dev.TypeID] {
+		hooks, _ = e.conn.Get(ctx, "/rpc/Webhook.List") // Webhooks.fillSettings
+	}
 	if err == nil && e.info.Gen != 0 {
 		var cfg struct {
 			Sys struct {
@@ -621,7 +633,7 @@ func (m *Devices) refreshConfig(ctx context.Context, e *entry) {
 		if err != nil {
 			return
 		}
-		e.rawConfig, e.rawPeriph = raw, periph
+		e.rawConfig, e.rawPeriph, e.rawActions, e.rawHooks = raw, periph, actions, hooks
 		m.reparse(e, d)
 		d.LastSeen = time.Now().UnixMilli()
 	})
@@ -637,12 +649,17 @@ func (m *Devices) refreshStatus(ctx context.Context, e *entry) {
 		path = "/status"
 	}
 	raw, err := e.conn.Get(ctx, path)
+	var comps []byte
+	if keys := parse.XT1Keys(e.info.Svc0Type); err == nil && keys != nil {
+		kb, _ := json.Marshal(keys)
+		comps, _ = e.conn.Get(ctx, "/rpc/Shelly.GetComponents?keys="+url.QueryEscape(string(kb)))
+	}
 	m.apply(e, func(d *model.Device) {
 		d.Status, d.Error = statusOf(err)
 		if err != nil {
 			return
 		}
-		e.rawStatus = raw
+		e.rawStatus, e.rawComps = raw, comps
 		m.reparse(e, d)
 		d.LastSeen = time.Now().UnixMilli()
 	})
@@ -660,13 +677,18 @@ func (m *Devices) reparse(e *entry, d *model.Device) {
 		if json.Unmarshal(e.rawConfig, &cfg) == nil && cfg.Device.Hostname != "" {
 			d.Hostname = cfg.Device.Hostname
 		}
-		d.ApplyReadings(parse.Gen1(parse.Gen1Input{TypeID: d.TypeID, DeviceName: d.Name, Settings: e.rawConfig, Status: e.rawStatus}))
+		d.ApplyReadings(parse.Gen1(parse.Gen1Input{TypeID: d.TypeID, DeviceName: d.Name, Settings: e.rawConfig, Status: e.rawStatus, Actions: e.rawActions}))
 		return
 	}
-	r := parse.Gen2(parse.Gen2Input{TypeID: d.TypeID, DeviceName: d.Name, Config: e.rawConfig, Status: e.rawStatus, Peripherals: e.rawPeriph})
+	r := parse.Gen2(parse.Gen2Input{TypeID: d.TypeID, DeviceName: d.Name, Config: e.rawConfig, Status: e.rawStatus, Peripherals: e.rawPeriph,
+		Webhooks: e.rawHooks, Variant: e.info.Svc0Type, Components: e.rawComps})
 	e.ext = r.RangeExtender
 	d.ApplyReadings(r)
 }
+
+// Models whose inputs show their configured actions in the Command column:
+// Gen1 i3 and Button 1 (Actions), Gen2+ i4 (Webhooks).
+var inputActionModels = map[string]bool{"SHIX3-1": true, "SHBTN-2": true, "PlusI4": true, "I4G3": true}
 
 // ---- helpers ----------------------------------------------------------------
 
