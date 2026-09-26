@@ -107,3 +107,23 @@ func TestScanSettingsTriggerRescan(t *testing.T) {
 		t.Fatalf("IP scan without ranges accepted: %d", r.StatusCode)
 	}
 }
+
+func TestCommandAndRebootEndpoints(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	// The archived device is a ghost: commands have no connection, reboot is refused.
+	if r := do(t, "POST", srv.URL+"/api/v1/devices/AABBCC000001/command", `{"key":"relay/0","action":"toggle"}`, jsonHdr); r.StatusCode != http.StatusGatewayTimeout {
+		t.Fatalf("command on stored device: %d", r.StatusCode)
+	}
+	if r := do(t, "POST", srv.URL+"/api/v1/devices/NOPE/command", `{"key":"relay/0","action":"toggle"}`, jsonHdr); r.StatusCode != 404 {
+		t.Fatalf("command on unknown device: %d", r.StatusCode)
+	}
+	if r := do(t, "POST", srv.URL+"/api/v1/devices/reboot", `{"ids":["AABBCC000001"]}`, jsonHdr); r.StatusCode != http.StatusPreconditionRequired {
+		t.Fatalf("reboot without confirm: %d", r.StatusCode)
+	}
+	if r := do(t, "POST", srv.URL+"/api/v1/devices/reboot", `{"ids":["AABBCC000001"],"confirm":true}`, jsonHdr); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("reboot of a stored device: %d", r.StatusCode)
+	}
+	if r := do(t, "POST", srv.URL+"/api/v1/devices/reboot", `{"ids":[],"confirm":true}`, jsonHdr); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("reboot without devices: %d", r.StatusCode)
+	}
+}

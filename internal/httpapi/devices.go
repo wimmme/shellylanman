@@ -45,6 +45,49 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/devices/{id}/log", h(s.logSnapshot))
 	mux.HandleFunc("PUT /api/v1/devices/{id}/pause", h(s.pauseDevice))
 	mux.HandleFunc("GET /ws/log/{id}", h(s.logStream))
+	mux.HandleFunc("POST /api/v1/devices/{id}/command", h(s.command))
+	mux.HandleFunc("POST /api/v1/devices/reboot", h(s.reboot))
+}
+
+// command runs one action of the Command column (service.Command).
+func (s *server) command(w http.ResponseWriter, r *http.Request) {
+	var cmd service.Command
+	if !readJSON(w, r, &cmd) {
+		return
+	}
+	if err := s.Devices.Command(r.Context(), r.PathValue("id"), cmd); err != nil {
+		code := deviceErrorCode(err)
+		if errors.Is(err, service.ErrConfirm) {
+			code = http.StatusPreconditionRequired
+		}
+		writeError(w, code, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// reboot restarts devices; destructive, so it needs confirm=true.
+func (s *server) reboot(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		IDs     []string `json:"ids"`
+		Confirm bool     `json:"confirm"`
+	}
+	if !readJSON(w, r, &body) {
+		return
+	}
+	if !body.Confirm {
+		writeError(w, http.StatusPreconditionRequired, service.ErrConfirm.Error())
+		return
+	}
+	if len(body.IDs) == 0 {
+		writeError(w, http.StatusBadRequest, "no devices")
+		return
+	}
+	if err := s.Devices.Reboot(body.IDs); err != nil {
+		writeError(w, deviceErrorCode(err), err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (s *server) listDevices(w http.ResponseWriter, r *http.Request) {
