@@ -1,8 +1,15 @@
 package httpapi
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/coder/websocket"
 
 	"github.com/wimmme/shellylanman/internal/discovery"
 	"github.com/wimmme/shellylanman/internal/service"
@@ -33,6 +40,11 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/scan", h(s.rescan))
 	mux.HandleFunc("DELETE /api/v1/archive", h(s.clearArchive))
 	mux.HandleFunc("GET /api/v1/network/interfaces", s.interfaces)
+	mux.HandleFunc("GET /api/v1/devices/{id}/info", h(s.infoRequests))
+	mux.HandleFunc("GET /api/v1/devices/{id}/info/{index}", h(s.infoResult))
+	mux.HandleFunc("GET /api/v1/devices/{id}/log", h(s.logSnapshot))
+	mux.HandleFunc("PUT /api/v1/devices/{id}/pause", h(s.pauseDevice))
+	mux.HandleFunc("GET /ws/log/{id}", h(s.logStream))
 }
 
 func (s *server) listDevices(w http.ResponseWriter, r *http.Request) {
@@ -141,4 +153,97 @@ func (s *server) interfaces(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, ifs)
+}
+
+func (s *server) infoRequests(w http.ResponseWriter, r *http.Request) {
+	reqs, err := s.Devices.InfoRequests(r.PathValue("id"))
+	if err != nil {
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, reqs)
+}
+
+func (s *server) infoResult(w http.ResponseWriter, r *http.Request) {
+	idx, err := strconv.Atoi(r.PathValue("index"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "index must be a number")
+		return
+	}
+	res, err := s.Devices.Info(r.Context(), r.PathValue("id"), idx)
+	if err != nil {
+		writeError(w, deviceErrorCode(err), err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, res)
+}
+
+// deviceErrorCode maps service and device errors to HTTP status codes.
+func deviceErrorCode(err error) int {
+	var api *shelly.APIError
+	switch {
+	case errors.Is(err, service.ErrNotFound):
+		return http.StatusNotFound
+	case errors.Is(err, shelly.ErrUnauthorized):
+		return http.StatusForbidden
+	case shelly.IsOffline(err), errors.Is(err, service.ErrNoConnection):
+		return http.StatusGatewayTimeout
+	case errors.As(err, &api):
+		return http.StatusBadGateway
+	}
+	return http.StatusBadRequest
+}
+
+func (s *server) logSnapshot(w http.ResponseWriter, r *http.Request) {
+	file, _ := strconv.Atoi(r.URL.Query().Get("file"))
+	text, err := s.Devices.LogSnapshot(r.Context(), r.PathValue("id"), file)
+	if err != nil {
+		writeError(w, deviceErrorCode(err), err.Error())
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	io.WriteString(w, text)
+}
+
+func (s *server) pauseDevice(w http.ResponseWriter, r *http.Request) {
+	var b struct {
+		Paused bool `json:"paused"`
+	}
+	if !readJSON(w, r, &b) {
+		return
+	}
+	if err := s.Devices.SetPaused(r.PathValue("id"), b.Paused); err != nil {
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// logStream relays a Gen2+ device's live log to the browser. The browser only
+// listens; closing the page closes the device connection.
+func (s *server) logStream(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if _, ok := s.Devices.Get(id); !ok {
+		writeError(w, http.StatusNotFound, service.ErrNotFound.Error())
+		return
+	}
+	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{OriginPatterns: s.Origins})
+	if err != nil {
+		return
+	}
+	defer c.CloseNow()
+	ctx := c.CloseRead(r.Context())
+	err = s.Devices.LogStream(ctx, id, func(line json.RawMessage) {
+		wctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		_ = c.Write(wctx, websocket.MessageText, line)
+		cancel()
+	})
+	if err != nil {
+		msg, _ := json.Marshal(map[string]string{"error": err.Error()})
+		_ = c.Write(ctx, websocket.MessageText, msg)
+		c.Close(websocket.StatusInternalError, "device log unavailable")
+		return
+	}
+	c.Close(websocket.StatusNormalClosure, "")
 }
