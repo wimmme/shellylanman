@@ -1,0 +1,21 @@
+{
+  "available_updates": {},
+  "btrelay_rev": 0,
+  "cfg_rev": 24,
+  "fs_free": 614400,
+  "fs_size": 1048576,
+  "kvs_rev": 2,
+  "last_sync_ts": 1790436959,
+  "mac": "AABBCC000001",
+  "ram_free": 122932,
+  "ram_min_free": 96432,
+  "ram_size": 279444,
+  "reset_reason": 3,
+  "restart_required": false,
+  "schedule_rev": 0,
+  "time": "18:00",
+  "unixtime": 1790438436,
+  "uptime": 196732,
+  "utc_offset": 7200,
+  "webhook_rev": 0
+}

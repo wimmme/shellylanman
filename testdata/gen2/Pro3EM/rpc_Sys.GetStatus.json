@@ -1,0 +1,31 @@
+{
+  "alt": {
+    "Pro3EMProAddon": {
+      "desc": "Pro 3 EM with Pro Sensor Addon",
+      "name": "Test",
+      "stable": {
+        "build_id": "20260923-075722/2.0.1-ge1a198b",
+        "version": "2.0.1"
+      }
+    }
+  },
+  "available_updates": {},
+  "btrelay_rev": 0,
+  "cfg_rev": 31,
+  "fs_free": 155648,
+  "fs_size": 524288,
+  "kvs_rev": 0,
+  "last_sync_ts": 1790437884,
+  "mac": "AABBCC000001",
+  "ram_free": 113040,
+  "ram_min_free": 89412,
+  "ram_size": 262812,
+  "reset_reason": 3,
+  "restart_required": false,
+  "schedule_rev": 0,
+  "time": "18:00",
+  "unixtime": 1790438420,
+  "uptime": 258817,
+  "utc_offset": 7200,
+  "webhook_rev": 0
+}

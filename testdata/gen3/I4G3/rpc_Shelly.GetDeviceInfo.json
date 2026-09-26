@@ -1,0 +1,15 @@
+{
+  "app": "I4G3",
+  "auth_domain": null,
+  "auth_en": false,
+  "enhanced_security": false,
+  "fw_id": "20260923-075439/2.0.1-ge1a198b",
+  "gen": 3,
+  "id": "shellyi4g3-aabbcc000001",
+  "mac": "AABBCC000001",
+  "model": "S3SN-0024X",
+  "name": "Test",
+  "provision": "complete",
+  "slot": 0,
+  "ver": "2.0.1"
+}

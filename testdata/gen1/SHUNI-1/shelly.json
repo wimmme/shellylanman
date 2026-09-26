@@ -1,0 +1,9 @@
+{
+  "auth": false,
+  "discoverable": false,
+  "fw": "20230913-114521/v1.14.0-gcb84623",
+  "longid": 1,
+  "mac": "AABBCC000001",
+  "num_outputs": 2,
+  "type": "SHUNI-1"
+}

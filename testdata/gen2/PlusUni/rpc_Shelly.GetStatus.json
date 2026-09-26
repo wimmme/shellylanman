@@ -1,0 +1,80 @@
+{
+  "ble": {
+    "addr": "aa:bb:cc:00:00:02,p",
+    "flags": [
+      "advertising",
+      "scanning"
+    ]
+  },
+  "cloud": {
+    "connected": true
+  },
+  "input:0": {
+    "id": 0,
+    "state": null
+  },
+  "input:1": {
+    "id": 1,
+    "state": null
+  },
+  "input:2": {
+    "counts": null,
+    "freq": null,
+    "id": 2
+  },
+  "mqtt": {
+    "connected": true
+  },
+  "script:1": {
+    "cpu": 12,
+    "id": 1,
+    "mem_free": 24416,
+    "mem_peak": 2814,
+    "mem_used": 770,
+    "running": true
+  },
+  "switch:0": {
+    "id": 0,
+    "output": false,
+    "source": "init",
+    "tag": null
+  },
+  "switch:1": {
+    "id": 1,
+    "output": false,
+    "source": "init",
+    "tag": null
+  },
+  "sys": {
+    "available_updates": {},
+    "btrelay_rev": 0,
+    "cfg_rev": 85,
+    "fs_free": 110592,
+    "fs_size": 393216,
+    "kvs_rev": 4,
+    "last_sync_ts": 1790437100,
+    "mac": "AABBCC000001",
+    "ram_free": 107996,
+    "ram_min_free": 48180,
+    "ram_size": 269136,
+    "reset_reason": 3,
+    "restart_required": false,
+    "schedule_rev": 0,
+    "time": "18:08",
+    "unixtime": 1790438884,
+    "uptime": 99261,
+    "utc_offset": 7200,
+    "webhook_rev": 0
+  },
+  "wifi": {
+    "bssid": "aa:bb:cc:00:00:03",
+    "channel": 6,
+    "rssi": -68,
+    "ssid": "REDACTED",
+    "sta_ip": "192.0.2.1",
+    "status": "got ip"
+  },
+  "ws": {
+    "connected": false
+  }
+}

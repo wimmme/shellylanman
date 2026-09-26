@@ -1,0 +1,32 @@
+{
+  "alt": {
+    "Mini1PMG4ZB": {
+      "desc": "Shelly Mini 1 PM Gen4 with Zigbee",
+      "name": "Test",
+      "stable": {
+        "build_id": "20260923-075527/2.0.1-ge1a198b",
+        "version": "2.0.1"
+      }
+    }
+  },
+  "available_updates": {},
+  "bthc_rev": 0,
+  "btrelay_rev": 0,
+  "cfg_rev": 50,
+  "fs_free": 438272,
+  "fs_size": 917504,
+  "kvs_rev": 0,
+  "last_sync_ts": 1790436899,
+  "mac": "AABBCC000001",
+  "ram_free": 133908,
+  "ram_min_free": 89432,
+  "ram_size": 343668,
+  "reset_reason": 3,
+  "restart_required": false,
+  "schedule_rev": 0,
+  "time": "18:00",
+  "unixtime": 1790438449,
+  "uptime": 98133,
+  "utc_offset": 7200,
+  "webhook_rev": 0
+}

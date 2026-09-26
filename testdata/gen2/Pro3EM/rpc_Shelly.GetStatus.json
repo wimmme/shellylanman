@@ -1,0 +1,105 @@
+{
+  "ble": {
+    "addr": "aa:bb:cc:00:00:02,p",
+    "flags": [
+      "advertising"
+    ]
+  },
+  "bthome": {},
+  "cloud": {
+    "connected": true
+  },
+  "em:0": {
+    "a_act_power": -3.5,
+    "a_aprt_power": 6.1,
+    "a_current": 0.026,
+    "a_freq": 50.0,
+    "a_pf": 0.57,
+    "a_voltage": 234.0,
+    "b_act_power": 2.2,
+    "b_aprt_power": 5.4,
+    "b_current": 0.023,
+    "b_freq": 50.0,
+    "b_pf": 0.40,
+    "b_voltage": 232.7,
+    "c_act_power": 2.0,
+    "c_aprt_power": 4.2,
+    "c_current": 0.018,
+    "c_freq": 50.0,
+    "c_pf": 0.53,
+    "c_voltage": 233.9,
+    "id": 0,
+    "n_current": null,
+    "total_act_power": 0.674,
+    "total_aprt_power": 15.670,
+    "total_current": 0.067,
+    "user_calibrated_phase": []
+  },
+  "emdata:0": {
+    "a_total_act_energy": 0.04,
+    "a_total_act_ret_energy": 881393.80,
+    "b_total_act_energy": 8881.01,
+    "b_total_act_ret_energy": 612100.61,
+    "c_total_act_energy": 8143.03,
+    "c_total_act_ret_energy": 616453.19,
+    "id": 0,
+    "total_act": 17024.08,
+    "total_act_ret": 2109947.61
+  },
+  "eth": {
+    "ip": "192.0.2.3",
+    "ip6": [
+      "fe80::a6f0:fff:fecd:7c47",
+      "2a02:1810:480e:ab80:a6f0:fff:fecd:7c47"
+    ]
+  },
+  "modbus": {},
+  "mqtt": {
+    "connected": true
+  },
+  "sys": {
+    "alt": {
+      "Pro3EMProAddon": {
+        "desc": "Pro 3 EM with Pro Sensor Addon",
+        "name": "Test",
+        "stable": {
+          "build_id": "20260923-075722/2.0.1-ge1a198b",
+          "version": "2.0.1"
+        }
+      }
+    },
+    "available_updates": {},
+    "btrelay_rev": 0,
+    "cfg_rev": 31,
+    "fs_free": 155648,
+    "fs_size": 524288,
+    "kvs_rev": 0,
+    "last_sync_ts": 1790437884,
+    "mac": "AABBCC000001",
+    "ram_free": 116912,
+    "ram_min_free": 89412,
+    "ram_size": 262912,
+    "reset_reason": 3,
+    "restart_required": false,
+    "schedule_rev": 0,
+    "time": "18:00",
+    "unixtime": 1790438418,
+    "uptime": 258815,
+    "utc_offset": 7200,
+    "webhook_rev": 0
+  },
+  "temperature:0": {
+    "id": 0,
+    "tC": 53.5,
+    "tF": 128.2
+  },
+  "wifi": {
+    "ssid": null,
+    "sta_ip": "0.0.0.0",
+    "sta_ip6": null,
+    "status": "disconnected"
+  },
+  "ws": {
+    "connected": false
+  }
+}

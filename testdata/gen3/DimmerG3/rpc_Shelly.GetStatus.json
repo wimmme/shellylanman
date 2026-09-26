@@ -1,0 +1,88 @@
+{
+  "ble": {
+    "addr": "aa:bb:cc:00:00:02,p",
+    "flags": [
+      "advertising"
+    ]
+  },
+  "bthome": {},
+  "cloud": {
+    "connected": true
+  },
+  "input:0": {
+    "id": 0,
+    "state": null
+  },
+  "input:1": {
+    "id": 1,
+    "state": null
+  },
+  "knx": {},
+  "light:0": {
+    "aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 845.466
+    },
+    "apower": 0.0,
+    "brightness": 100,
+    "current": 0.000,
+    "id": 0,
+    "output": false,
+    "source": "init",
+    "tag": null,
+    "temperature": {
+      "tC": 45.4,
+      "tF": 113.7
+    },
+    "voltage": 219.0
+  },
+  "matter": {
+    "commissionable": false,
+    "num_fabrics": 0
+  },
+  "mqtt": {
+    "connected": true
+  },
+  "sys": {
+    "available_updates": {},
+    "bthc_rev": 0,
+    "btrelay_rev": 0,
+    "cfg_rev": 40,
+    "fs_free": 372736,
+    "fs_size": 917504,
+    "kvs_rev": 0,
+    "last_sync_ts": 1790436654,
+    "mac": "AABBCC000001",
+    "ram_free": 105908,
+    "ram_min_free": 62644,
+    "ram_size": 273676,
+    "reset_reason": 3,
+    "restart_required": false,
+    "schedule_rev": 0,
+    "time": "18:00",
+    "unixtime": 1790438438,
+    "uptime": 101741,
+    "utc_offset": 7200,
+    "webhook_rev": 0
+  },
+  "wifi": {
+    "bssid": "aa:bb:cc:00:00:03",
+    "channel": 1,
+    "rssi": -58,
+    "ssid": "REDACTED",
+    "sta_ip": "192.0.2.2",
+    "sta_ip6": [
+      "fe80::e6b0:63ff:fed9:9d7c",
+      "2a02:1810:480e:ab80:e6b0:63ff:fed9:9d7c"
+    ],
+    "status": "got ip"
+  },
+  "ws": {
+    "connected": false
+  }
+}

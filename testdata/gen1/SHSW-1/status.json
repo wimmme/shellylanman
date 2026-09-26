@@ -1,0 +1,62 @@
+{
+  "actions_stats": {
+    "skipped": 0
+  },
+  "cfg_changed_cnt": 0,
+  "cloud": {
+    "connected": false,
+    "enabled": false
+  },
+  "ext_humidity": {},
+  "ext_sensors": {},
+  "ext_temperature": {},
+  "fs_free": 149345,
+  "fs_size": 233681,
+  "has_update": false,
+  "inputs": [
+    {
+      "event": "",
+      "event_cnt": 0,
+      "input": 0
+    }
+  ],
+  "mac": "AABBCC000001",
+  "meters": [
+    {
+      "is_valid": true,
+      "power": 0.00
+    }
+  ],
+  "mqtt": {
+    "connected": true
+  },
+  "ram_free": 37864,
+  "ram_total": 51688,
+  "relays": [
+    {
+      "has_timer": false,
+      "ison": false,
+      "source": "http",
+      "timer_duration": 0,
+      "timer_remaining": 0,
+      "timer_started": 0
+    }
+  ],
+  "serial": 99,
+  "time": "18:00",
+  "unixtime": 1790438418,
+  "update": {
+    "beta_version": "20231107-162940/v1.14.1-rc1-g0617c15",
+    "has_update": false,
+    "new_version": "20230913-112003/v1.14.0-gcb84623",
+    "old_version": "20230913-112003/v1.14.0-gcb84623",
+    "status": "idle"
+  },
+  "uptime": 606204,
+  "wifi_sta": {
+    "connected": true,
+    "ip": "192.0.2.1",
+    "rssi": -67,
+    "ssid": "REDACTED"
+  }
+}

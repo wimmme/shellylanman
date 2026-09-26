@@ -1,0 +1,6 @@
+{
+  "analog_in": {},
+  "dht22": {},
+  "ds18b20": {},
+  "voltmeter": {}
+}

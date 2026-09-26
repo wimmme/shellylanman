@@ -1,0 +1,152 @@
+{
+  "ble": {
+    "rpc": {
+      "enable": true
+    }
+  },
+  "bthome": {},
+  "cloud": {
+    "enable": true,
+    "server": "REDACTED"
+  },
+  "input:0": {
+    "enable": true,
+    "factory_reset": true,
+    "id": 0,
+    "invert": false,
+    "name": "Test",
+    "type": "button"
+  },
+  "input:1": {
+    "enable": false,
+    "factory_reset": true,
+    "id": 1,
+    "invert": false,
+    "name": null,
+    "type": "switch"
+  },
+  "input:2": {
+    "enable": false,
+    "factory_reset": true,
+    "id": 2,
+    "invert": false,
+    "name": null,
+    "type": "switch"
+  },
+  "input:3": {
+    "enable": false,
+    "factory_reset": true,
+    "id": 3,
+    "invert": false,
+    "name": null,
+    "type": "switch"
+  },
+  "knx": {
+    "enable": false,
+    "ia": "15.15.255",
+    "routing": {
+      "addr": "224.0.23.12:3671"
+    }
+  },
+  "mqtt": {
+    "client_id": "shellyi4g3-aabbcc000001",
+    "enable": true,
+    "enable_control": true,
+    "enable_rpc": true,
+    "rpc_ntf": true,
+    "server": "REDACTED",
+    "ssl_ca": null,
+    "status_ntf": true,
+    "topic_prefix": "shellyi4g3-aabbcc000001",
+    "use_client_cert": false,
+    "user": null
+  },
+  "script:1": {
+    "enable": false,
+    "id": 1,
+    "name": "Test"
+  },
+  "sys": {
+    "cfg_rev": 57,
+    "debug": {
+      "file_level": null,
+      "file_log": {
+        "enable": false
+      },
+      "level": 2,
+      "mqtt": {
+        "enable": false
+      },
+      "udp": {
+        "addr": null
+      },
+      "websocket": {
+        "enable": false
+      }
+    },
+    "device": {
+      "addon_type": null,
+      "discoverable": true,
+      "eco_mode": false,
+      "enhanced_security": false,
+      "fw_id": "20260923-075439/2.0.1-ge1a198b",
+      "mac": "AABBCC000001",
+      "name": "Test",
+      "tls_check_cert_validity_time": true
+    },
+    "location": {
+      "lat": 0,
+      "lon": 0,
+      "tz": "UTC"
+    },
+    "rpc_udp": {
+      "dst_addr": null,
+      "listen_port": null
+    },
+    "sntp": {
+      "server": "REDACTED"
+    },
+    "ui_data": {
+      "device_revision": "1-49"
+    }
+  },
+  "wifi": {
+    "ap": {
+      "enable": false,
+      "is_open": false,
+      "range_extender": {
+        "enable": false
+      },
+      "ssid": "REDACTED"
+    },
+    "roam": {
+      "interval": 180,
+      "rssi_thr": -85
+    },
+    "sta": {
+      "enable": true,
+      "gw": null,
+      "ip": null,
+      "ipv4mode": "dhcp",
+      "is_open": false,
+      "nameserver": null,
+      "netmask": null,
+      "ssid": "REDACTED"
+    },
+    "sta1": {
+      "enable": false,
+      "gw": null,
+      "ip": null,
+      "ipv4mode": "dhcp",
+      "is_open": false,
+      "nameserver": null,
+      "netmask": null,
+      "ssid": "REDACTED"
+    }
+  },
+  "ws": {
+    "enable": true,
+    "server": "REDACTED",
+    "ssl_ca": "*"
+  }
+}

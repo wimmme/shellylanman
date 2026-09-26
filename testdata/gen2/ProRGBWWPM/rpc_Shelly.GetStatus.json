@@ -1,0 +1,196 @@
+{
+  "ble": {
+    "addr": "aa:bb:cc:00:00:02,p",
+    "flags": [
+      "advertising"
+    ]
+  },
+  "bthome": {},
+  "cloud": {
+    "connected": true
+  },
+  "eth": {
+    "ip": "192.0.2.1",
+    "ip6": [
+      "fe80::eee3:34ff:fef9:5023",
+      "2a02:1810:480e:ab80:eee3:34ff:fef9:5023"
+    ]
+  },
+  "input:0": {
+    "id": 0,
+    "state": null
+  },
+  "input:1": {
+    "id": 1,
+    "state": null
+  },
+  "input:2": {
+    "id": 2,
+    "state": null
+  },
+  "input:3": {
+    "id": 3,
+    "state": null
+  },
+  "input:4": {
+    "id": 4,
+    "state": null
+  },
+  "light:0": {
+    "aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 5681.518
+    },
+    "apower": 0.0,
+    "brightness": 100,
+    "current": 0.000,
+    "id": 0,
+    "output": false,
+    "source": "WS_in",
+    "tag": null,
+    "temperature": {
+      "tC": 55.6,
+      "tF": 132.1
+    },
+    "voltage": 24.8
+  },
+  "light:1": {
+    "aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 8308.505
+    },
+    "apower": 0.0,
+    "brightness": 100,
+    "current": 0.000,
+    "id": 1,
+    "output": false,
+    "source": "WS_in",
+    "tag": null,
+    "temperature": {
+      "tC": 55.6,
+      "tF": 132.1
+    },
+    "voltage": 24.8
+  },
+  "light:2": {
+    "aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 5108.470
+    },
+    "apower": 0.0,
+    "brightness": 100,
+    "current": 0.000,
+    "id": 2,
+    "output": false,
+    "source": "WS_in",
+    "tag": null,
+    "temperature": {
+      "tC": 55.6,
+      "tF": 132.1
+    },
+    "voltage": 24.8
+  },
+  "light:3": {
+    "aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 9670.050
+    },
+    "apower": 0.0,
+    "brightness": 100,
+    "current": 0.000,
+    "id": 3,
+    "output": false,
+    "source": "WS_in",
+    "tag": null,
+    "temperature": {
+      "tC": 55.6,
+      "tF": 132.1
+    },
+    "voltage": 24.8
+  },
+  "light:4": {
+    "aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 0.000
+    },
+    "apower": 0.0,
+    "brightness": 50,
+    "current": 0.000,
+    "id": 4,
+    "output": false,
+    "source": "init",
+    "tag": null,
+    "temperature": {
+      "tC": 55.6,
+      "tF": 132.1
+    },
+    "voltage": 24.8
+  },
+  "mqtt": {
+    "connected": true
+  },
+  "prorgbwwpm": {},
+  "sys": {
+    "available_updates": {},
+    "bthc_rev": 0,
+    "btrelay_rev": 0,
+    "cfg_rev": 46,
+    "ch": [
+      "light:0",
+      "light:1",
+      "light:2",
+      "light:3",
+      "light:4"
+    ],
+    "fs_free": 155648,
+    "fs_size": 524288,
+    "kvs_rev": 2,
+    "last_sync_ts": 1790438203,
+    "mac": "AABBCC000001",
+    "ram_free": 105036,
+    "ram_min_free": 82020,
+    "ram_size": 264004,
+    "reset_reason": 3,
+    "restart_required": false,
+    "schedule_rev": 1,
+    "time": "18:00",
+    "unixtime": 1790438431,
+    "uptime": 174126,
+    "utc_offset": 7200,
+    "webhook_rev": 1
+  },
+  "wifi": {
+    "ssid": null,
+    "sta_ip": "0.0.0.0",
+    "sta_ip6": null,
+    "status": "disconnected"
+  },
+  "ws": {
+    "connected": false
+  }
+}

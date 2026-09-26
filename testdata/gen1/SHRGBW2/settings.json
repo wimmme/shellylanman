@@ -1,0 +1,221 @@
+{
+  "actions": {
+    "active": false,
+    "names": [
+      "btn_on_url",
+      "btn_off_url",
+      "longpush_url",
+      "shortpush_url",
+      "out_on_url",
+      "out_off_url",
+      "out_on_url",
+      "out_off_url",
+      "out_on_url",
+      "out_off_url",
+      "out_on_url",
+      "out_off_url"
+    ]
+  },
+  "allow_cross_origin": true,
+  "ap_roaming": {
+    "enabled": true,
+    "threshold": -85
+  },
+  "build_info": {
+    "build_id": "20230913-131259/v1.14.0-gcb84623",
+    "build_timestamp": "2023-09-13T13:12:59Z",
+    "build_version": "1.0"
+  },
+  "cloud": {
+    "connected": false,
+    "enabled": false
+  },
+  "coiot": {
+    "enabled": true,
+    "peer": "REDACTED",
+    "update_period": 15
+  },
+  "dcpower": 0,
+  "debug_enable": false,
+  "device": {
+    "hostname": "shellyrgbw2-A894A1",
+    "mac": "AABBCC000001",
+    "mode": "white",
+    "num_outputs": 4,
+    "type": "SHRGBW2"
+  },
+  "discoverable": false,
+  "eco_mode_enabled": false,
+  "factory_reset_from_switch": false,
+  "fw": "20230913-131259/v1.14.0-gcb84623",
+  "fw_mode": "SHRGBW2!white",
+  "hwinfo": {
+    "batch_id": 1,
+    "hw_revision": "prod-190822"
+  },
+  "lat": 0,
+  "led_status_disable": true,
+  "lights": [
+    {
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "brightness": 20,
+      "btn_reverse": 0,
+      "btn_type": "edge",
+      "default_state": "switch",
+      "ison": false,
+      "name": "Test",
+      "night_mode": {
+        "brightness": 0,
+        "enabled": false,
+        "end_time": "00:00",
+        "start_time": "00:00"
+      },
+      "out_off_url": "",
+      "out_on_url": "",
+      "schedule": false,
+      "schedule_rules": [],
+      "transition": 1000
+    },
+    {
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "brightness": 10,
+      "default_state": "switch",
+      "ison": false,
+      "name": "Test",
+      "night_mode": {
+        "brightness": 0,
+        "enabled": false,
+        "end_time": "00:00",
+        "start_time": "00:00"
+      },
+      "out_off_url": "",
+      "out_on_url": "",
+      "schedule": false,
+      "schedule_rules": [],
+      "transition": 1000
+    },
+    {
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "brightness": 20,
+      "default_state": "switch",
+      "ison": false,
+      "name": "Test",
+      "night_mode": {
+        "brightness": 0,
+        "enabled": false,
+        "end_time": "00:00",
+        "start_time": "00:00"
+      },
+      "out_off_url": "",
+      "out_on_url": "",
+      "schedule": false,
+      "schedule_rules": [],
+      "transition": 1000
+    },
+    {
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "brightness": 10,
+      "default_state": "switch",
+      "ison": false,
+      "name": "Test",
+      "night_mode": {
+        "brightness": 0,
+        "enabled": false,
+        "end_time": "00:00",
+        "start_time": "00:00"
+      },
+      "out_off_url": "",
+      "out_on_url": "",
+      "schedule": false,
+      "schedule_rules": [],
+      "transition": 1000
+    }
+  ],
+  "lng": 0,
+  "login": {
+    "enabled": false,
+    "unprotected": false,
+    "username": "REDACTED"
+  },
+  "mode": "white",
+  "mqtt": {
+    "clean_session": true,
+    "enable": true,
+    "id": "shellyrgbw2-A894A1",
+    "keep_alive": 60,
+    "max_qos": 0,
+    "reconnect_timeout_max": 60.000000,
+    "reconnect_timeout_min": 2.000000,
+    "retain": false,
+    "server": "REDACTED",
+    "update_period": 30,
+    "user": ""
+  },
+  "name": "Test",
+  "night_mode": [
+    {
+      "brightness": 0,
+      "enabled": false,
+      "end_time": "00:00",
+      "start_time": "00:00"
+    },
+    {
+      "brightness": 0,
+      "enabled": false,
+      "end_time": "00:00",
+      "start_time": "00:00"
+    },
+    {
+      "brightness": 0,
+      "enabled": false,
+      "end_time": "00:00",
+      "start_time": "00:00"
+    },
+    {
+      "brightness": 0,
+      "enabled": false,
+      "end_time": "00:00",
+      "start_time": "00:00"
+    }
+  ],
+  "pin_code": "uriTL(",
+  "pon_wifi_reset": false,
+  "sntp": {
+    "enabled": true,
+    "server": "REDACTED"
+  },
+  "time": "18:00",
+  "timezone": "UTC",
+  "tz_dst": false,
+  "tz_dst_auto": true,
+  "tz_utc_offset": 7200,
+  "tzautodetect": true,
+  "unixtime": 1790438416,
+  "wifi_ap": {
+    "enabled": false,
+    "key": "",
+    "ssid": "REDACTED"
+  },
+  "wifi_sta": {
+    "dns": "192.0.2.1",
+    "enabled": true,
+    "gw": "192.0.2.1",
+    "ip": "192.0.2.2",
+    "ipv4_method": "static",
+    "mask": "255.255.255.0",
+    "ssid": "REDACTED"
+  },
+  "wifi_sta1": {
+    "dns": null,
+    "enabled": false,
+    "gw": null,
+    "ip": null,
+    "ipv4_method": "dhcp",
+    "mask": null,
+    "ssid": null
+  }
+}

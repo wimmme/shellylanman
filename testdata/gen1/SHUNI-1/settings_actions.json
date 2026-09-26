@@ -1,0 +1,203 @@
+{
+  "actions": {
+    "adc_over_url": [
+      {
+        "adc_over_onetime": true,
+        "adc_over_value": 0,
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "adc_under_url": [
+      {
+        "adc_under_onetime": true,
+        "adc_under_value": 0,
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      }
+    ],
+    "btn_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      }
+    ],
+    "ext_hum_over_url": [
+      {
+        "enabled": false,
+        "ext_hum_over_onetime": true,
+        "ext_hum_over_value": 0,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "ext_hum_under_url": [
+      {
+        "enabled": false,
+        "ext_hum_under_onetime": true,
+        "ext_hum_under_value": 0,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "ext_temp_over_url": [
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 2,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 3,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 4,
+        "urls": []
+      }
+    ],
+    "ext_temp_under_url": [
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 2,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 3,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 4,
+        "urls": []
+      }
+    ],
+    "longpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      }
+    ],
+    "out_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      }
+    ],
+    "out_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      }
+    ],
+    "report_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      }
+    ]
+  }
+}

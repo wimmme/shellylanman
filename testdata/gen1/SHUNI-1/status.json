@@ -1,0 +1,74 @@
+{
+  "actions_stats": {
+    "skipped": 0
+  },
+  "adcs": [
+    {
+      "voltage": 0.03
+    }
+  ],
+  "cfg_changed_cnt": 0,
+  "cloud": {
+    "connected": true,
+    "enabled": true
+  },
+  "ext_humidity": {},
+  "ext_sensors": {},
+  "ext_temperature": {},
+  "fs_free": 147086,
+  "fs_size": 233681,
+  "has_update": false,
+  "inputs": [
+    {
+      "event": "",
+      "event_cnt": 0,
+      "input": 0
+    },
+    {
+      "event": "",
+      "event_cnt": 0,
+      "input": 0
+    }
+  ],
+  "mac": "AABBCC000001",
+  "mqtt": {
+    "connected": false
+  },
+  "ram_free": 36972,
+  "ram_total": 50776,
+  "relays": [
+    {
+      "has_timer": false,
+      "ison": false,
+      "source": "input",
+      "timer_duration": 0,
+      "timer_remaining": 0,
+      "timer_started": 0
+    },
+    {
+      "has_timer": false,
+      "ison": false,
+      "source": "input",
+      "timer_duration": 0,
+      "timer_remaining": 0,
+      "timer_started": 0
+    }
+  ],
+  "serial": 13,
+  "time": "18:00",
+  "unixtime": 1790438417,
+  "update": {
+    "beta_version": "20231107-165239/v1.14.1-rc1-g0617c15",
+    "has_update": false,
+    "new_version": "20230913-114521/v1.14.0-gcb84623",
+    "old_version": "20230913-114521/v1.14.0-gcb84623",
+    "status": "idle"
+  },
+  "uptime": 107632,
+  "wifi_sta": {
+    "connected": true,
+    "ip": "192.0.2.1",
+    "rssi": -49,
+    "ssid": "REDACTED"
+  }
+}

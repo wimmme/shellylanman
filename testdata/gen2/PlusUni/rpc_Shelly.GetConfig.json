@@ -1,0 +1,171 @@
+{
+  "ble": {
+    "rpc": {
+      "enable": true
+    }
+  },
+  "cloud": {
+    "enable": true,
+    "server": "REDACTED"
+  },
+  "input:0": {
+    "enable": true,
+    "id": 0,
+    "invert": false,
+    "name": "Test",
+    "type": "button"
+  },
+  "input:1": {
+    "enable": false,
+    "id": 1,
+    "invert": false,
+    "name": "Test",
+    "type": "button"
+  },
+  "input:2": {
+    "count_rep_thr": 100,
+    "enable": false,
+    "freq_rep_thr": 10,
+    "freq_window": 1,
+    "id": 2,
+    "name": "Test",
+    "type": "count",
+    "xcounts": {
+      "expr": null,
+      "unit": null
+    },
+    "xfreq": {
+      "expr": null,
+      "unit": null
+    }
+  },
+  "mqtt": {
+    "client_id": "shellyplusuni-aabbcc000001",
+    "enable": true,
+    "enable_control": true,
+    "enable_rpc": true,
+    "rpc_ntf": true,
+    "server": "REDACTED",
+    "ssl_ca": null,
+    "status_ntf": true,
+    "topic_prefix": "shellyplusuni-aabbcc000001",
+    "use_client_cert": false,
+    "user": null
+  },
+  "script:1": {
+    "enable": false,
+    "id": 1,
+    "name": "Test"
+  },
+  "switch:0": {
+    "auto_off": true,
+    "auto_off_delay": 1.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "counts": {
+      "enable": true
+    },
+    "id": 0,
+    "in_locked": false,
+    "in_mode": "activate",
+    "initial_state": "off",
+    "name": "Test"
+  },
+  "switch:1": {
+    "auto_off": false,
+    "auto_off_delay": 60.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "counts": {
+      "enable": true
+    },
+    "id": 1,
+    "in_locked": false,
+    "in_mode": "detached",
+    "initial_state": "off",
+    "name": "Test"
+  },
+  "sys": {
+    "cfg_rev": 85,
+    "debug": {
+      "file_level": null,
+      "file_log": {
+        "enable": false
+      },
+      "level": 2,
+      "mqtt": {
+        "enable": false
+      },
+      "udp": {
+        "addr": null
+      },
+      "websocket": {
+        "enable": true
+      }
+    },
+    "device": {
+      "discoverable": true,
+      "eco_mode": false,
+      "enhanced_security": false,
+      "fw_id": "20260923-075617/2.0.1-ge1a198b",
+      "mac": "AABBCC000001",
+      "name": "Test",
+      "tls_check_cert_validity_time": true
+    },
+    "location": {
+      "lat": 0,
+      "lon": 0,
+      "tz": "UTC"
+    },
+    "rpc_udp": {
+      "dst_addr": null,
+      "listen_port": null
+    },
+    "sntp": {
+      "server": "REDACTED"
+    },
+    "ui_data": {
+      "device_revision": "1-73",
+      "tf": 24
+    }
+  },
+  "wifi": {
+    "ap": {
+      "enable": true,
+      "is_open": false,
+      "range_extender": {
+        "enable": false
+      },
+      "ssid": "REDACTED"
+    },
+    "roam": {
+      "interval": 300,
+      "rssi_thr": -85
+    },
+    "sta": {
+      "enable": false,
+      "gw": null,
+      "ip": null,
+      "ipv4mode": "dhcp",
+      "is_open": false,
+      "nameserver": null,
+      "netmask": null,
+      "ssid": "REDACTED"
+    },
+    "sta1": {
+      "enable": true,
+      "gw": null,
+      "ip": null,
+      "ipv4mode": "dhcp",
+      "is_open": false,
+      "nameserver": null,
+      "netmask": null,
+      "ssid": "REDACTED"
+    }
+  },
+  "ws": {
+    "enable": true,
+    "server": "REDACTED",
+    "ssl_ca": "*"
+  }
+}

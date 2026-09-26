@@ -1,0 +1,10 @@
+{
+  "auth": false,
+  "discoverable": true,
+  "fw": "20230913-114336/v1.14.0-gcb84623",
+  "longid": 1,
+  "mac": "AABBCC000001",
+  "num_inputs": 3,
+  "num_outputs": 0,
+  "type": "SHIX3-1"
+}

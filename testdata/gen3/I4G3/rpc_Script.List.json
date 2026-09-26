@@ -1,0 +1,10 @@
+{
+  "scripts": [
+    {
+      "enable": false,
+      "id": 1,
+      "name": "Test",
+      "running": true
+    }
+  ]
+}

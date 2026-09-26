@@ -1,0 +1,250 @@
+{
+  "cfg_rev": 40,
+  "components": [
+    {
+      "config": {
+        "rpc": {
+          "enable": true
+        }
+      },
+      "key": "REDACTED",
+      "status": {
+        "addr": "aa:bb:cc:00:00:02,p",
+        "flags": [
+          "advertising"
+        ]
+      }
+    },
+    {
+      "config": {},
+      "key": "REDACTED",
+      "status": {}
+    },
+    {
+      "config": {
+        "enable": true,
+        "server": "REDACTED"
+      },
+      "key": "REDACTED",
+      "status": {
+        "connected": true
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "factory_reset": true,
+        "id": 0,
+        "invert": false,
+        "name": null,
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 0,
+        "state": null
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "factory_reset": true,
+        "id": 1,
+        "invert": false,
+        "name": null,
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 1,
+        "state": null
+      }
+    },
+    {
+      "config": {
+        "enable": false,
+        "ia": "15.15.255",
+        "routing": {
+          "addr": "224.0.23.12:3671"
+        }
+      },
+      "key": "REDACTED",
+      "status": {}
+    },
+    {
+      "attrs": {
+        "inputs": [
+          0,
+          1
+        ],
+        "limits": {
+          "transition": [
+            0.0,
+            5.0
+          ]
+        }
+      },
+      "config": {
+        "auto_off": false,
+        "auto_off_delay": 60.00,
+        "auto_on": false,
+        "auto_on_delay": 60.00,
+        "button_fade_rate": 3,
+        "button_presets": {
+          "button_doublepush": {
+            "brightness": 100
+          }
+        },
+        "current_limit": 1.200,
+        "gamma": 1.00,
+        "id": 0,
+        "in_mode": "dim",
+        "initial_state": "restore_last",
+        "min_brightness_on_toggle": 3,
+        "name": null,
+        "night_mode": {
+          "active_between": [],
+          "brightness": 50,
+          "enable": false
+        },
+        "power_limit": 240,
+        "range_map": [
+          0,
+          100
+        ],
+        "transition_duration": 3.00,
+        "undervoltage_limit": 100,
+        "voltage_limit": 280,
+        "warmup": {
+          "brightness": 100,
+          "enable": false,
+          "time_ms": 50
+        }
+      },
+      "key": "REDACTED",
+      "status": {
+        "aenergy": {
+          "by_minute": [
+            0.000,
+            0.000,
+            0.000
+          ],
+          "minute_ts": 1790438400,
+          "total": 845.466
+        },
+        "apower": 0.0,
+        "brightness": 100,
+        "current": 0.000,
+        "id": 0,
+        "output": false,
+        "source": "init",
+        "tag": null,
+        "temperature": {
+          "tC": 45.5,
+          "tF": 113.9
+        },
+        "voltage": 218.0
+      }
+    },
+    {
+      "config": {
+        "enable": false
+      },
+      "key": "REDACTED",
+      "status": {
+        "commissionable": false,
+        "num_fabrics": 0
+      }
+    },
+    {
+      "config": {
+        "client_id": "shellydimmerg3-aabbcc000001",
+        "enable": true,
+        "enable_control": true,
+        "enable_rpc": true,
+        "rpc_ntf": true,
+        "server": "REDACTED",
+        "ssl_ca": null,
+        "status_ntf": true,
+        "topic_prefix": "shellydimmerg3-aabbcc000001",
+        "use_client_cert": false,
+        "user": null
+      },
+      "key": "REDACTED",
+      "status": {
+        "connected": true
+      }
+    },
+    {
+      "config": {
+        "cfg_rev": 40,
+        "debug": {
+          "file_level": null,
+          "file_log": {
+            "enable": false
+          },
+          "level": 2,
+          "mqtt": {
+            "enable": false
+          },
+          "udp": {
+            "addr": null
+          },
+          "websocket": {
+            "enable": false
+          }
+        },
+        "device": {
+          "discoverable": true,
+          "eco_mode": false,
+          "enhanced_security": false,
+          "fw_id": "20260923-075411/2.0.1-ge1a198b",
+          "mac": "AABBCC000001",
+          "name": "Test",
+          "tls_check_cert_validity_time": true
+        },
+        "location": {
+          "lat": 0,
+          "lon": 0,
+          "tz": "UTC"
+        },
+        "rpc_udp": {
+          "dst_addr": null,
+          "listen_port": null
+        },
+        "sntp": {
+          "server": "REDACTED"
+        },
+        "ui_data": {
+          "device_revision": "1-4",
+          "tf": 24
+        }
+      },
+      "key": "REDACTED",
+      "status": {
+        "available_updates": {},
+        "bthc_rev": 0,
+        "btrelay_rev": 0,
+        "cfg_rev": 40,
+        "fs_free": 372736,
+        "fs_size": 917504,
+        "kvs_rev": 0,
+        "last_sync_ts": 1790436654,
+        "mac": "AABBCC000001",
+        "ram_free": 99760,
+        "ram_min_free": 62644,
+        "ram_size": 273628,
+        "reset_reason": 3,
+        "restart_required": false,
+        "schedule_rev": 0,
+        "time": "18:00",
+        "unixtime": 1790438439,
+        "uptime": 101742,
+        "utc_offset": 7200,
+        "webhook_rev": 0
+      }
+    }
+  ],
+  "offset": 0,
+  "total": 12
+}

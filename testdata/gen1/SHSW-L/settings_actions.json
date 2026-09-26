@@ -1,0 +1,74 @@
+{
+  "actions": {
+    "btn1_longpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn1_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn1_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn1_shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn2_longpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn2_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn2_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn2_shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "out_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "out_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ]
+  }
+}

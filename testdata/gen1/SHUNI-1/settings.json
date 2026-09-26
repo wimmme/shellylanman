@@ -1,0 +1,180 @@
+{
+  "actions": {
+    "active": false,
+    "names": [
+      "out_on_url",
+      "out_off_url",
+      "btn_on_url",
+      "btn_off_url",
+      "longpush_url",
+      "shortpush_url",
+      "out_on_url",
+      "out_off_url",
+      "btn_on_url",
+      "btn_off_url",
+      "longpush_url",
+      "shortpush_url",
+      "adc_over_url",
+      "adc_under_url",
+      "report_url",
+      "report_url",
+      "report_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_hum_over_url",
+      "ext_hum_under_url"
+    ]
+  },
+  "adcs": [
+    {
+      "offset": 0.00,
+      "range": 30,
+      "relay_actions": [
+        {
+          "over_act": "disabled",
+          "over_threshold": 0,
+          "under_act": "disabled",
+          "under_threshold": 0
+        },
+        {
+          "over_act": "disabled",
+          "over_threshold": 0,
+          "under_act": "disabled",
+          "under_threshold": 0
+        }
+      ]
+    }
+  ],
+  "allow_cross_origin": false,
+  "ap_roaming": {
+    "enabled": false,
+    "threshold": -70
+  },
+  "build_info": {
+    "build_id": "20230913-114521/v1.14.0-gcb84623",
+    "build_timestamp": "2023-09-13T11:45:21Z",
+    "build_version": "1.0"
+  },
+  "cloud": {
+    "connected": true,
+    "enabled": true
+  },
+  "coiot": {
+    "enabled": true,
+    "peer": "",
+    "update_period": 15
+  },
+  "debug_enable": false,
+  "device": {
+    "hostname": "shellyuni-AABBCC000001",
+    "mac": "AABBCC000001",
+    "num_outputs": 2,
+    "type": "SHUNI-1"
+  },
+  "discoverable": false,
+  "eco_mode_enabled": true,
+  "ext_humidity": {},
+  "ext_sensors": {},
+  "ext_temperature": {},
+  "factory_reset_from_switch": true,
+  "fw": "20230913-114521/v1.14.0-gcb84623",
+  "hwinfo": {
+    "batch_id": 0,
+    "hw_revision": "prod-202101"
+  },
+  "lat": 0,
+  "lng": 0,
+  "login": {
+    "enabled": false,
+    "unprotected": false,
+    "username": "REDACTED"
+  },
+  "longpush_time": 800,
+  "mode": "relay",
+  "mqtt": {
+    "clean_session": true,
+    "enable": false,
+    "id": "shellyuni-AABBCC000001",
+    "keep_alive": 60,
+    "max_qos": 0,
+    "reconnect_timeout_max": 60.000000,
+    "reconnect_timeout_min": 2.000000,
+    "retain": false,
+    "server": "REDACTED",
+    "update_period": 30,
+    "user": ""
+  },
+  "name": null,
+  "pin_code": "",
+  "pon_wifi_reset": false,
+  "relays": [
+    {
+      "appliance_type": "General",
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "btn_reverse": 0,
+      "btn_type": "toggle",
+      "default_state": "off",
+      "has_timer": false,
+      "ison": false,
+      "name": null,
+      "schedule": false,
+      "schedule_rules": []
+    },
+    {
+      "appliance_type": "General",
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "btn_reverse": 0,
+      "btn_type": "toggle",
+      "default_state": "off",
+      "has_timer": false,
+      "ison": false,
+      "name": null,
+      "schedule": false,
+      "schedule_rules": []
+    }
+  ],
+  "sntp": {
+    "enabled": true,
+    "server": "REDACTED"
+  },
+  "time": "18:00",
+  "timezone": "UTC",
+  "tz_dst": false,
+  "tz_dst_auto": true,
+  "tz_utc_offset": 7200,
+  "tzautodetect": true,
+  "unixtime": 1790438417,
+  "wifi_ap": {
+    "enabled": false,
+    "key": "",
+    "ssid": "REDACTED"
+  },
+  "wifi_sta": {
+    "dns": null,
+    "enabled": true,
+    "gw": null,
+    "ip": null,
+    "ipv4_method": "dhcp",
+    "mask": null,
+    "ssid": "REDACTED"
+  },
+  "wifi_sta1": {
+    "dns": null,
+    "enabled": false,
+    "gw": null,
+    "ip": null,
+    "ipv4_method": "dhcp",
+    "mask": null,
+    "ssid": null
+  }
+}

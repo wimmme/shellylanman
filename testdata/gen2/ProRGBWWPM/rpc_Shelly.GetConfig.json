@@ -1,0 +1,307 @@
+{
+  "ble": {
+    "rpc": {
+      "enable": true
+    }
+  },
+  "bthome": {},
+  "cloud": {
+    "enable": true,
+    "server": "REDACTED"
+  },
+  "eth": {
+    "enable": true,
+    "gw": null,
+    "ip": null,
+    "ipv4mode": "dhcp",
+    "nameserver": null,
+    "netmask": null,
+    "server_mode": false
+  },
+  "input:0": {
+    "enable": true,
+    "id": 0,
+    "invert": false,
+    "name": null,
+    "type": "button"
+  },
+  "input:1": {
+    "enable": true,
+    "id": 1,
+    "invert": false,
+    "name": null,
+    "type": "button"
+  },
+  "input:2": {
+    "enable": true,
+    "id": 2,
+    "invert": false,
+    "name": null,
+    "type": "button"
+  },
+  "input:3": {
+    "enable": true,
+    "id": 3,
+    "invert": false,
+    "name": null,
+    "type": "button"
+  },
+  "input:4": {
+    "enable": true,
+    "id": 4,
+    "invert": false,
+    "name": null,
+    "type": "button"
+  },
+  "light:0": {
+    "auto_off": false,
+    "auto_off_delay": 60.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "button_fade_rate": 3,
+    "button_presets": {
+      "button_doublepush": {
+        "brightness": 100
+      }
+    },
+    "current_limit": 6.000,
+    "id": 0,
+    "in_mode": "detached",
+    "initial_state": "off",
+    "min_brightness_on_toggle": 3,
+    "name": "Test",
+    "night_mode": {
+      "active_between": [],
+      "brightness": 50,
+      "enable": false
+    },
+    "power_limit": 350,
+    "range_map": [
+      0,
+      100
+    ],
+    "transition_duration": 1.00,
+    "voltage_limit": 30
+  },
+  "light:1": {
+    "auto_off": false,
+    "auto_off_delay": 60.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "button_fade_rate": 3,
+    "button_presets": {
+      "button_doublepush": {
+        "brightness": 100
+      }
+    },
+    "current_limit": 6.000,
+    "id": 1,
+    "in_mode": "detached",
+    "initial_state": "off",
+    "min_brightness_on_toggle": 3,
+    "name": "Test",
+    "night_mode": {
+      "active_between": [],
+      "brightness": 50,
+      "enable": false
+    },
+    "power_limit": 350,
+    "range_map": [
+      0,
+      100
+    ],
+    "transition_duration": 1.00,
+    "voltage_limit": 30
+  },
+  "light:2": {
+    "auto_off": false,
+    "auto_off_delay": 60.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "button_fade_rate": 3,
+    "button_presets": {
+      "button_doublepush": {
+        "brightness": 100
+      }
+    },
+    "current_limit": 6.000,
+    "id": 2,
+    "in_mode": "detached",
+    "initial_state": "off",
+    "min_brightness_on_toggle": 3,
+    "name": "Test",
+    "night_mode": {
+      "active_between": [],
+      "brightness": 50,
+      "enable": false
+    },
+    "power_limit": 350,
+    "range_map": [
+      0,
+      100
+    ],
+    "transition_duration": 1.00,
+    "voltage_limit": 30
+  },
+  "light:3": {
+    "auto_off": false,
+    "auto_off_delay": 60.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "button_fade_rate": 3,
+    "button_presets": {
+      "button_doublepush": {
+        "brightness": 100
+      }
+    },
+    "current_limit": 6.000,
+    "id": 3,
+    "in_mode": "detached",
+    "initial_state": "off",
+    "min_brightness_on_toggle": 3,
+    "name": "Test",
+    "night_mode": {
+      "active_between": [],
+      "brightness": 50,
+      "enable": false
+    },
+    "power_limit": 350,
+    "range_map": [
+      0,
+      100
+    ],
+    "transition_duration": 1.00,
+    "voltage_limit": 30
+  },
+  "light:4": {
+    "auto_off": false,
+    "auto_off_delay": 60.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "button_fade_rate": 3,
+    "button_presets": {
+      "button_doublepush": {
+        "brightness": 100
+      }
+    },
+    "current_limit": 6.000,
+    "id": 4,
+    "in_mode": "detached",
+    "initial_state": "off",
+    "min_brightness_on_toggle": 3,
+    "name": "Test",
+    "night_mode": {
+      "active_between": [],
+      "brightness": 50,
+      "enable": false
+    },
+    "power_limit": 350,
+    "range_map": [
+      0,
+      100
+    ],
+    "transition_duration": 3.00,
+    "voltage_limit": 30
+  },
+  "mqtt": {
+    "client_id": "shellyprorgbwwpm-aabbcc000001",
+    "enable": true,
+    "enable_control": true,
+    "enable_rpc": true,
+    "rpc_ntf": true,
+    "server": "REDACTED",
+    "ssl_ca": null,
+    "status_ntf": true,
+    "topic_prefix": "shellyprorgbwwpm-aabbcc000001",
+    "use_client_cert": false,
+    "user": null
+  },
+  "prorgbwwpm": {
+    "hf_mode": false
+  },
+  "sys": {
+    "cfg_rev": 46,
+    "debug": {
+      "file_level": null,
+      "file_log": {
+        "enable": false
+      },
+      "level": 2,
+      "mqtt": {
+        "enable": false
+      },
+      "udp": {
+        "addr": null
+      },
+      "websocket": {
+        "enable": false
+      }
+    },
+    "device": {
+      "addon_type": null,
+      "discoverable": true,
+      "eco_mode": false,
+      "enhanced_security": false,
+      "fw_id": "20260923-075708/2.0.1-ge1a198b",
+      "mac": "AABBCC000001",
+      "name": "Test",
+      "profile": "light",
+      "tls_check_cert_validity_time": true
+    },
+    "location": {
+      "lat": 0,
+      "lon": 0,
+      "tz": "UTC"
+    },
+    "rpc_udp": {
+      "dst_addr": null,
+      "listen_port": null
+    },
+    "sntp": {
+      "server": "REDACTED"
+    },
+    "ui_data": {
+      "device_revision": "1-44",
+      "tf": 24
+    }
+  },
+  "wifi": {
+    "ap": {
+      "enable": false,
+      "is_open": true,
+      "range_extender": {
+        "enable": false
+      },
+      "ssid": "REDACTED"
+    },
+    "roam": {
+      "interval": 60,
+      "rssi_thr": -80
+    },
+    "sta": {
+      "enable": false,
+      "gw": null,
+      "ip": null,
+      "ipv4mode": "dhcp",
+      "is_open": false,
+      "nameserver": null,
+      "netmask": null,
+      "ssid": "REDACTED"
+    },
+    "sta1": {
+      "enable": false,
+      "gw": null,
+      "ip": null,
+      "ipv4mode": "dhcp",
+      "is_open": true,
+      "nameserver": null,
+      "netmask": null,
+      "ssid": null
+    }
+  },
+  "ws": {
+    "enable": true,
+    "server": "REDACTED",
+    "ssl_ca": "*"
+  }
+}

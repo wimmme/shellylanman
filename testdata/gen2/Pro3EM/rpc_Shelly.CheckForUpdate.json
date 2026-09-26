@@ -1,0 +1,12 @@
+{
+  "alt": {
+    "Pro3EMProAddon": {
+      "desc": "Pro 3 EM with Pro Sensor Addon",
+      "name": "Test",
+      "stable": {
+        "build_id": "20260923-075722/2.0.1-ge1a198b",
+        "version": "2.0.1"
+      }
+    }
+  }
+}

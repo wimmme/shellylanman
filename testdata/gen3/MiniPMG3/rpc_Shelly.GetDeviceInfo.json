@@ -1,0 +1,15 @@
+{
+  "app": "MiniPMG3",
+  "auth_domain": null,
+  "auth_en": false,
+  "enhanced_security": false,
+  "fw_id": "20260923-075534/2.0.1-ge1a198b",
+  "gen": 3,
+  "id": "shellypmminig3-aabbcc000001",
+  "mac": "AABBCC000001",
+  "model": "S3PM-001PCEU16",
+  "name": "Test",
+  "provision": "complete",
+  "slot": 0,
+  "ver": "2.0.1"
+}

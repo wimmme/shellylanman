@@ -1,0 +1,247 @@
+{
+  "cfg_rev": 85,
+  "components": [
+    {
+      "config": {
+        "rpc": {
+          "enable": true
+        }
+      },
+      "key": "REDACTED",
+      "status": {
+        "addr": "aa:bb:cc:00:00:02,p",
+        "flags": [
+          "advertising",
+          "scanning"
+        ]
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "server": "REDACTED"
+      },
+      "key": "REDACTED",
+      "status": {
+        "connected": true
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "id": 0,
+        "invert": false,
+        "name": "Test",
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 0,
+        "state": null
+      }
+    },
+    {
+      "config": {
+        "enable": false,
+        "id": 1,
+        "invert": false,
+        "name": "Test",
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 1,
+        "state": null
+      }
+    },
+    {
+      "config": {
+        "count_rep_thr": 100,
+        "enable": false,
+        "freq_rep_thr": 10,
+        "freq_window": 1,
+        "id": 2,
+        "name": "Test",
+        "type": "count",
+        "xcounts": {
+          "expr": null,
+          "unit": null
+        },
+        "xfreq": {
+          "expr": null,
+          "unit": null
+        }
+      },
+      "key": "REDACTED",
+      "status": {
+        "counts": null,
+        "freq": null,
+        "id": 2
+      }
+    },
+    {
+      "config": {
+        "client_id": "shellyplusuni-aabbcc000001",
+        "enable": true,
+        "enable_control": true,
+        "enable_rpc": true,
+        "rpc_ntf": true,
+        "server": "REDACTED",
+        "ssl_ca": null,
+        "status_ntf": true,
+        "topic_prefix": "shellyplusuni-aabbcc000001",
+        "use_client_cert": false,
+        "user": null
+      },
+      "key": "REDACTED",
+      "status": {
+        "connected": true
+      }
+    },
+    {
+      "attrs": {
+        "type": "general"
+      },
+      "config": {
+        "enable": false,
+        "id": 1,
+        "name": "Test"
+      },
+      "key": "REDACTED",
+      "status": {
+        "cpu": 12,
+        "id": 1,
+        "mem_free": 24416,
+        "mem_peak": 2814,
+        "mem_used": 770,
+        "running": true
+      }
+    },
+    {
+      "attrs": {
+        "inputs": [
+          0
+        ]
+      },
+      "config": {
+        "auto_off": true,
+        "auto_off_delay": 1.00,
+        "auto_on": false,
+        "auto_on_delay": 60.00,
+        "counts": {
+          "enable": true
+        },
+        "id": 0,
+        "in_locked": false,
+        "in_mode": "activate",
+        "initial_state": "off",
+        "name": "Test"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 0,
+        "output": false,
+        "source": "init",
+        "tag": null
+      }
+    },
+    {
+      "attrs": {
+        "inputs": [
+          1
+        ]
+      },
+      "config": {
+        "auto_off": false,
+        "auto_off_delay": 60.00,
+        "auto_on": false,
+        "auto_on_delay": 60.00,
+        "counts": {
+          "enable": true
+        },
+        "id": 1,
+        "in_locked": false,
+        "in_mode": "detached",
+        "initial_state": "off",
+        "name": "Test"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 1,
+        "output": false,
+        "source": "init",
+        "tag": null
+      }
+    },
+    {
+      "config": {
+        "cfg_rev": 85,
+        "debug": {
+          "file_level": null,
+          "file_log": {
+            "enable": false
+          },
+          "level": 2,
+          "mqtt": {
+            "enable": false
+          },
+          "udp": {
+            "addr": null
+          },
+          "websocket": {
+            "enable": true
+          }
+        },
+        "device": {
+          "discoverable": true,
+          "eco_mode": false,
+          "enhanced_security": false,
+          "fw_id": "20260923-075617/2.0.1-ge1a198b",
+          "mac": "AABBCC000001",
+          "name": "Test",
+          "tls_check_cert_validity_time": true
+        },
+        "location": {
+          "lat": 0,
+          "lon": 0,
+          "tz": "UTC"
+        },
+        "rpc_udp": {
+          "dst_addr": null,
+          "listen_port": null
+        },
+        "sntp": {
+          "server": "REDACTED"
+        },
+        "ui_data": {
+          "device_revision": "1-73",
+          "tf": 24
+        }
+      },
+      "key": "REDACTED",
+      "status": {
+        "available_updates": {},
+        "btrelay_rev": 0,
+        "cfg_rev": 85,
+        "fs_free": 110592,
+        "fs_size": 393216,
+        "kvs_rev": 4,
+        "last_sync_ts": 1790437100,
+        "mac": "AABBCC000001",
+        "ram_free": 107568,
+        "ram_min_free": 48180,
+        "ram_size": 269164,
+        "reset_reason": 3,
+        "restart_required": false,
+        "schedule_rev": 0,
+        "time": "18:08",
+        "unixtime": 1790438886,
+        "uptime": 99263,
+        "utc_offset": 7200,
+        "webhook_rev": 0
+      }
+    }
+  ],
+  "offset": 0,
+  "total": 12
+}

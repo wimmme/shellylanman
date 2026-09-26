@@ -1,0 +1,141 @@
+{
+  "actions": {
+    "btn_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "btn_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "ext_hum_over_url": [
+      {
+        "enabled": false,
+        "ext_hum_over_onetime": true,
+        "ext_hum_over_value": 0,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "ext_hum_under_url": [
+      {
+        "enabled": false,
+        "ext_hum_under_onetime": true,
+        "ext_hum_under_value": 0,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "ext_temp_over_url": [
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_over_onetime": true,
+        "ext_temp_over_value": 0.00,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "ext_temp_under_url": [
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "ext_temp_under_onetime": true,
+        "ext_temp_under_value": 0.00,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "longpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "lp_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "lp_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "out_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "out_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "report_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ]
+  }
+}

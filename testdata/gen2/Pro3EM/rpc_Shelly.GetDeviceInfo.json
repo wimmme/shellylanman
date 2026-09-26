@@ -1,0 +1,16 @@
+{
+  "app": "Pro3EM",
+  "auth_domain": null,
+  "auth_en": false,
+  "enhanced_security": false,
+  "fw_id": "20260923-075715/2.0.1-ge1a198b",
+  "gen": 2,
+  "id": "shellypro3em63-aabbcc000001",
+  "mac": "AABBCC000001",
+  "model": "SPEM-003CEBEU63",
+  "name": "Test",
+  "profile": "triphase",
+  "provision": "complete",
+  "slot": 0,
+  "ver": "2.0.1"
+}

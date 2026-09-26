@@ -1,0 +1,16 @@
+{
+  "app": "DimmerG3",
+  "auth_domain": null,
+  "auth_en": false,
+  "enhanced_security": false,
+  "fw_id": "20260923-075411/2.0.1-ge1a198b",
+  "gen": 3,
+  "id": "shellydimmerg3-aabbcc000001",
+  "mac": "AABBCC000001",
+  "matter": false,
+  "model": "S3DM-0A101WWL",
+  "name": "Test",
+  "provision": "complete",
+  "slot": 0,
+  "ver": "2.0.1"
+}

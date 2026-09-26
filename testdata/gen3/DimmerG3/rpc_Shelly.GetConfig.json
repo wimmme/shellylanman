@@ -1,0 +1,171 @@
+{
+  "ble": {
+    "rpc": {
+      "enable": true
+    }
+  },
+  "bthome": {},
+  "cloud": {
+    "enable": true,
+    "server": "REDACTED"
+  },
+  "input:0": {
+    "enable": true,
+    "factory_reset": true,
+    "id": 0,
+    "invert": false,
+    "name": null,
+    "type": "button"
+  },
+  "input:1": {
+    "enable": true,
+    "factory_reset": true,
+    "id": 1,
+    "invert": false,
+    "name": null,
+    "type": "button"
+  },
+  "knx": {
+    "enable": false,
+    "ia": "15.15.255",
+    "routing": {
+      "addr": "224.0.23.12:3671"
+    }
+  },
+  "light:0": {
+    "auto_off": false,
+    "auto_off_delay": 60.00,
+    "auto_on": false,
+    "auto_on_delay": 60.00,
+    "button_fade_rate": 3,
+    "button_presets": {
+      "button_doublepush": {
+        "brightness": 100
+      }
+    },
+    "current_limit": 1.200,
+    "gamma": 1.00,
+    "id": 0,
+    "in_mode": "dim",
+    "initial_state": "restore_last",
+    "min_brightness_on_toggle": 3,
+    "name": null,
+    "night_mode": {
+      "active_between": [],
+      "brightness": 50,
+      "enable": false
+    },
+    "power_limit": 240,
+    "range_map": [
+      0,
+      100
+    ],
+    "transition_duration": 3.00,
+    "undervoltage_limit": 100,
+    "voltage_limit": 280,
+    "warmup": {
+      "brightness": 100,
+      "enable": false,
+      "time_ms": 50
+    }
+  },
+  "matter": {
+    "enable": false
+  },
+  "mqtt": {
+    "client_id": "shellydimmerg3-aabbcc000001",
+    "enable": true,
+    "enable_control": true,
+    "enable_rpc": true,
+    "rpc_ntf": true,
+    "server": "REDACTED",
+    "ssl_ca": null,
+    "status_ntf": true,
+    "topic_prefix": "shellydimmerg3-aabbcc000001",
+    "use_client_cert": false,
+    "user": null
+  },
+  "sys": {
+    "cfg_rev": 40,
+    "debug": {
+      "file_level": null,
+      "file_log": {
+        "enable": false
+      },
+      "level": 2,
+      "mqtt": {
+        "enable": false
+      },
+      "udp": {
+        "addr": null
+      },
+      "websocket": {
+        "enable": false
+      }
+    },
+    "device": {
+      "discoverable": true,
+      "eco_mode": false,
+      "enhanced_security": false,
+      "fw_id": "20260923-075411/2.0.1-ge1a198b",
+      "mac": "AABBCC000001",
+      "name": "Test",
+      "tls_check_cert_validity_time": true
+    },
+    "location": {
+      "lat": 0,
+      "lon": 0,
+      "tz": "UTC"
+    },
+    "rpc_udp": {
+      "dst_addr": null,
+      "listen_port": null
+    },
+    "sntp": {
+      "server": "REDACTED"
+    },
+    "ui_data": {
+      "device_revision": "1-4",
+      "tf": 24
+    }
+  },
+  "wifi": {
+    "ap": {
+      "enable": false,
+      "is_open": false,
+      "range_extender": {
+        "enable": false
+      },
+      "ssid": "REDACTED"
+    },
+    "roam": {
+      "interval": 300,
+      "rssi_thr": -80
+    },
+    "sta": {
+      "enable": true,
+      "gw": "192.0.2.1",
+      "ip": "192.0.2.2",
+      "ipv4mode": "static",
+      "is_open": false,
+      "nameserver": "192.0.2.1",
+      "netmask": "255.255.255.0",
+      "ssid": "REDACTED"
+    },
+    "sta1": {
+      "enable": false,
+      "gw": null,
+      "ip": null,
+      "ipv4mode": "dhcp",
+      "is_open": false,
+      "nameserver": null,
+      "netmask": null,
+      "ssid": "REDACTED"
+    }
+  },
+  "ws": {
+    "enable": true,
+    "server": "REDACTED",
+    "ssl_ca": "*"
+  }
+}

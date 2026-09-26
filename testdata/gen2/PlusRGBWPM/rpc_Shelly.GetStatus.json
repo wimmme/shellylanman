@@ -1,0 +1,128 @@
+{
+  "ble": {
+    "addr": "aa:bb:cc:00:00:02,p"
+  },
+  "cloud": {
+    "connected": true
+  },
+  "input:0": {
+    "id": 0,
+    "state": null
+  },
+  "input:1": {
+    "id": 1,
+    "state": null
+  },
+  "input:2": {
+    "id": 2,
+    "state": null
+  },
+  "input:3": {
+    "id": 3,
+    "state": null
+  },
+  "light:0": {
+    "aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 458.870
+    },
+    "apower": 0.0,
+    "brightness": 31,
+    "current": 0.000,
+    "id": 0,
+    "output": false,
+    "source": "WS_in",
+    "tag": null,
+    "temperature": {
+      "tC": 45.7,
+      "tF": 114.2
+    },
+    "voltage": 24.7
+  },
+  "light:1": {
+    "brightness": 58,
+    "flags": [
+      "no_load"
+    ],
+    "id": 1,
+    "output": false,
+    "source": "WS_in",
+    "tag": null,
+    "temperature": {
+      "tC": 45.7,
+      "tF": 114.2
+    },
+    "voltage": 24.7
+  },
+  "light:2": {
+    "brightness": 100,
+    "flags": [
+      "no_load"
+    ],
+    "id": 2,
+    "output": false,
+    "source": "WS_in",
+    "tag": null,
+    "temperature": {
+      "tC": 45.7,
+      "tF": 114.2
+    },
+    "voltage": 24.7
+  },
+  "light:3": {
+    "brightness": 50,
+    "flags": [
+      "no_load"
+    ],
+    "id": 3,
+    "output": false,
+    "source": "init",
+    "tag": null,
+    "temperature": {
+      "tC": 45.7,
+      "tF": 114.2
+    },
+    "voltage": 24.7
+  },
+  "mqtt": {
+    "connected": true
+  },
+  "plusrgbwpm": {},
+  "sys": {
+    "available_updates": {},
+    "btrelay_rev": 0,
+    "cfg_rev": 50,
+    "fs_free": 98304,
+    "fs_size": 393216,
+    "kvs_rev": 0,
+    "last_sync_ts": 1790438051,
+    "mac": "AABBCC000001",
+    "ram_free": 130104,
+    "ram_min_free": 106956,
+    "ram_size": 268024,
+    "reset_reason": 3,
+    "restart_required": false,
+    "schedule_rev": 1,
+    "time": "18:00",
+    "unixtime": 1790438421,
+    "uptime": 173969,
+    "utc_offset": 7200,
+    "webhook_rev": 1
+  },
+  "wifi": {
+    "bssid": "aa:bb:cc:00:00:03",
+    "channel": 1,
+    "rssi": -51,
+    "ssid": "REDACTED",
+    "sta_ip": "192.0.2.1",
+    "status": "got ip"
+  },
+  "ws": {
+    "connected": false
+  }
+}

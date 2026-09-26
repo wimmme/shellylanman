@@ -1,0 +1,12 @@
+{
+  "alt": {
+    "Mini1PMG4ZB": {
+      "desc": "Shelly Mini 1 PM Gen4 with Zigbee",
+      "name": "Test",
+      "stable": {
+        "build_id": "20260923-075527/2.0.1-ge1a198b",
+        "version": "2.0.1"
+      }
+    }
+  }
+}

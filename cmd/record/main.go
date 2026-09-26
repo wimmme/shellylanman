@@ -30,7 +30,7 @@ var (
 	gen2RPC   = []string{
 		"Shelly.GetDeviceInfo", "Shelly.GetConfig", "Shelly.GetStatus", "Shelly.CheckForUpdate",
 		"Shelly.GetComponents", "Schedule.List", "Webhook.List", "Script.List", "KVS.GetMany",
-		"WiFi.ListAPClients", "BLE.CloudRelay.ListInfos", "Sys.GetStatus",
+		"WiFi.ListAPClients", "BLE.CloudRelay.ListInfos", "Sys.GetStatus", "SensorAddon.GetPeripherals",
 	}
 )
 

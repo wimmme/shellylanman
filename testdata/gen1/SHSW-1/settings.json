@@ -1,0 +1,145 @@
+{
+  "actions": {
+    "active": false,
+    "names": [
+      "btn_on_url",
+      "btn_off_url",
+      "longpush_url",
+      "shortpush_url",
+      "out_on_url",
+      "out_off_url",
+      "lp_on_url",
+      "lp_off_url",
+      "report_url",
+      "report_url",
+      "report_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_temp_over_url",
+      "ext_temp_under_url",
+      "ext_hum_over_url",
+      "ext_hum_under_url"
+    ]
+  },
+  "allow_cross_origin": true,
+  "ap_roaming": {
+    "enabled": true,
+    "threshold": -85
+  },
+  "build_info": {
+    "build_id": "20230913-112003/v1.14.0-gcb84623",
+    "build_timestamp": "2023-09-13T11:20:03Z",
+    "build_version": "1.0"
+  },
+  "cloud": {
+    "connected": false,
+    "enabled": false
+  },
+  "coiot": {
+    "enabled": true,
+    "peer": "REDACTED",
+    "update_period": 15
+  },
+  "debug_enable": false,
+  "device": {
+    "hostname": "shelly1-BA6201",
+    "mac": "AABBCC000001",
+    "num_outputs": 1,
+    "type": "SHSW-1"
+  },
+  "discoverable": true,
+  "eco_mode_enabled": false,
+  "ext_humidity": {},
+  "ext_sensors": {},
+  "ext_switch": {
+    "0": {
+      "relay_num": -1
+    }
+  },
+  "ext_switch_enable": false,
+  "ext_switch_reverse": false,
+  "ext_temperature": {},
+  "factory_reset_from_switch": true,
+  "fw": "20230913-112003/v1.14.0-gcb84623",
+  "hwinfo": {
+    "batch_id": 2,
+    "hw_revision": "prod-2018-08"
+  },
+  "lat": 0,
+  "lng": 0,
+  "login": {
+    "enabled": false,
+    "unprotected": false,
+    "username": "REDACTED"
+  },
+  "longpush_time": 800,
+  "mode": "relay",
+  "mqtt": {
+    "clean_session": true,
+    "enable": true,
+    "id": "shelly1-BA6201",
+    "keep_alive": 60,
+    "max_qos": 0,
+    "reconnect_timeout_max": 60.000000,
+    "reconnect_timeout_min": 2.000000,
+    "retain": false,
+    "server": "REDACTED",
+    "update_period": 30,
+    "user": ""
+  },
+  "name": "Test",
+  "pin_code": "523F7a",
+  "pon_wifi_reset": false,
+  "relays": [
+    {
+      "appliance_type": "General",
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "btn_reverse": 0,
+      "btn_type": "momentary",
+      "default_state": "off",
+      "has_timer": false,
+      "ison": false,
+      "name": null,
+      "power": 0.00,
+      "schedule": false,
+      "schedule_rules": []
+    }
+  ],
+  "sntp": {
+    "enabled": true,
+    "server": "REDACTED"
+  },
+  "time": "18:00",
+  "timezone": "UTC",
+  "tz_dst": false,
+  "tz_dst_auto": true,
+  "tz_utc_offset": 7200,
+  "tzautodetect": true,
+  "unixtime": 1790438418,
+  "wifi_ap": {
+    "enabled": false,
+    "key": "",
+    "ssid": "REDACTED"
+  },
+  "wifi_sta": {
+    "dns": null,
+    "enabled": true,
+    "gw": null,
+    "ip": null,
+    "ipv4_method": "dhcp",
+    "mask": null,
+    "ssid": "REDACTED"
+  },
+  "wifi_sta1": {
+    "dns": null,
+    "enabled": false,
+    "gw": null,
+    "ip": null,
+    "ipv4_method": "dhcp",
+    "mask": null,
+    "ssid": null
+  }
+}

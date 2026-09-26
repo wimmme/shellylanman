@@ -1,0 +1,209 @@
+{
+  "cfg_rev": 50,
+  "components": [
+    {
+      "config": {
+        "rpc": {
+          "enable": false
+        }
+      },
+      "key": "REDACTED",
+      "status": {
+        "addr": "aa:bb:cc:00:00:02,p"
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "server": "REDACTED"
+      },
+      "key": "REDACTED",
+      "status": {
+        "connected": true
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "factory_reset": true,
+        "id": 0,
+        "invert": false,
+        "name": null,
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 0,
+        "state": null
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "factory_reset": true,
+        "id": 1,
+        "invert": false,
+        "name": null,
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 1,
+        "state": null
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "factory_reset": true,
+        "id": 2,
+        "invert": false,
+        "name": null,
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 2,
+        "state": null
+      }
+    },
+    {
+      "config": {
+        "enable": true,
+        "factory_reset": true,
+        "id": 3,
+        "invert": false,
+        "name": null,
+        "type": "button"
+      },
+      "key": "REDACTED",
+      "status": {
+        "id": 3,
+        "state": null
+      }
+    },
+    {
+      "attrs": {
+        "inputs": [
+          0
+        ],
+        "limits": {
+          "transition": [
+            0.0,
+            5.0
+          ]
+        }
+      },
+      "config": {
+        "auto_off": false,
+        "auto_off_delay": 60.00,
+        "auto_on": false,
+        "auto_on_delay": 60.00,
+        "button_fade_rate": 3,
+        "button_presets": {
+          "button_doublepush": {
+            "brightness": 100
+          }
+        },
+        "current_limit": 10.000,
+        "id": 0,
+        "in_mode": "dim",
+        "initial_state": "off",
+        "min_brightness_on_toggle": 3,
+        "name": "Test",
+        "night_mode": {
+          "active_between": [],
+          "brightness": 50,
+          "enable": false
+        },
+        "range_map": [
+          0,
+          100
+        ],
+        "transition_duration": 3.00
+      },
+      "key": "REDACTED",
+      "status": {
+        "aenergy": {
+          "by_minute": [
+            0.000,
+            0.000,
+            0.000
+          ],
+          "minute_ts": 1790438400,
+          "total": 458.870
+        },
+        "apower": 0.0,
+        "brightness": 31,
+        "current": 0.000,
+        "id": 0,
+        "output": false,
+        "source": "WS_in",
+        "tag": null,
+        "temperature": {
+          "tC": 45.6,
+          "tF": 114.1
+        },
+        "voltage": 24.7
+      }
+    },
+    {
+      "attrs": {
+        "inputs": [
+          1
+        ],
+        "limits": {
+          "transition": [
+            0.0,
+            5.0
+          ]
+        }
+      },
+      "config": {
+        "auto_off": false,
+        "auto_off_delay": 60.00,
+        "auto_on": false,
+        "auto_on_delay": 60.00,
+        "button_fade_rate": 3,
+        "button_presets": {
+          "button_doublepush": {
+            "brightness": 100
+          }
+        },
+        "id": 1,
+        "in_mode": "dim",
+        "initial_state": "off",
+        "min_brightness_on_toggle": 3,
+        "name": "Test",
+        "night_mode": {
+          "active_between": [],
+          "brightness": 50,
+          "enable": false
+        },
+        "range_map": [
+          0,
+          100
+        ],
+        "transition_duration": 3.00
+      },
+      "key": "REDACTED",
+      "status": {
+        "brightness": 58,
+        "flags": [
+          "no_load"
+        ],
+        "id": 1,
+        "output": false,
+        "source": "WS_in",
+        "tag": null,
+        "temperature": {
+          "tC": 45.6,
+          "tF": 114.1
+        },
+        "voltage": 24.7
+      }
+    }
+  ],
+  "offset": 0,
+  "total": 15
+}

@@ -1,0 +1,112 @@
+{
+  "ble": {
+    "addr": "aa:bb:cc:00:00:02,p",
+    "flags": [
+      "advertising"
+    ]
+  },
+  "bthome": {},
+  "cloud": {
+    "connected": true
+  },
+  "input:0": {
+    "id": 0,
+    "state": null
+  },
+  "knx": {},
+  "matter": {
+    "commissionable": false,
+    "num_fabrics": 0
+  },
+  "modbus": {},
+  "mqtt": {
+    "connected": true
+  },
+  "switch:0": {
+    "aenergy": {
+      "by_minute": [
+        411.215,
+        411.215,
+        822.430
+      ],
+      "minute_ts": 1790438400,
+      "total": 1424539.117
+    },
+    "apower": 24.2,
+    "counts": {
+      "on_above_thr": 73979,
+      "on_above_thr_rst_ts": 0,
+      "on_time": 5644290,
+      "on_time_rst_ts": 0,
+      "switch_on": 0,
+      "switch_on_rst_ts": 0
+    },
+    "current": 0.367,
+    "freq": 50.2,
+    "id": 0,
+    "output": true,
+    "ret_aenergy": {
+      "by_minute": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "minute_ts": 1790438400,
+      "total": 1251496.866
+    },
+    "source": "init",
+    "tag": null,
+    "temperature": {
+      "tC": 75.9,
+      "tF": 168.6
+    },
+    "voltage": 233.7
+  },
+  "sys": {
+    "alt": {
+      "Mini1PMG4ZB": {
+        "desc": "Shelly Mini 1 PM Gen4 with Zigbee",
+        "name": "Test",
+        "stable": {
+          "build_id": "20260923-075527/2.0.1-ge1a198b",
+          "version": "2.0.1"
+        }
+      }
+    },
+    "available_updates": {},
+    "bthc_rev": 0,
+    "btrelay_rev": 0,
+    "cfg_rev": 50,
+    "fs_free": 438272,
+    "fs_size": 917504,
+    "kvs_rev": 0,
+    "last_sync_ts": 1790436899,
+    "mac": "AABBCC000001",
+    "ram_free": 129344,
+    "ram_min_free": 89432,
+    "ram_size": 343332,
+    "reset_reason": 3,
+    "restart_required": false,
+    "schedule_rev": 0,
+    "time": "18:00",
+    "unixtime": 1790438448,
+    "uptime": 98131,
+    "utc_offset": 7200,
+    "webhook_rev": 0
+  },
+  "wifi": {
+    "bssid": "aa:bb:cc:00:00:03",
+    "channel": 6,
+    "rssi": -75,
+    "ssid": "REDACTED",
+    "sta_ip": "192.0.2.2",
+    "sta_ip6": [
+      "fe80::a285:e3ff:feb6:4248",
+      "2a02:1810:480e:ab80:a285:e3ff:feb6:4248"
+    ],
+    "status": "got ip"
+  },
+  "ws": {
+    "connected": false
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "actions": {
+    "btn_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "btn_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "double_shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "longpush_shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "longpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "shortpush_longpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ],
+    "triple_shortpush_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 1,
+        "urls": []
+      },
+      {
+        "enabled": false,
+        "index": 2,
+        "urls": []
+      }
+    ]
+  }
+}
