@@ -80,6 +80,8 @@ type Devices struct {
 	wake      chan struct{}
 	done      chan struct{} // closed when the final archive save is done
 	scan      ScanState
+
+	deferred deferredQueue // tasks for devices that were off line (Phase 5)
 }
 
 type entry struct {
@@ -92,6 +94,7 @@ type entry struct {
 	now       chan struct{} // request an immediate full refresh
 	paused    bool          // refresh paused by the user (logs dialog)
 	rebooting bool          // refresh paused after a reboot command
+	g1Reboot  bool          // Gen1: a setting that needs a reboot was changed (eco mode)
 
 	rawConfig, rawStatus, rawPeriph json.RawMessage // last answers: table fields and "stored data" of sleeping devices
 	rawActions, rawHooks, rawComps  json.RawMessage // Gen1 /settings/actions, Gen2+ Webhook.List, XT1 components
@@ -139,6 +142,7 @@ func (m *Devices) Start(ctx context.Context) {
 		}
 		m.mu.Unlock()
 	}
+	m.loadDeferred()
 	go m.archiveLoop(ctx)
 	m.Rescan()
 }
@@ -407,6 +411,7 @@ func (m *Devices) upsert(e *entry) bool {
 	m.mu.Unlock()
 
 	m.emit(EventDeviceUpsert, e.dev)
+	m.updated(e.dev)
 	if e.conn != nil {
 		ctx, cancel := context.WithCancel(run)
 		m.mu.Lock()
@@ -566,6 +571,23 @@ func (m *Devices) setStatus(e *entry, s model.Status) {
 	m.mu.Unlock()
 	if changed {
 		m.emit(EventDeviceUpsert, d)
+		m.updated(d)
+	}
+}
+
+// updated runs after a device changed: a device that is on line runs its
+// next deferred task (DeferrablesContainer listens to UPDATE events).
+func (m *Devices) updated(d model.Device) {
+	if d.Status == model.StatusOnline && m.deferredWaiting(d.ID) {
+		m.runDeferred(d.ID)
+	}
+}
+
+// poke asks for an immediate full refresh without changing the status.
+func (m *Devices) poke(e *entry) {
+	select {
+	case e.now <- struct{}{}:
+	default:
 	}
 }
 
@@ -582,6 +604,9 @@ func (m *Devices) apply(e *entry, fn func(d *model.Device)) {
 	m.mu.Unlock()
 	if current && !reflect.DeepEqual(before, after) {
 		m.emit(EventDeviceUpsert, after)
+	}
+	if current {
+		m.updated(after)
 	}
 }
 
@@ -678,6 +703,7 @@ func (m *Devices) reparse(e *entry, d *model.Device) {
 			d.Hostname = cfg.Device.Hostname
 		}
 		d.ApplyReadings(parse.Gen1(parse.Gen1Input{TypeID: d.TypeID, DeviceName: d.Name, Settings: e.rawConfig, Status: e.rawStatus, Actions: e.rawActions}))
+		d.RebootRequired = e.g1Reboot // Gen1 does not report it; the original remembers its own changes
 		return
 	}
 	r := parse.Gen2(parse.Gen2Input{TypeID: d.TypeID, DeviceName: d.Name, Config: e.rawConfig, Status: e.rawStatus, Peripherals: e.rawPeriph,

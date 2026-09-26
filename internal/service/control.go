@@ -613,7 +613,7 @@ func (m *Devices) reboot(ctx context.Context, e *entry) error {
 	case e.info.Gen == 0:
 		_, err := e.conn.Get(ctx, "/reboot")
 		if err == nil {
-			m.apply(e, func(d *model.Device) { d.RebootRequired = false })
+			m.apply(e, func(d *model.Device) { e.g1Reboot = false; d.RebootRequired = false })
 		}
 		return err
 	default:
