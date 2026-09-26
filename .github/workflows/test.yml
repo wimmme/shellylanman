@@ -1,0 +1,23 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      # The same target tools/verify.sh builds: typecheck, frontend tests,
+      # gofmt, go vet, go test -race. Fails the workflow on any failure.
+      - name: Checks
+        run: docker buildx build --target test .
+      - name: Production image builds
+        run: docker buildx build .

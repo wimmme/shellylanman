@@ -1,0 +1,29 @@
+# ShellyLanMan — minimal compose file.
+#
+# Host networking is the default on purpose: mDNS discovery needs multicast on
+# your LAN, which Docker's bridge network does not pass (ARCHITECTURE.md §2.5).
+# Linux only. The UI listens on port 3082 of the host; change it with
+# SHELLYLANMAN_LISTEN (e.g. ":8095") if that port is taken.
+#
+# Update:  docker compose pull && docker compose up -d
+services:
+  shellylanman:
+    image: ghcr.io/wimmme/shellylanman:latest
+    build: .
+    container_name: shellylanman
+    network_mode: host
+    volumes:
+      - data:/data
+    environment:
+      - TZ=${TZ:-UTC}
+      # - SHELLYLANMAN_LISTEN=:3082
+      # - SHELLYLANMAN_ORIGINS=shelly.example.net   # reverse proxy host name
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  data:
