@@ -1,0 +1,21 @@
+# Frontend
+web/node_modules/
+web/dist/
+web/test/.out/
+
+# Built frontend copied in by the Docker build
+internal/web/dist/*
+!internal/web/dist/.keep
+
+# Local data directories and binaries
+/data/
+/shellylanman
+/shellysim
+/record
+*.exe
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

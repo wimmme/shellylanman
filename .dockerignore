@@ -1,0 +1,8 @@
+.git
+.github
+web/node_modules
+web/dist
+web/test/.out
+data
+*.md
+!web/**/*.md
