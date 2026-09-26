@@ -1,0 +1,65 @@
+// Tiny DOM helpers. Text always goes through textContent, never innerHTML, so
+// device-supplied strings (names, hostnames) can never inject markup.
+
+type Attrs = Record<string, string | number | boolean | EventListener | undefined>;
+type Child = Node | string | null | undefined | false;
+
+/** Create an element: h('button', {class: 'btn', onclick: fn}, 'Save'). */
+export function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Attrs = {}, ...children: Child[]): HTMLElementTagNameMap[K] {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === undefined || v === false) continue;
+    if (k.startsWith('on') && typeof v === 'function') {
+      e.addEventListener(k.slice(2), v as EventListener);
+    } else if (k === 'style') {
+      // Through the CSSOM: the Content-Security-Policy forbids style attributes.
+      e.style.cssText = String(v);
+    } else if (v === true) {
+      e.setAttribute(k, '');
+    } else {
+      e.setAttribute(k, String(v));
+    }
+  }
+  append(e, ...children);
+  return e;
+}
+
+export function append(parent: Node, ...children: Child[]): void {
+  for (const c of children) {
+    if (c === null || c === undefined || c === false) continue;
+    parent.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+}
+
+/** An inline SVG icon from a 24×24 stroke path. */
+export function icon(path: string, size = 18): SVGSVGElement {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.8');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  const p = document.createElementNS(ns, 'path');
+  p.setAttribute('d', path);
+  svg.appendChild(p);
+  return svg;
+}
+
+export const ICONS = {
+  logo: 'M13 2 4 14h7l-1 8 9-12h-7z',
+  devices: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+  checklist: 'M9 11l2 2 4-4M5 4h14v16H5z',
+  charts: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  firmware: 'M12 3v12m0 0-4-4m4 4 4-4M4 21h16',
+  deferred: 'M12 7v5l3 3M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
+  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4.9V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 11h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 0z',
+  about: 'M12 16v-4M12 8h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
+  sun: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.4-6.4-.7.7M6.3 17.7l-.7.7M17.7 17.7l-.7-.7M6.3 6.3l-.7-.7M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
+  moon: 'M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z',
+  empty: 'M3 7h18M3 7l2 13h14l2-13M8 7V4h8v3',
+} as const;
