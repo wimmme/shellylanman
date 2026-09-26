@@ -159,13 +159,13 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 
 | # | Feature | Where in Java | Shelly API | Gen | Web equivalent | Phase | Status |
 |---|---|---|---|---|---|---|---|
-| A1 | General: toolbar captions, font size (small/normal/big), default filter column, uptime format, temperature unit, double-click action, update check (never/stable/all), detailed-view resize, columns (default/detailed), CSV separator, default chart | `view/appsettings/PanelGUI`, `ScannerProperties` | — | — | Settings page (General) + per-browser Appearance (theme, palette, contrast, font, size — from MikroDash) | 1/3 | — |
+| A1 | General: toolbar captions, font size (small/normal/big), default filter column, uptime format, temperature unit, double-click action, update check (never/stable/all), detailed-view resize, columns (default/detailed), CSV separator, default chart | `view/appsettings/PanelGUI`, `ScannerProperties` | — | — | Settings page (General) + per-browser Appearance (theme, palette, contrast, font, size — from MikroDash). Phase 1: language + appearance done; ShellyScanner options follow with their features | 1/3 | 🔨 |
 | A2 | Network: scan mode, IP ranges, status refresh interval, config refresh tics, restricted-login credentials (with "not secured" warning) | `view/appsettings/PanelNetwork` | — | — | Settings page (Network); credentials encrypted ⚠️ | 2 | — |
 | A3 | Archive: use archive, file, auto-reload, clear (confirm) | `view/appsettings/PanelStore`, `DevicesStore` | — | — | Settings page (Archive); file is fixed `/data/archive.json`; **no `.arc` import** (Q11) | 2 | — |
 | A4 | Script editor settings | `view/appsettings/PanelIDE` | — | — | Settings (Script editor), per browser | 8 | — |
 | A5 | Archive written on exit: identity, address, type, SSID, last connection, battery flag, notes, keyword; devices with errors/not logged keep stored data | `DevicesStore.store/read/toGhosts/getGhost` | — | all | Archive service; written on change + periodically (server has no "exit") ⚠️ | 2 | ⚠️ |
 | A6 | Remove ghost devices from archive (warning if notes) | `MainView.eraseGhostAction` | — | — | Row action + confirm | 2 | — |
-| A7 | About dialog (author, licence, links) | `view/DialogAbout`, `aboutApp` label | — | — | About page: credits usnasoft + link, GPL-3.0, independent-project and trademark notice | 1 | — |
+| A7 | About dialog (author, licence, links) | `view/DialogAbout`, `aboutApp` label | — | — | About page: credits usnasoft + link, GPL-3.0, independent-project and trademark notice (EN/NL) | 1 | ✅ |
 | A8 | Application update check against usna.it; skip release | `view/util/ApplicationUpdateCHK` | `https://www.usna.it/shellyscanner/last_version.txt` | — | **GitHub releases of ShellyLanMan, opt-in, off by default** (Q18) | 10 | ⚠️ |
 | A9 | Localisation: English and Italian label bundles | `resources/LabelsBundle*.properties` | — | — | **English + Dutch** string catalogues (Q21); Italian not planned | 3 | ⚠️ |
 | A10 | Online help links (manual, checklist, charts) | `UsnaOpenUrlAction`, `*ManualUrl` labels | — | — | **Own short in-app help** (Q22); usna.it linked from About | 8 | ⚠️ |
