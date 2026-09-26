@@ -42,7 +42,18 @@ export interface Device {
   hostname: string; name: string; ip: string; port: number; status: DeviceStatus;
   managed: boolean; battery: boolean; error?: string; lastSeen: number; ssid?: string;
   rebootRequired: boolean; parent?: string; parents?: string[]; note?: string; keyword?: string;
+  rssi: number; cloudEnabled: boolean; cloudConnected: boolean; mqttEnabled: boolean; mqttConnected: boolean;
+  uptime: number; logMode: string; internalTemp?: number; meters?: MeterSet[]; modules?: Module[]; paused?: boolean;
 }
+
+export interface MeterValue { type: string; value: number; name?: string }
+export interface MeterSet { label?: string; values: MeterValue[] }
+export interface Module {
+  kind: string; index: number; label: string; on?: boolean; brightness?: number; position?: number; calibrated?: boolean;
+  target?: number; inputOn?: boolean; rgb?: number[]; white?: number; tempK?: number; state?: string; source?: string;
+}
+export interface InfoRequest { name: string; path: string }
+export interface InfoResult { data: unknown; stored: boolean }
 
 export interface ScanState {
   mode: string; scanning: boolean; mdnsActive: boolean; mdnsError?: string; mdnsInstances: number; startedAt: number;
@@ -70,4 +81,13 @@ export const devicesApi = {
   settings: () => request<FullSettings>('GET', '/settings'),
   updateSettings: (patch: Partial<FullSettings>) => request<FullSettings>('PUT', '/settings', patch),
   clearArchive: () => request<unknown>('DELETE', '/archive'),
+  infoRequests: (id: string) => request<InfoRequest[]>('GET', `/devices/${encodeURIComponent(id)}/info`),
+  info: (id: string, index: number) => request<InfoResult>('GET', `/devices/${encodeURIComponent(id)}/info/${index}`),
+  pause: (id: string, paused: boolean) => request<unknown>('PUT', `/devices/${encodeURIComponent(id)}/pause`, { paused }),
+  logText: async (id: string, file: number): Promise<string> => {
+    const r = await fetch(`/api/v1/devices/${encodeURIComponent(id)}/log?file=${file}`);
+    const text = await r.text();
+    if (!r.ok) throw new ApiError(r.status, text);
+    return text;
+  },
 };

@@ -198,3 +198,23 @@ dl.kv dd{margin:0}
   .shell{display:block}
   body{background:#fff;color:#000}
 }
+
+/* Device table (Phase 3) */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.toolbar .spacer{flex:1}
+.status-line{margin-left:auto;font-size:.8rem}
+.dropdown{position:relative}
+.menu{position:absolute;top:calc(100% + 4px);left:0;z-index:20;min-width:200px;max-height:60vh;overflow:auto;background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;padding:4px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.menu button{display:block;width:100%;text-align:left;font:inherit;font-size:.85rem;background:none;border:none;color:var(--text-main);padding:6px 10px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.menu button:hover{background:rgba(99,130,190,.12)}
+table.devices td{vertical-align:top}
+table.devices td.sel,table.devices th.sel{width:28px;padding-right:0}
+table.devices tbody tr{cursor:default}
+table.devices tbody tr.selected td{background:color-mix(in srgb,var(--accent-rx) 14%,transparent)}
+table.devices td.c-ip,table.devices td.c-mac,table.devices td.c-rssi,table.devices td.c-uptime,table.devices td.c-temp,table.devices td.c-measures{font-family:var(--font-mono);font-size:.82rem}
+table.devices td.c-cloud,table.devices td.c-mqtt,table.devices td.c-logs{text-align:center}
+.cell-lines div{white-space:nowrap}
+.modal.wide{width:min(1000px,100%)}
+pre.json,pre.log{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin:10px 0 0;max-height:60vh;overflow:auto;font-family:var(--font-mono);font-size:.8rem;white-space:pre-wrap;word-break:break-word}
+.log-meta{color:var(--accent-rx)}
+.info-panel .tabs{flex-wrap:wrap}

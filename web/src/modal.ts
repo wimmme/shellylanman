@@ -12,7 +12,7 @@ export interface ModalButton {
 
 let seq = 0;
 
-export function openModal(title: string, body: Node, buttons: ModalButton[], onClose?: () => void): () => void {
+export function openModal(title: string, body: Node, buttons: ModalButton[], onClose?: () => void, size?: 'wide'): () => void {
   const id = `modal${++seq}`;
   const close = (): void => {
     back.remove();
@@ -34,7 +34,7 @@ export function openModal(title: string, body: Node, buttons: ModalButton[], onC
     });
     return btn;
   }));
-  const dialog = h('div', { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id },
+  const dialog = h('div', { class: size === 'wide' ? 'modal wide' : 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id },
     h('header', { id }, title), h('div', { class: 'body' }, body), footer);
   const back = h('div', { class: 'modal-back' }, dialog);
   back.addEventListener('mousedown', (e) => { if (e.target === back) close(); });

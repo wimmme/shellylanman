@@ -6,6 +6,7 @@ import { addressText, compareAddress } from '../src/devices';
 const dev = (ip: string, port = 80, id = ip): Device => ({
   id, mac: id, gen: '1', typeId: '', typeName: '', hostname: '', name: '', ip, port,
   status: 'online', managed: true, battery: false, lastSeen: 0, rebootRequired: false,
+  rssi: 0, cloudEnabled: false, cloudConnected: false, mqttEnabled: false, mqttConnected: false, uptime: 0, logMode: 'NONE',
 });
 
 test('addresses sort numerically, then by port (ShellyScanner default order)', () => {

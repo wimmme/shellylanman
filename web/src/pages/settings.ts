@@ -4,6 +4,7 @@ import {
   applyTheme, currentPalette, currentTheme, resetAppearance, storedFont, storedFontSize,
 } from '../appearance';
 import { h, ICONS } from '../dom';
+import { prefs, type DblClick, type TempUnit, type UptimeMode } from '../format';
 import { LANGUAGES, isLang, lang, setLang, t, type Key } from '../i18n';
 import { card, type Page } from './common';
 import { archive, network } from './settings-network';
@@ -47,6 +48,21 @@ function field(label: string, control: HTMLElement): HTMLElement {
 }
 
 async function general(body: HTMLElement, onLanguageChange: () => void): Promise<void> {
+  // ShellyScanner's General tab display options, kept per browser here.
+  body.append(
+    field(t('prefs.uptime'), select('prefUptime', [
+      { value: 'SEC', label: t('prefs.uptime.SEC') }, { value: 'DAY', label: t('prefs.uptime.DAY') }, { value: 'FROM', label: t('prefs.uptime.FROM') },
+    ], prefs.uptime(), (v) => prefs.setUptime(v as UptimeMode))),
+    field(t('prefs.temp'), select('prefTemp', [{ value: 'C', label: t('prefs.temp.C') }, { value: 'F', label: t('prefs.temp.F') }],
+      prefs.temp(), (v) => prefs.setTemp(v as TempUnit))),
+    field(t('prefs.dblclick'), select('prefDbl', [{ value: 'DET', label: t('prefs.dblclick.DET') }, { value: 'WEB', label: t('prefs.dblclick.WEB') }],
+      prefs.dblClick(), (v) => prefs.setDblClick(v as DblClick))),
+    field(t('prefs.filter'), select('prefFilter', [
+      { value: '0', label: t('filter.all') }, { value: '1', label: t('col.type') }, { value: '2', label: t('col.device') },
+      { value: '3', label: t('col.name') }, { value: '4', label: t('col.keyword') },
+    ], String(prefs.defaultFilter()), (v) => prefs.setDefaultFilter(Number(v)))),
+    h('p', { class: 'muted' }, t('prefs.note')),
+  );
   const langs = LANGUAGES.map((l) => ({ value: l.id, label: l.label }));
   body.append(field(t('settings.language.browser'), select('langBrowser', langs, lang(), (v) => {
     if (isLang(v)) {
