@@ -1,0 +1,25 @@
+{
+  "actions": {
+    "btn_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "out_off_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ],
+    "out_on_url": [
+      {
+        "enabled": false,
+        "index": 0,
+        "urls": []
+      }
+    ]
+  }
+}

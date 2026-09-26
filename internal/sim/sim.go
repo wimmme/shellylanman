@@ -1,0 +1,89 @@
+// Package sim is a simulated Shelly device that answers from a fixture set
+// (see package fixture). It backs integration tests and cmd/shellysim.
+//
+// Phase 1 scope: read-only and stateless. GET requests return the recorded
+// file for their path; POST /rpc returns the recorded result for the method in
+// a Gen2+ RPC envelope. Stateful writes, authentication, WebSocket events and
+// mDNS announcement are added in the phases that need them.
+package sim
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/wimmme/shellylanman/internal/fixture"
+)
+
+// Device serves one fixture directory.
+type Device struct {
+	dir string
+	id  string // Gen2+ "id" from shelly.json, used as "src" in RPC replies
+}
+
+// New loads the device in dir. dir must contain at least shelly.json.
+func New(dir string) (*Device, error) {
+	b, err := os.ReadFile(filepath.Join(dir, fixture.FileName("/shelly")))
+	if err != nil {
+		return nil, err
+	}
+	var info struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(b, &info)
+	return &Device{dir: dir, id: info.ID}, nil
+}
+
+func (d *Device) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch {
+	case r.Method == http.MethodGet:
+		d.serveFile(w, fixture.FileName(r.URL.Path))
+	case r.Method == http.MethodPost && r.URL.Path == "/rpc":
+		d.serveRPC(w, r)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (d *Device) serveFile(w http.ResponseWriter, name string) {
+	b, err := os.ReadFile(filepath.Join(d.dir, name))
+	if err != nil {
+		http.NotFound(w, nil)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
+}
+
+type rpcRequest struct {
+	ID     any    `json:"id"`
+	Method string `json:"method"`
+}
+
+type rpcError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func (d *Device) serveRPC(w http.ResponseWriter, r *http.Request) {
+	var req rpcRequest
+	body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
+	if err := json.Unmarshal(body, &req); err != nil || req.Method == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{"id": req.ID, "src": d.id, "error": rpcError{-103, "invalid request"}})
+		return
+	}
+	b, err := os.ReadFile(filepath.Join(d.dir, fixture.RPCFileName(req.Method)))
+	if err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]any{"id": req.ID, "src": d.id, "error": rpcError{404, "No handler for " + req.Method}})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"id": req.ID, "src": d.id, "result": json.RawMessage(b)})
+}
+
+func writeJSON(w http.ResponseWriter, code int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(v)
+}

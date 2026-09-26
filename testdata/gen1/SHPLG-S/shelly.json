@@ -1,0 +1,10 @@
+{
+  "auth": false,
+  "discoverable": false,
+  "fw": "20230913-113421/v1.14.0-gcb84623",
+  "longid": 1,
+  "mac": "AABBCC000001",
+  "num_meters": 1,
+  "num_outputs": 1,
+  "type": "SHPLG-S"
+}

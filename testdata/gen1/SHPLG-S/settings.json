@@ -1,0 +1,118 @@
+{
+  "actions": {
+    "active": false,
+    "names": [
+      "btn_on_url",
+      "out_on_url",
+      "out_off_url"
+    ]
+  },
+  "allow_cross_origin": true,
+  "ap_roaming": {
+    "enabled": true,
+    "threshold": -85
+  },
+  "build_info": {
+    "build_id": "20230913-113421/v1.14.0-gcb84623",
+    "build_timestamp": "2023-09-13T11:34:21Z",
+    "build_version": "1.0"
+  },
+  "cloud": {
+    "connected": false,
+    "enabled": false
+  },
+  "coiot": {
+    "enabled": true,
+    "peer": "REDACTED",
+    "update_period": 15
+  },
+  "debug_enable": false,
+  "device": {
+    "hostname": "shellyplug-s-AABBCC000001",
+    "mac": "AABBCC000001",
+    "num_meters": 1,
+    "num_outputs": 1,
+    "type": "SHPLG-S"
+  },
+  "discoverable": false,
+  "eco_mode_enabled": false,
+  "fw": "20230913-113421/v1.14.0-gcb84623",
+  "hwinfo": {
+    "batch_id": 0,
+    "hw_revision": "dev-prototype"
+  },
+  "lat": 0,
+  "led_power_disable": false,
+  "led_status_disable": false,
+  "lng": 0,
+  "login": {
+    "enabled": false,
+    "unprotected": false,
+    "username": "REDACTED"
+  },
+  "max_power": 1800,
+  "mqtt": {
+    "clean_session": true,
+    "enable": true,
+    "id": "shellyplug-s-AABBCC000001",
+    "keep_alive": 60,
+    "max_qos": 0,
+    "reconnect_timeout_max": 60.000000,
+    "reconnect_timeout_min": 2.000000,
+    "retain": false,
+    "server": "REDACTED",
+    "update_period": 30,
+    "user": ""
+  },
+  "name": "Test",
+  "pin_code": "",
+  "pon_wifi_reset": false,
+  "relays": [
+    {
+      "appliance_type": "General",
+      "auto_off": 0.00,
+      "auto_on": 0.00,
+      "default_state": "off",
+      "has_timer": false,
+      "ison": false,
+      "max_power": 1800,
+      "name": "Test",
+      "schedule": false,
+      "schedule_rules": []
+    }
+  ],
+  "sntp": {
+    "enabled": true,
+    "server": "REDACTED"
+  },
+  "time": "14:53",
+  "timezone": "UTC",
+  "tz_dst": false,
+  "tz_dst_auto": true,
+  "tz_utc_offset": 7200,
+  "tzautodetect": true,
+  "unixtime": 1790427213,
+  "wifi_ap": {
+    "enabled": false,
+    "key": "",
+    "ssid": "REDACTED"
+  },
+  "wifi_sta": {
+    "dns": null,
+    "enabled": true,
+    "gw": null,
+    "ip": null,
+    "ipv4_method": "dhcp",
+    "mask": null,
+    "ssid": "REDACTED"
+  },
+  "wifi_sta1": {
+    "dns": null,
+    "enabled": false,
+    "gw": null,
+    "ip": null,
+    "ipv4_method": "dhcp",
+    "mask": null,
+    "ssid": null
+  }
+}

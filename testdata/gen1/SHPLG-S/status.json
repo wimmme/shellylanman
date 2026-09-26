@@ -1,0 +1,68 @@
+{
+  "actions_stats": {
+    "skipped": 0
+  },
+  "cfg_changed_cnt": 0,
+  "cloud": {
+    "connected": false,
+    "enabled": false
+  },
+  "fs_free": 166162,
+  "fs_size": 233681,
+  "has_update": false,
+  "mac": "AABBCC000001",
+  "meters": [
+    {
+      "counters": [
+        0.000,
+        0.000,
+        0.000
+      ],
+      "is_valid": true,
+      "overpower": 0.00,
+      "power": 0.00,
+      "timestamp": 1790434413,
+      "total": 0
+    }
+  ],
+  "mqtt": {
+    "connected": true
+  },
+  "overtemperature": false,
+  "ram_free": 39348,
+  "ram_total": 52056,
+  "relays": [
+    {
+      "has_timer": false,
+      "ison": false,
+      "overpower": false,
+      "source": "input",
+      "timer_duration": 0,
+      "timer_remaining": 0,
+      "timer_started": 0
+    }
+  ],
+  "serial": 3,
+  "temperature": 31.93,
+  "time": "14:53",
+  "tmp": {
+    "is_valid": true,
+    "tC": 31.93,
+    "tF": 89.48
+  },
+  "unixtime": 1790427213,
+  "update": {
+    "beta_version": "20231107-164219/v1.14.1-rc1-g0617c15",
+    "has_update": false,
+    "new_version": "20230913-113421/v1.14.0-gcb84623",
+    "old_version": "20230913-113421/v1.14.0-gcb84623",
+    "status": "idle"
+  },
+  "uptime": 1602,
+  "wifi_sta": {
+    "connected": true,
+    "ip": "192.0.2.1",
+    "rssi": -47,
+    "ssid": "REDACTED"
+  }
+}

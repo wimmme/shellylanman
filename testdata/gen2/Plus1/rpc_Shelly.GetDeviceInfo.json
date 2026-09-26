@@ -1,0 +1,14 @@
+{
+  "app": "Plus1",
+  "auth_domain": null,
+  "auth_en": false,
+  "fw_id": "20260311-095850/1.7.5-g9979d16",
+  "gen": 2,
+  "id": "shellyplus1-aabbcc000001",
+  "mac": "AABBCC000001",
+  "model": "SNSW-001X16EU",
+  "name": "Test",
+  "provision": "complete",
+  "slot": 0,
+  "ver": "1.7.5"
+}
