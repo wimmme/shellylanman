@@ -433,3 +433,16 @@ Technical choices made while building discovery, within the scope agreed above.
 | P4-6 | The circuit breaker toggle needs `confirm:true` in the API as well as the dialog in the UI; a locked breaker (`safety`) cannot be toggled | Same confirmation as ShellyScanner, enforced server-side too |
 | P4-7 | The table does not redraw while a slider in a Command cell or the lights editor is being dragged; it catches up on release | Device updates arrive every 2 s; redrawing would drop the slider under the pointer |
 | P4-8 | Where the original sends a request that looks wrong we send the corrected one and list it for Wim: Gen1 bulb on/off without index (O14), `Thermostat.SetConfig` with `=` instead of `:` in its JSON (O15) | The JSON one cannot be sent as-is by a JSON encoder; the bulb one is a one-character difference. Both flagged, not silently fixed |
+
+## 12. Decisions taken during Phase 5 (2026-09-27)
+
+| # | Decision | Why |
+|---|---|---|
+| P5-1 | **Settings dialog as a modal** opened from the device table ("Settings" with a selection), tabs Wi-Fi 1, Wi-Fi 2, Restricted login, MQTT, Others; the FW Update tab arrives with Phase 7 | Same structure as DialogDeviceSettings; each tab reads the devices when shown and reports one result line per device |
+| P5-2 | API: `GET /api/v1/config/{section}?ids=` (common values, excluded devices, MQTT/login variant) and `POST /api/v1/config/{section}` (results). The service decides the variant (G1 / G2 / mixed MQTT panel), the prefix rule for several devices and which devices are queued, exactly as the Java panels | One place for the rules; the browser only draws the form |
+| P5-3 | Wi-Fi changes need `confirm:true` in the API (the original's warning dialog) | Wrong values disconnect devices |
+| P5-4 | After a login change the new credentials are stored encrypted for that device (disable: removed) and used at once | LoginManager*.set/disable update the app's authentication the same way |
+| P5-5 | Deferred tasks: `/data/deferred.json`, parameters (passwords included) sealed with AES-256-GCM bound to the task id; keyed by device ID; not cancelled by a rescan (O22); at most 200 kept (oldest finished dropped); a task interrupted by a restart is marked failed; "Deferred" page with the waiting count on the sidebar | Q10 and a server that runs for months |
+| P5-6 | Checklist page: from the device table for the selection (`#/checklist?ids=`) or from the sidebar for all devices; rows computed on the server with the same requests as CheckListView; right-click menu per column; Scripts edit waits for Phase 8 | The sidebar entry has no selection to work from |
+| P5-7 | Gen1 "reboot required" after an eco-mode change is remembered by the server until the device is rebooted (Gen1 does not report it) | AbstractG1Device.setEcoMode sets rebootRequired |
+| P5-8 | MQTT `-slow` becomes a setting (tenths of a second between devices) on the Network settings page | Q14: no command line |

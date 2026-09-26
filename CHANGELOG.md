@@ -5,6 +5,27 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Phase 5: configuration
+- Devices settings for one or more devices: Wi-Fi 1 and Wi-Fi 2 (enable/disable,
+  DHCP/static/keep, copy from another device, warning before applying), restricted
+  login (new credentials are kept for the device), MQTT (Gen1 panel with reconnect,
+  clean session, keep alive, QoS, retain, update period; Gen2+ panel with MQTT
+  control, RPC over MQTT and notifications; mixed panel), NTP server, cloud and reset
+  by input; one result line per device.
+- Deferred tasks: login, MQTT, NTP, cloud and input-reset changes for off-line or
+  archived devices are queued and run when the device is back; "Deferred" page with
+  cancel and a waiting count on the sidebar; kept in `/data/deferred.json` with the
+  passwords encrypted.
+- Configuration checklist: eco mode, LED, logs, Bluetooth (relayed BLU devices and
+  gateways), access point, roaming, Wi-Fi static/DHCP, range extender, scripts and
+  automatic firmware update per device, with the toolbar and right-click actions of
+  the original.
+- MQTT delay between devices (ShellyScanner's `-slow`) as a setting.
+
+### Fixed — found during Phase 5
+- The browser kept an old `app.js` after an upgrade: every static file is now served
+  with `Cache-Control: no-cache`.
+
 ### Added — Phase 4: device controls
 - Command column with the controls of ShellyScanner, drawn per model like its cell
   editor: relays (ON/OFF, input indicator), covers (open/stop/close, position slider

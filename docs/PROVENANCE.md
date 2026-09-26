@@ -29,6 +29,12 @@ header. Update this table in the same commit as the code.
 | `internal/parse/gen2_ctl.go` | 2 | `g2/modules/SensorAddOnPro.getDigitalOut`, `g3/PbSXT1St1820`, `g3/PbSXT1St802`, `g3/modules/XT1Thermostat` |
 | `internal/parse/actions.go` | 2 | `g1/modules/Actions` (fillSettings, Action.isActive) |
 | `internal/service/control.go` | 2 | commands of `g1/modules/*`, `g2/modules/*`, `g3/modules/*`, `blu/BluTRV`; `MainView.rebootAction`, `Devices.reboot`, `Webhooks.execute`, `Actions.execute` |
+| `internal/service/config.go` | 2 | `view/devsettings/*` panels; `WIFIManager*`, `LoginManager*`, `MQTTManager*`, `TimeAndLocationManager*`, `InputResetManager*`, `setCloudEnabled` |
+| `internal/service/deferred.go` | 2 | `controller/DeferrableTask`, `DeferrablesContainer` |
+| `internal/service/checklist.go` | 2 | `view/checklist/CheckListView` (rows, actions, gateways), `setEcoMode`, `setLEDMode`, `setDebugMode`, `RangeExtenderManager.enable`, `ScheduleManager` (auto FW) |
+| `web/src/panels/devsettings.ts` | 2 | `view/devsettings/*`, `view/DialogDeviceSelection` |
+| `web/src/pages/checklist.ts`, `web/src/checklistlogic.ts` | 2 | `view/checklist/*` |
+| `web/src/pages/deferred.ts` | 2 | `view/DialogDeferrables`, `MainView` deferred button |
 | `internal/shelly/rpc.go` | 2 | `AbstractG2Device.executeRPC/postCommand`, `LoginManagerG2.getAuthNode` |
 | `web/src/command.ts`, `web/src/commandlogic.ts` | 2 | `view/DevicesCommandCellEditor`, `DevicesCommandCellRenderer`, `view/util/ColorUtil`, event labels of `LabelsBundle.properties` |
 | `web/src/panels/lights.ts` | 2 | `view/lightsEditor/*` |

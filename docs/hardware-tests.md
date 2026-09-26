@@ -64,3 +64,24 @@ Not tested on hardware (no such device here, or writes not allowed): covers, RGB
 RGBCCT colour commands, thermostats (Wall Display, XT1, BLU TRV, Gen1 TRV), circuit
 breaker, camera, executing input actions, Gen2+ commands with authentication (covered
 by simulator tests with Digest and JSON-RPC auth).
+
+## Phase 5 — configuration (2026-09-27)
+
+Same setup. Writes only to **Grondwaterpomp** (PlugS Gen1, .86), each change set
+back to its original value; the other devices were only read.
+
+| Check | Result |
+|---|---|
+| Forms for all 25 devices (read only) | Wi-Fi 1/2, login, MQTT ("mix"), others: values merged as the Java panels (empty where devices differ, "Keep" for mixed DHCP/static) |
+| Checklist for all 25 devices (read only) | values per generation match the devices (socket logs on .76/.158/Deurbel, Ethernet Pro devices "-" for wi-fi1, roaming thresholds, scripts count, auto FW "✗"); rows fill in one by one — a slow device (+UNI, 7 s for `Shelly.GetConfig`) no longer delays the others |
+| NTP | `time.google.com` → `pool.ntp.org` → back; device settings changed each time |
+| Cloud | set to disabled (unchanged) — call accepted |
+| MQTT (Gen1 panel) | form shows the Gen1 extras (reconnect 60/2, clean session, keep alive 60, QoS 0, retain off, update period 30); applying the same values succeeded, settings unchanged |
+| Restricted login | enabled with a temporary password: the device answered 401 without credentials, ShellyLanMan kept reading it (new credentials stored); disabled again → open |
+| Checklist actions | LED off on/off, logs on/off (row now shows the new state at once), roaming off/on (threshold kept), eco on/off → "reboot required" until the device was rebooted |
+| UI | settings dialog tabs, checklist page and deferred page render without console errors |
+
+Not tested on hardware: Wi-Fi changes (the device's Wi-Fi password cannot be read
+back, so a test could not restore it — simulator tests only), Gen2+ writes (no Gen2+
+test device), deferred tasks on a real device going off line and back (simulator
+tests), BLE info of BLU devices (none here), auto firmware update schedule (Gen2+).
