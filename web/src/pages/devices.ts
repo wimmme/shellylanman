@@ -1,5 +1,6 @@
 // The device table (ShellyScanner: MainView + DevicesTable).
 import { devicesApi, type Device, type DeviceStatus } from '../api';
+import { commandCell, interacting, whenIdle } from '../command';
 import { addressText, allDevices, compareAddress, onDevicesChanged, scanState } from '../devices';
 import { h, icon, ICONS } from '../dom';
 import { dateTime, formatTemp, formatUptime, meterSetText, metersText, moduleText, prefs, uptimeTooltip } from '../format';
@@ -7,6 +8,7 @@ import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
 import { openInfo } from '../panels/info';
 import { openLogs } from '../panels/logs';
+import { toast } from '../toast';
 import { emptyState, type Page } from './common';
 
 type ColKey = 'status' | 'type' | 'device' | 'name' | 'keyword' | 'mac' | 'ip' | 'ssid' | 'rssi' | 'cloud' | 'mqtt'
@@ -83,7 +85,7 @@ const COLUMNS: Col[] = [
   { key: 'source', label: 'col.source', text: (d) => (d.modules ?? []).map((m) => m.source).filter((s): s is string => !!s).join(' / '),
     cell: (d) => lines((d.modules ?? []).map((m) => m.source ?? '').filter(Boolean)), live: true },
   { key: 'command', label: 'col.command', text: (d) => (d.modules ?? []).map((m) => moduleText(m)).join(' + '),
-    cell: (d) => lines((d.modules ?? []).map((m) => moduleText(m))), live: true },
+    cell: (d) => commandCell(d) ?? '', live: true },
 ];
 
 // ShellyScanner hides Keyword, MAC, SSID and Logs in the default view; the
@@ -157,6 +159,18 @@ async function openWebUI(list: Device[]): Promise<void> {
   const targets = list.filter((d) => d.status !== 'ghost');
   if (targets.length > 8 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: targets.length }), t('action.webUI'), false))) return;
   for (const d of targets) window.open(`http://${d.port === 80 ? d.ip : `${d.ip}:${d.port}`}`, '_blank', 'noopener');
+}
+
+/** Reboot (MainView.rebootAction): stored devices and BLU devices other than the TRV cannot. */
+const rebootable = (d: Device): boolean => d.status !== 'ghost' && d.gen !== 'bth';
+
+async function reboot(list: Device[]): Promise<void> {
+  if (!(await confirmDialog(t('action.reboot'), t('action.rebootConfirm'), t('action.reboot')))) return;
+  try {
+    await devicesApi.reboot(list.map((d) => d.id));
+  } catch (e) {
+    toast(e instanceof Error ? e.message : String(e));
+  }
 }
 
 async function removeGhosts(list: Device[]): Promise<void> {
@@ -256,6 +270,7 @@ export const devicesPage: Page = {
       bodyBox));
 
     const draw = (): void => {
+      if (interacting()) { whenIdle(draw); return; } // a slider is being dragged: redraw when it is released
       const all = allDevices();
       for (const id of [...selected]) if (!all.some((d) => d.id === id)) selected.delete(id);
       const rows = visibleRows(all);
@@ -275,6 +290,7 @@ export const devicesPage: Page = {
         act('action.logs', !!one && one.status !== 'ghost' && one.gen !== '-', () => one && openLogs(one.id)),
         act('action.webUI', noGhost && sel.some((d) => !isBLU(d)), () => void openWebUI(sel.filter((d) => !isBLU(d))), 'action.webUITip'),
         act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(sel)),
+        act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(sel), 'action.rebootTip'),
         sel.length > 0 && sel.every((d) => d.status === 'ghost') ? act('action.removeGhost', true, () => void removeGhosts(sel)) : null,
       ].filter((x): x is HTMLElement => x !== null));
       controlsBox.replaceChildren(
@@ -350,7 +366,11 @@ export const devicesPage: Page = {
       const banner = scanBanner();
       bannerBox.replaceChildren(...(banner ? [banner] : []));
       summaryBox.replaceChildren(summary(all));
+      const old = bodyBox.querySelector('.table-wrap');
+      const [sx, sy] = old ? [old.scrollLeft, old.scrollTop] : [0, 0];
       bodyBox.replaceChildren(body);
+      const wrap = bodyBox.querySelector('.table-wrap');
+      if (wrap) { wrap.scrollLeft = sx; wrap.scrollTop = sy; } // keep the user's scroll position across updates
     };
     // User actions redraw even with a menu open (the menu belongs to the old toolbar).
     const redraw = (): void => { document.querySelectorAll('.menu').forEach((m) => m.classList.add('hidden')); draw(); };

@@ -44,13 +44,25 @@ export interface Device {
   rebootRequired: boolean; parent?: string; parents?: string[]; note?: string; keyword?: string;
   rssi: number; cloudEnabled: boolean; cloudConnected: boolean; mqttEnabled: boolean; mqttConnected: boolean;
   uptime: number; logMode: string; internalTemp?: number; meters?: MeterSet[]; modules?: Module[]; paused?: boolean;
+  layout?: Layout;
 }
+
+/** How the Command cell draws the modules: the array type of ShellyScanner's getModules(). */
+export type Layout = 'relay' | 'roller' | 'rgbcct' | 'rgbw' | 'rgb' | 'thermostat' | 'trvg1' | 'cb' | 'mixed';
 
 export interface MeterValue { type: string; value: number; name?: string }
 export interface MeterSet { label?: string; values: MeterValue[] }
 export interface Module {
-  kind: string; index: number; label: string; on?: boolean; brightness?: number; position?: number; calibrated?: boolean;
-  target?: number; inputOn?: boolean; rgb?: number[]; white?: number; tempK?: number; state?: string; source?: string;
+  kind: string; index: number; key?: string; label: string; on?: boolean; brightness?: number; gain?: number; position?: number;
+  calibrated?: boolean; target?: number; inputOn?: boolean; inputOn1?: boolean; rgb?: number[]; white?: number; tempK?: number;
+  colorMode?: boolean; state?: string; source?: string;
+  min?: number; max?: number; div?: number; tMin?: number; tMax?: number;
+  enabled?: boolean; running?: boolean; schedule?: boolean; locked?: boolean; motion?: boolean; events?: InputEvent[];
+}
+export interface InputEvent { event: string; enabled: boolean }
+/** One action on one module (service.Command). */
+export interface Command {
+  key: string; action: string; value?: number; rgb?: number[]; white?: number; event?: number; confirm?: boolean;
 }
 export interface InfoRequest { name: string; path: string }
 export interface InfoResult { data: unknown; stored: boolean }
@@ -84,6 +96,8 @@ export const devicesApi = {
   infoRequests: (id: string) => request<InfoRequest[]>('GET', `/devices/${encodeURIComponent(id)}/info`),
   info: (id: string, index: number) => request<InfoResult>('GET', `/devices/${encodeURIComponent(id)}/info/${index}`),
   pause: (id: string, paused: boolean) => request<unknown>('PUT', `/devices/${encodeURIComponent(id)}/pause`, { paused }),
+  command: (id: string, cmd: Command) => request<unknown>('POST', `/devices/${encodeURIComponent(id)}/command`, cmd),
+  reboot: (ids: string[]) => request<unknown>('POST', '/devices/reboot', { ids, confirm: true }),
   logText: async (id: string, file: number): Promise<string> => {
     const r = await fetch(`/api/v1/devices/${encodeURIComponent(id)}/log?file=${file}`);
     const text = await r.text();
