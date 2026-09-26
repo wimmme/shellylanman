@@ -45,6 +45,10 @@ type Settings struct {
 	Language     string          `json:"language"` // default UI language for new browsers
 	Scan         ScanSettings    `json:"scan"`
 	Archive      ArchiveSettings `json:"archive"`
+	// MQTTSlow is an extra pause, in tenths of a second, after each device
+	// when MQTT settings are applied to several devices (ShellyScanner's
+	// "-slow" command-line option, MQTT_SLOW).
+	MQTTSlow int `json:"mqttSlow"`
 }
 
 // Scan modes (ShellyScanner: setting SCAN_MODE, dialog "Network scan mode").
@@ -110,6 +114,9 @@ func (s Settings) Validate() error {
 	}
 	if s.Scan.RefreshSeconds < 1 || s.Scan.RefreshSeconds > 3600 {
 		return errors.New("status refresh must be 1–3600 seconds")
+	}
+	if s.MQTTSlow < 0 || s.MQTTSlow > 600 {
+		return errors.New("MQTT delay must be 0–600 tenths of a second")
 	}
 	if s.Scan.ConfigTics < 1 || s.Scan.ConfigTics > 1000 {
 		return errors.New("configuration refresh must be 1–1000 status refreshes")

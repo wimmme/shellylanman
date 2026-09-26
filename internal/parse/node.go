@@ -8,6 +8,7 @@ package parse
 
 import (
 	"encoding/json"
+	"sort"
 	"strconv"
 )
 
@@ -83,6 +84,7 @@ func (n node) Keys() []string {
 	for k := range m {
 		out = append(out, k)
 	}
+	sort.Strings(out)
 	return out
 }
 
@@ -125,3 +127,9 @@ func (n node) Str(def string) string {
 
 // IsNull reports an explicit JSON null (present, but null).
 func (n node) IsNull() bool { return n.v == nil }
+
+// Node is the forgiving JSON reader, for other packages.
+type Node = node
+
+// Decode parses b into a Node (a missing or invalid document reads as empty).
+func Decode(b []byte) Node { return decode(b) }
