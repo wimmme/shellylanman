@@ -155,15 +155,22 @@ func isCommand(r *http.Request) bool {
 	if p == "/reboot" || p == "/rpc/Shelly.Reboot" {
 		return true
 	}
-	for _, pre := range []string{"/relay/", "/roller/", "/light/", "/white/", "/color/", "/settings/thermostats/"} {
+	for _, pre := range []string{"/relay/", "/roller/", "/light/", "/white/", "/color/", "/settings"} {
 		if strings.HasPrefix(p, pre) && r.URL.RawQuery != "" {
 			return true
 		}
 	}
-	if strings.HasPrefix(p, "/rpc/") && (strings.HasSuffix(p, ".Set") || strings.HasSuffix(p, ".Toggle") || strings.Contains(p, ".Call")) {
-		return true
+	return strings.HasPrefix(p, "/rpc/") && isCommandMethod(strings.TrimPrefix(p, "/rpc/"))
+}
+
+// isCommandMethod: RPC methods that change something.
+func isCommandMethod(m string) bool {
+	for _, suf := range []string{".Set", ".SetConfig", ".SetAuth", ".Toggle", ".Create", ".Delete", ".Update"} {
+		if strings.HasSuffix(m, suf) {
+			return true
+		}
 	}
-	return false
+	return strings.Contains(m, ".Call") || strings.EqualFold(m, "BluTrv.call") || m == "Shelly.Reboot"
 }
 
 // setRelay applies on/off/toggle to relay idx and returns the relay state
@@ -297,7 +304,7 @@ func (d *Device) serveRPC(w http.ResponseWriter, body []byte) {
 	}
 	b, err := os.ReadFile(filepath.Join(d.dir, fixture.RPCFileName(req.Method)))
 	if err != nil {
-		if strings.HasSuffix(req.Method, ".Set") || strings.HasSuffix(req.Method, ".SetConfig") || strings.HasSuffix(req.Method, ".Call") || req.Method == "Shelly.Reboot" {
+		if isCommandMethod(req.Method) {
 			reply(map[string]any{})
 			return
 		}
