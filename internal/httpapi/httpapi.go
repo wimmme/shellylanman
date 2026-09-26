@@ -137,6 +137,7 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		Language     *string                `json:"language"`
 		Scan         *store.ScanSettings    `json:"scan"`
 		Archive      *store.ArchiveSettings `json:"archive"`
+		MQTTSlow     *int                   `json:"mqttSlow"`
 	}
 	if !readJSON(w, r, &patch) {
 		return
@@ -153,6 +154,9 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		}
 		if patch.Archive != nil {
 			st.Archive = *patch.Archive
+		}
+		if patch.MQTTSlow != nil {
+			st.MQTTSlow = *patch.MQTTSlow
 		}
 	})
 	if err != nil {
@@ -192,9 +196,9 @@ func (s *server) static(w http.ResponseWriter, r *http.Request) {
 	if ct := mime.TypeByExtension(path.Ext(name)); ct != "" {
 		w.Header().Set("Content-Type", ct)
 	}
-	if name == "index.html" {
-		w.Header().Set("Cache-Control", "no-cache")
-	}
+	// Revalidate every file: after an upgrade the browser must not keep an old
+	// app.js next to a new index.html.
+	w.Header().Set("Cache-Control", "no-cache")
 	w.Write(b)
 }
 

@@ -127,3 +127,43 @@ func TestCommandAndRebootEndpoints(t *testing.T) {
 		t.Fatalf("reboot without devices: %d", r.StatusCode)
 	}
 }
+
+func TestConfigEndpoints(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	if r := do(t, "GET", srv.URL+"/api/v1/config/wifi1", "", nil); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("no ids: %d", r.StatusCode)
+	}
+	// The only device is archived: Wi-Fi cannot be read, everything is excluded.
+	if r := do(t, "GET", srv.URL+"/api/v1/config/wifi1?ids=AABBCC000001", "", nil); r.StatusCode != http.StatusConflict {
+		t.Fatalf("all excluded: %d", r.StatusCode)
+	}
+	if r := do(t, "GET", srv.URL+"/api/v1/config/bogus?ids=AABBCC000001", "", nil); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("unknown section: %d", r.StatusCode)
+	}
+	// NTP for an archived device is queued as a deferred task.
+	r := do(t, "POST", srv.URL+"/api/v1/config/others", `{"ids":["AABBCC000001"],"part":"ntp","ntp":"pool.ntp.org"}`, jsonHdr)
+	b, _ := io.ReadAll(r.Body)
+	if r.StatusCode != 200 || !strings.Contains(string(b), `"result":"queued"`) {
+		t.Fatalf("queue: %d %s", r.StatusCode, b)
+	}
+	var list []map[string]any
+	decode(t, do(t, "GET", srv.URL+"/api/v1/deferred", "", nil), &list)
+	if len(list) != 1 || list[0]["status"] != "WAITING" || list[0]["sealed"] != "" && list[0]["sealed"] != nil {
+		t.Fatalf("deferred %v", list)
+	}
+	id, _ := list[0]["id"].(string)
+	if r := do(t, "DELETE", srv.URL+"/api/v1/deferred/"+id, "", nil); r.StatusCode != 204 {
+		t.Fatalf("cancel: %d", r.StatusCode)
+	}
+	if r := do(t, "DELETE", srv.URL+"/api/v1/deferred/"+id, "", nil); r.StatusCode != http.StatusConflict {
+		t.Fatalf("cancel twice: %d", r.StatusCode)
+	}
+	if r := do(t, "POST", srv.URL+"/api/v1/config/wifi1", `{"ids":["AABBCC000001"],"enabled":true,"ssid":"x","password":"y","mode":"dhcp"}`, jsonHdr); r.StatusCode != http.StatusPreconditionRequired {
+		t.Fatalf("wifi without confirm: %d", r.StatusCode)
+	}
+	var rows []map[string]any
+	decode(t, do(t, "GET", srv.URL+"/api/v1/checklist", "", nil), &rows)
+	if len(rows) != 1 || rows[0]["id"] != "AABBCC000001" {
+		t.Fatalf("checklist %v", rows)
+	}
+}
