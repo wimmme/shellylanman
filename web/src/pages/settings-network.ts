@@ -79,6 +79,13 @@ export async function network(body: HTMLElement): Promise<void> {
     try { await devicesApi.setCredentials('', ''); pass.placeholder = ''; cres.ok(); } catch (e) { cres.fail(e); }
   } }, t('cred.clear'));
 
+  // MQTT delay (ShellyScanner's -slow option)
+  const slow = h('input', { type: 'number', min: 0, max: 600, value: settings.mqttSlow ?? 0 });
+  const sres = result();
+  const ssave = h('button', { class: 'btn', onclick: async () => {
+    try { await devicesApi.updateSettings({ mqttSlow: Number(slow.value) }); sres.ok(); } catch (e) { sres.fail(e); }
+  } }, t('common.save'));
+
   body.append(
     modeBox, extra,
     field('scanRefresh', t('scan.refresh'), refresh),
@@ -89,6 +96,9 @@ export async function network(body: HTMLElement): Promise<void> {
     field('credUser', t('cred.user'), user),
     field('credPass', t('login.password'), pass),
     h('div', { class: 'row' }, csave, cclear, cres.el),
+    h('h3', { class: 'card-title', style: 'margin-top:24px' }, t('slow.title')),
+    field('mqttSlow', t('slow.label'), slow, t('slow.help')),
+    h('div', { class: 'row' }, ssave, sres.el),
   );
 }
 

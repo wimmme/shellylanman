@@ -5,6 +5,8 @@ import { h, icon, ICONS } from './dom';
 import { isLang, setLang, storedLang, t } from './i18n';
 import { aboutPage } from './pages/about';
 import { errorState, loadingState, placeholder, type Page } from './pages/common';
+import { checklistPage } from './pages/checklist';
+import { deferredPage, sidebarBadge, wireDeferredEvents } from './pages/deferred';
 import { devicesPage } from './pages/devices';
 import { settingsPage } from './pages/settings';
 import { EventSocket, type ConnState } from './socket';
@@ -12,10 +14,10 @@ import { loadDevices, wireDeviceEvents } from './devices';
 
 const pages: Page[] = [
   devicesPage,
-  placeholder('checklist', 'nav.checklist', ICONS.checklist, 'page.checklist.text'),
+  checklistPage,
   placeholder('charts', 'nav.charts', ICONS.charts, 'page.charts.text'),
   placeholder('firmware', 'nav.firmware', ICONS.firmware, 'page.firmware.text'),
-  placeholder('deferred', 'nav.deferred', ICONS.deferred, 'page.deferred.text'),
+  deferredPage,
   settingsPage(() => renderShell()),
   aboutPage,
 ];
@@ -26,7 +28,7 @@ let version = '';
 const app = document.getElementById('app')!;
 
 function currentPage(): Page {
-  const id = location.hash.replace(/^#\/?/, '');
+  const id = location.hash.replace(/^#\/?/, '').split('?')[0];
   return pages.find((p) => p.id === id) || pages[0]!;
 }
 
@@ -43,7 +45,7 @@ function renderShell(): void {
   shown = page;
   const nav = h('ul', { class: 'nav' }, ...pages.map((p) =>
     h('li', {}, h('a', { href: '#/' + p.id, class: p === page ? 'active' : undefined, 'aria-current': p === page ? 'page' : undefined, title: t(p.title) },
-      icon(p.icon), h('span', { class: 'label' }, t(p.title))))));
+      icon(p.icon), h('span', { class: 'label' }, t(p.title)), p.id === 'deferred' ? sidebarBadge() : null))));
   const main = h('main', { class: 'main', id: 'main' });
   const shell = h('div', { class: 'shell' },
     h('aside', { class: 'sidebar' },
@@ -115,6 +117,7 @@ async function boot(): Promise<void> {
     if (!storedLang() && isLang(s?.language)) { setLang(s.language, false); renderShell(); }
   });
   wireDeviceEvents(socket);
+  wireDeferredEvents(socket);
   socket.connect();
   void loadDevices().catch(() => { /* retried on the socket's hello */ });
 

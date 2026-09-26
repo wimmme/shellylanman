@@ -74,7 +74,7 @@ export interface ScanState {
 export interface IPRange { base: string; first: number; last: number }
 export interface ScanSettings { mode: string; interface?: string; ranges?: IPRange[]; refreshSeconds: number; configTics: number }
 export interface ArchiveSettings { use: boolean; autoReload: boolean }
-export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings }
+export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number }
 export interface CredentialsInfo { globalSet: boolean; globalUser: string }
 export interface NetInterface { name: string; addrs: string[] }
 
@@ -104,4 +104,44 @@ export const devicesApi = {
     if (!r.ok) throw new ApiError(r.status, text);
     return text;
   },
+};
+
+// ---- configuration (Phase 5) ----
+
+export interface DeviceRef { id: string; name: string }
+export interface ResultLine extends DeviceRef { result: 'ok' | 'fail' | 'queued' | 'excluded'; message?: string }
+export interface WiFiForm { enabled: boolean; ssid: string; static: boolean | null; ip: string; netmask: string; gateway: string; dns: string }
+export interface LoginForm { enabled: boolean; user: string }
+export interface MQTTForm {
+  enabled: boolean; server: string; user: string; prefix: string; noPassword: boolean;
+  reconnectMax?: number; reconnectMin?: number; cleanSession?: boolean; keepAlive?: number; qos?: number; retain?: boolean; updatePeriod?: number;
+  control?: boolean; rpc?: boolean; rpcNtf?: boolean; statusNtf?: boolean;
+}
+export interface OthersForm { ntp: string; cloud: boolean | null; reset: boolean | null }
+export interface ConfigForm {
+  section: string; variant?: 'g1' | 'g2' | 'mix'; devices: number; excluded: DeviceRef[];
+  wifi?: WiFiForm; login?: LoginForm; mqtt?: MQTTForm; others?: OthersForm;
+}
+export type Cell = boolean | string | number | BLEItem[] | null;
+export interface BLEItem { id?: string; name?: string; mac?: string; address?: string; lastSeen?: number }
+export interface ChecklistRow {
+  id: string; host: string; address: string; status: DeviceStatus; gen: string;
+  eco: Cell; led: Cell; logs: Cell; ble: Cell; ap: Cell; roaming: Cell; wifi1: Cell; wifi2: Cell; extender: Cell; scripts: Cell; autoFW: Cell;
+}
+export interface DeferredTask {
+  id: string; time: number; deviceId: string; deviceName: string; type: string; description: string;
+  status: 'WAITING' | 'CANCELLED' | 'RUNNING' | 'SUCCESS' | 'FAIL'; message?: string;
+}
+
+const idsQuery = (ids: string[]): string => 'ids=' + ids.map(encodeURIComponent).join(',');
+
+export const configApi = {
+  form: (section: string, ids: string[]) => request<ConfigForm>('GET', `/config/${section}?${idsQuery(ids)}`),
+  apply: (section: string, ids: string[], body: Record<string, unknown>) =>
+    request<{ results: ResultLine[] }>('POST', `/config/${section}`, { ids, ...body }),
+  checklist: (ids: string[]) => request<ChecklistRow[]>('GET', `/checklist${ids.length ? '?' + idsQuery(ids) : ''}`),
+  checklistAction: (ids: string[], action: string, value: boolean, mode?: string) =>
+    request<{ errors: ResultLine[]; rows: ChecklistRow[] }>('POST', '/checklist/action', { ids, action, value, mode }),
+  deferred: () => request<DeferredTask[]>('GET', '/deferred'),
+  cancelDeferred: (id: string) => request<unknown>('DELETE', `/deferred/${encodeURIComponent(id)}`),
 };
