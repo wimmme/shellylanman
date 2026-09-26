@@ -71,7 +71,8 @@ internal/fixture   fixture naming + scrubbing (public repo!)
   are ticked only with tests. CI never touches real devices. Fixtures are
   recorded with `cmd/record` and reviewed before commit.
 - **Dependencies:** Go stdlib first. Each dependency needs a reason and its
-  licence in `THIRD_PARTY_NOTICES.md` before it is added. Current: `coder/websocket`.
+  licence in `THIRD_PARTY_NOTICES.md` before it is added. Current: `coder/websocket`,
+  `golang.org/x/net`, `golang.org/x/sys`.
 - **Attribution:** ported code gets the "Portions derived from ShellyScanner"
   header and a `docs/PROVENANCE.md` row, in the same commit.
 - **Frontend:** plain TypeScript, no framework. Text via `textContent` only

@@ -78,9 +78,9 @@ needed before the UI is up:
 |---|---|
 | `secret.key` | Random key created on first start; encrypts secrets in `settings.json` |
 | `settings.json` | Application settings; device credentials encrypted |
+| `archive.json` | Device archive: known devices, last address, notes and keywords |
 
-Later phases add the device archive (notes, keywords), backups, deferred
-actions and a firmware cache — the full list is in
+Later phases add backups, deferred actions and a firmware cache — the full list is in
 [`ARCHITECTURE.md` §2.6](ARCHITECTURE.md).
 
 ### Behind a reverse proxy

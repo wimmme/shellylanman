@@ -396,3 +396,16 @@ Answered interactively by Wim. These override any proposal above that says other
 Future MCP note: the existing `shelly-mcp` (dockerhostvm:8933) currently gets its device list from
 ShellyScanner's `menu.html`; ShellyLanMan's API is the natural future source for it (and for an
 MCP server of our own, §2.8 of `ARCHITECTURE.md`).
+
+## 9. Decisions taken during Phase 2 (2026-09-26)
+
+Technical choices made while building discovery, within the scope agreed above.
+
+| # | Decision | Why |
+|---|---|---|
+| P2-1 | **mDNS: own browse-only implementation** on `golang.org/x/net` (dnsmessage + ipv4), not a third-party mDNS library | Settles risk R1: it only has to browse `_http._tcp` and resolve SRV/A; ~300 lines, unit-tested with constructed packets, verified on the real network (43 instances, all 25 Shellies found and identified within 25 s). Shares UDP 5353 with the host's responder via SO_REUSEADDR/SO_REUSEPORT (`golang.org/x/sys`). |
+| P2-2 | "Full mDNS scan" **skips container/VM bridge interfaces** (`docker*`, `br-*`, `veth*`, `virbr*`, `cni*`, `flannel*`, `podman*`, `vnet*`) | With host networking a Docker host has dozens of bridges (44 on dockerhostvm); no Shelly is behind them. They can still be picked in "Local mDNS scan". |
+| P2-3 | **Scan-setting changes apply at once** (rescan) instead of "at next start" | ShellyScanner needs a restart because of JmDNS; restarting a server container is worse UX. Errors retry (30 s) and archive auto reload (45 s) are scheduled per (re)scan. |
+| P2-4 | IDs: the MAC (upper case, no separators); unmanaged hosts without a MAC in their name get `addr:<ip:port>` | ShellyScanner uses an empty MAC there, which would merge unrelated devices. |
+| P2-5 | Gen2+ reads use `GET /rpc/<Method>` with HTTP Digest (SHA-256) | Documented Shelly transport; one mechanism for all reads. Writes (Phase 4+) will use the same connection. |
+| P2-6 | Devices are refreshed with `/status`+`/settings` (Gen1) or `Shelly.GetStatus`+`Shelly.GetConfig` (Gen2+) exactly like ShellyScanner, and the raw answers are kept for Phase 3 | The device table's remaining columns (Phase 3) parse the same payloads. |
