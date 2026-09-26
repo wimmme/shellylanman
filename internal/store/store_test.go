@@ -3,6 +3,7 @@ package store
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -20,7 +21,7 @@ func TestOpenCreatesKeyAndDefaults(t *testing.T) {
 	if len(key) != keySize {
 		t.Fatalf("key has %d bytes", len(key))
 	}
-	if got := s.Settings(); got != Defaults() {
+	if got := s.Settings(); !reflect.DeepEqual(got, Defaults()) {
 		t.Fatalf("settings = %+v, want defaults", got)
 	}
 }

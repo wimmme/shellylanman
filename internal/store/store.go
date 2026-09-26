@@ -22,7 +22,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
+
+	"github.com/wimmme/shellylanman/internal/discovery"
 )
 
 const (
@@ -38,23 +41,80 @@ var Languages = []string{"en", "nl"}
 // Settings are the application settings visible to the UI. Secrets are kept
 // apart and never leave the store in clear text except through Secret.
 type Settings struct {
-	FirstRunDone bool   `json:"firstRunDone"`
-	Language     string `json:"language"` // default UI language for new browsers
+	FirstRunDone bool            `json:"firstRunDone"`
+	Language     string          `json:"language"` // default UI language for new browsers
+	Scan         ScanSettings    `json:"scan"`
+	Archive      ArchiveSettings `json:"archive"`
 }
 
-// Defaults are the settings of a fresh installation.
+// Scan modes (ShellyScanner: setting SCAN_MODE, dialog "Network scan mode").
+const (
+	ScanFull    = "full"    // mDNS on all interfaces ("Full mDNS scan")
+	ScanLocal   = "local"   // mDNS on one chosen interface ("Local mDNS scan")
+	ScanIP      = "ip"      // IP ranges ("IP scan")
+	ScanOffline = "offline" // archive only ("Offline")
+)
+
+// ScanSettings are ShellyScanner's Network tab.
+type ScanSettings struct {
+	Mode      string            `json:"mode"`
+	Interface string            `json:"interface,omitempty"` // for ScanLocal
+	Ranges    []discovery.Range `json:"ranges,omitempty"`    // for ScanIP, at most discovery.MaxRanges
+	// RefreshSeconds is the status refresh interval while a browser is
+	// connected (REFRESH_INTERVAL, default 2); ConfigTics is how many status
+	// refreshes run per configuration refresh (REFRESH_SETTINGS, default 5).
+	RefreshSeconds int `json:"refreshSeconds"`
+	ConfigTics     int `json:"configTics"`
+}
+
+// ArchiveSettings are ShellyScanner's Archive tab (USE_ARCHIVE, AUTORELOAD).
+type ArchiveSettings struct {
+	Use        bool `json:"use"`
+	AutoReload bool `json:"autoReload"`
+}
+
+// Defaults are the settings of a fresh installation (ScannerProperties defaults).
 func Defaults() Settings {
-	return Settings{Language: "en"}
+	return Settings{
+		Language: "en",
+		Scan:     ScanSettings{Mode: ScanFull, RefreshSeconds: 2, ConfigTics: 5},
+		Archive:  ArchiveSettings{Use: true, AutoReload: true},
+	}
 }
 
 // Validate reports whether the settings can be stored.
 func (s Settings) Validate() error {
-	for _, l := range Languages {
-		if s.Language == l {
-			return nil
+	if !slices.Contains(Languages, s.Language) {
+		return fmt.Errorf("unsupported language %q", s.Language)
+	}
+	switch s.Scan.Mode {
+	case ScanFull, ScanOffline:
+	case ScanLocal:
+		if s.Scan.Interface == "" {
+			return errors.New("local scan needs a network interface")
+		}
+	case ScanIP:
+		if len(s.Scan.Ranges) == 0 {
+			return errors.New("IP scan needs at least one range")
+		}
+	default:
+		return fmt.Errorf("unknown scan mode %q", s.Scan.Mode)
+	}
+	if len(s.Scan.Ranges) > discovery.MaxRanges {
+		return fmt.Errorf("at most %d IP ranges", discovery.MaxRanges)
+	}
+	for _, r := range s.Scan.Ranges {
+		if err := r.Validate(); err != nil {
+			return err
 		}
 	}
-	return fmt.Errorf("unsupported language %q", s.Language)
+	if s.Scan.RefreshSeconds < 1 || s.Scan.RefreshSeconds > 3600 {
+		return errors.New("status refresh must be 1–3600 seconds")
+	}
+	if s.Scan.ConfigTics < 1 || s.Scan.ConfigTics > 1000 {
+		return errors.New("configuration refresh must be 1–1000 status refreshes")
+	}
+	return nil
 }
 
 // fileFormat is settings.json on disk.
@@ -156,14 +216,19 @@ func (s *Store) load() error {
 func (s *Store) Settings() Settings {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.data.Settings
+	return s.data.Settings.clone()
+}
+
+func (s Settings) clone() Settings {
+	s.Scan.Ranges = slices.Clone(s.Scan.Ranges)
+	return s
 }
 
 // Update changes the settings through fn and saves them if they validate.
 func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	next := s.data.Settings
+	next := s.data.Settings.clone()
 	fn(&next)
 	if err := next.Validate(); err != nil {
 		return s.data.Settings, err
