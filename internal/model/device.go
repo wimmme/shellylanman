@@ -59,6 +59,7 @@ type Device struct {
 	InternalTemp   *float64         `json:"internalTemp,omitempty"`
 	Meters         []parse.MeterSet `json:"meters,omitempty"`
 	Modules        []parse.Module   `json:"modules,omitempty"`
+	Layout         string           `json:"layout,omitempty"` // how the Command cell draws the modules (parse.Layout*)
 	Paused         bool             `json:"paused,omitempty"` // refresh paused (logs dialog)
 
 	RebootRequired bool `json:"rebootRequired"`
@@ -109,5 +110,5 @@ func (d *Device) ApplyReadings(r parse.Readings) {
 	d.RSSI, d.CloudEnabled, d.CloudConnected = r.RSSI, r.CloudEnabled, r.CloudConnected
 	d.MQTTEnabled, d.MQTTConnected = r.MQTTEnabled, r.MQTTConnected
 	d.Uptime, d.LogMode, d.RebootRequired = r.Uptime, r.LogMode, r.RebootRequired
-	d.InternalTemp, d.Meters, d.Modules = r.InternalTemp, r.Meters, r.Modules
+	d.InternalTemp, d.Meters, d.Modules, d.Layout = r.InternalTemp, r.Meters, r.Modules, r.Layout
 }

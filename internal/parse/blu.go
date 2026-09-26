@@ -6,7 +6,10 @@
 package parse
 
 import (
+	"fmt"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -57,6 +60,7 @@ type BTHomeInput struct {
 	Index        string // bthomedevice component index
 	KnownObjects []byte // BTHomeDevice.GetKnownObjects
 	Components   []byte // Shelly.GetComponents?keys=[device, sensors…] (one or more pages merged as {"components":[…]})
+	Webhooks     []byte // the gateway's Webhook.List (button actions)
 }
 
 // BTHome parses a BLU BTHome device: RSSI, one meter set from the measuring
@@ -86,6 +90,7 @@ func BTHome(in BTHomeInput) Readings {
 	}
 	sort.SliceStable(order, func(i, j int) bool { return compIndex(order[i]) < compIndex(order[j]) })
 
+	hooks := decode(in.Webhooks)
 	var ms MeterSet
 	tSeq, angSeq := []string{T, T1, T2, T3, T4}, []string{ANG, ANG1, ANG2}
 	tn, an := 0, 0
@@ -95,7 +100,9 @@ func BTHome(in BTHomeInput) Readings {
 		val := c.Path("status", "value")
 		switch obj := objOf[key]; obj {
 		case objButton:
-			r.Modules = append(r.Modules, Module{Kind: KindInput, Index: compIndex(key), Label: name, State: val.Str("")})
+			id := compIndex(key)
+			r.Modules = append(r.Modules, Module{Kind: KindInput, Index: id, Key: key, Label: name, State: val.Str(""),
+				Enabled: ptr(true), Events: hookEvents(hooks, "bthomesensor", id, nil)})
 		case objMotion:
 			r.Modules = append(r.Modules, Module{Kind: KindSensor, Label: labelOr(name, "Motion"), On: ptr(val.Bool())})
 		case objWindow:
@@ -125,7 +132,56 @@ func BTHome(in BTHomeInput) Readings {
 	if len(ms.Values) > 0 {
 		r.Meters = []MeterSet{ms}
 	}
+	r.Modules = append(r.Modules, deviceInputs(hooks, in.Index)...)
+	r.Layout = layoutOf(r.Modules)
 	return r
+}
+
+var (
+	buttonIDPattern  = regexp.MustCompile(`ev.idx\s*===?\s*(\d+)`)
+	channelIDPattern = regexp.MustCompile(`ev.sensors\[96\]\[0\]\.value\s*===?\s*(\d+)`)
+)
+
+// deviceInputs: one input per distinct webhook condition on the
+// bthomedevice itself (BTHomeDevice.deviceInputs, InputOnDevice), sorted by
+// condition; the label is "ch N - M" from the channel and button index.
+func deviceInputs(hooks node, index string) []Module {
+	cid, err := strconv.Atoi(index)
+	if err != nil {
+		return nil
+	}
+	seen := map[string]bool{}
+	list := hooks.Get("hooks")
+	for i := 0; i < list.Len(); i++ {
+		h := list.Idx(i)
+		if h.Get("cid").Int() == cid && strings.HasPrefix(h.Get("event").Str(""), "bthomedevice.") {
+			seen[h.Get("condition").Str("")] = true
+		}
+	}
+	conds := make([]string, 0, len(seen))
+	for c := range seen {
+		conds = append(conds, c)
+	}
+	sort.Strings(conds)
+	var out []Module
+	for _, cond := range conds {
+		label := ""
+		if cond != "" {
+			if m := channelIDPattern.FindStringSubmatch(cond); m != nil {
+				label = "ch " + m[1]
+			}
+			if m := buttonIDPattern.FindStringSubmatch(cond); m != nil {
+				if label != "" {
+					label += " - "
+				}
+				label += m[1]
+			}
+		}
+		c := cond
+		out = append(out, Module{Kind: KindInput, Index: len(out), Key: fmt.Sprintf("bthomedevice:%d/%s", cid, cond), Label: label,
+			Enabled: ptr(true), Events: hookEvents(hooks, "bthomedevice", cid, &c)})
+	}
+	return out
 }
 
 func labelOr(s, def string) string {
@@ -154,10 +210,12 @@ func BluTRV(in BluTRVInput) Readings {
 	}
 	trv := rs.Get("trv:0")
 	r.Meters = []MeterSet{set("", T, trv.Get("current_C").Float(), BAT, float64(st.Get("battery").Int()))}
-	m := Module{Kind: KindThermostat, Label: in.Name, Target: ptr(trv.Get("target_C").Float()), Position: ptr(trv.Get("pos").Int())}
+	m := Module{Kind: KindThermostat, Key: "trv:0", Label: in.Name, Target: ptr(trv.Get("target_C").Float()), Position: ptr(trv.Get("pos").Int()),
+		Running: ptr(trv.Get("pos").Int() > 0), Min: fptr(4), Max: fptr(30), Div: 10}
 	if in.RemoteConfig != nil {
-		m.On = ptr(decode(in.RemoteConfig).Path("config", "trv:0", "enable").Bool())
+		m.Enabled = ptr(decode(in.RemoteConfig).Path("config", "trv:0", "enable").Bool())
 	}
 	r.Modules = []Module{m}
+	r.Layout = LayoutThermostat
 	return r
 }

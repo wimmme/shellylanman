@@ -204,7 +204,7 @@ func TestBluTRV(t *testing.T) {
 	r := BluTRV(BluTRVInput{Name: "Radiator", Status: []byte(`{"rssi":-60,"battery":80}`),
 		RemoteStatus: []byte(`{"status":{"sys":{"uptime":100},"trv:0":{"current_C":19.5,"target_C":21,"pos":30}}}`),
 		RemoteConfig: []byte(`{"config":{"trv:0":{"enable":true}}}`)})
-	if r.Meters[0].Values[0].Value != 19.5 || r.Meters[0].Values[1].Value != 80 || *r.Modules[0].Target != 21 || !*r.Modules[0].On || r.Uptime != 100 {
+	if r.Meters[0].Values[0].Value != 19.5 || r.Meters[0].Values[1].Value != 80 || *r.Modules[0].Target != 21 || !*r.Modules[0].Enabled || r.Modules[0].Div != 10 || r.Layout != LayoutThermostat || r.Uptime != 100 {
 		t.Fatalf("TRV %+v", r)
 	}
 }

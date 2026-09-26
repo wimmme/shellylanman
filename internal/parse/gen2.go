@@ -19,6 +19,9 @@ type Gen2Input struct {
 	Config      []byte // Shelly.GetConfig
 	Status      []byte // Shelly.GetStatus
 	Peripherals []byte // SensorAddon.GetPeripherals, when an add-on is fitted
+	Webhooks    []byte // Webhook.List, for models whose inputs show their actions (i4)
+	Variant     string // XT1: svc0.type
+	Components  []byte // XT1: Shelly.GetComponents of the service components (XT1Keys)
 }
 
 // AddonSensor is sys.device.addon_type for the Sensor Add-on (Plus and Pro).
@@ -34,11 +37,20 @@ func Gen2(in Gen2Input) Readings {
 		if r.Name == "" {
 			c.name = in.DeviceName
 		}
+		c.hooks = decode(in.Webhooks)
+		c.variant, c.comps = in.Variant, decode(in.Components)
 		m(c)
 		if in.Peripherals != nil && UsesAddon(in.TypeID, r.AddonType) {
-			if a := addon(decode(in.Peripherals), cfg, st); len(a.Values) > 0 {
+			p := decode(in.Peripherals)
+			if a := addon(p, cfg, st); len(a.Values) > 0 {
 				r.Meters = append(r.Meters, a)
 			}
+			if proAddonOut[in.TypeID] {
+				c.digitalOut(p)
+			}
+		}
+		if r.Layout == "" {
+			r.Layout = layoutOf(r.Modules)
 		}
 	}
 	return r
@@ -80,6 +92,9 @@ type g2ctx struct {
 	cfg, st node
 	name    string // device name, the fallback label of relays, lights, covers
 	r       *Readings
+	hooks   node   // Webhook.List
+	variant string // XT1 svc0.type
+	comps   node   // XT1 Shelly.GetComponents
 }
 
 func (c *g2ctx) profile() string { return c.cfg.Path("sys", "device", "profile").Str("") }
@@ -121,7 +136,7 @@ func (c *g2ctx) label(key, fallbackInput string) string {
 func (c *g2ctx) relay(idx int, input string) Module {
 	key := fmt.Sprintf("switch:%d", idx)
 	s := c.st.Get(key)
-	m := Module{Kind: KindRelay, Index: idx, Label: c.label(key, input), On: ptr(s.Get("output").Bool()), Source: s.Get("source").Str("-")}
+	m := Module{Kind: KindRelay, Index: idx, Key: key, Label: c.label(key, input), On: ptr(s.Get("output").Bool()), Source: s.Get("source").Str("-")}
 	if input != "" {
 		m.InputOn = ptr(c.st.Path(input, "state").Bool())
 	}
@@ -131,33 +146,40 @@ func (c *g2ctx) relay(idx int, input string) Module {
 // light: g2 LightWhite on light:N (or any white-like component).
 func (c *g2ctx) light(key string, idx int, input string) Module {
 	s := c.st.Get(key)
-	m := Module{Kind: KindLight, Index: idx, Label: c.label(key, ""), On: ptr(s.Get("output").Bool()),
-		Brightness: ptr(s.Get("brightness").Int()), Source: s.Get("source").Str("-")}
+	m := Module{Kind: KindLight, Index: idx, Key: key, Label: c.label(key, ""), On: ptr(s.Get("output").Bool()),
+		Brightness: ptr(s.Get("brightness").Int()), Source: s.Get("source").Str("-"), Min: fptr(0), Max: fptr(100)}
 	if input != "" {
 		m.InputOn = ptr(c.st.Path(input, "state").Bool())
 	}
 	return m
 }
 
+// cct: g2 LightCCT; the colour temperature range comes from ct_range.
 func (c *g2ctx) cct(key string, idx int, input string) Module {
 	m := c.light(key, idx, input)
 	m.Kind = KindCCT
 	m.TempK = ptr(c.st.Path(key, "ct").Int())
+	m.TMin, m.TMax = 2700, 6500
+	if r := c.cfg.Path(key, "ct_range"); r.Len() == 2 {
+		m.TMin, m.TMax = r.Idx(0).Int(), r.Idx(1).Int()
+	}
 	return m
 }
 
 func (c *g2ctx) rgb(key string, idx int, input string, kind string) Module {
 	s := c.st.Get(key)
-	m := Module{Kind: kind, Index: idx, Label: c.label(key, ""), On: ptr(s.Get("output").Bool()),
-		Brightness: ptr(s.Get("brightness").Int()), Source: s.Get("source").Str("-")}
+	m := Module{Kind: kind, Index: idx, Key: key, Label: c.label(key, ""), On: ptr(s.Get("output").Bool()),
+		Brightness: ptr(s.Get("brightness").Int()), Gain: ptr(s.Get("brightness").Int()), Source: s.Get("source").Str("-")}
 	if rgb := s.Get("rgb"); rgb.Len() == 3 {
 		m.RGB = []int{rgb.Idx(0).Int(), rgb.Idx(1).Int(), rgb.Idx(2).Int()}
 	}
 	if kind == KindRGBW {
 		m.White = ptr(s.Get("white").Int())
 	}
-	if kind == KindRGBCCT {
+	if kind == KindRGBCCT { // g3 LightRGBCCT: brightness is also the gain
 		m.TempK = ptr(s.Get("ct").Int())
+		m.ColorMode = ptr(s.Get("mode").Str("") == "rgb")
+		m.Min, m.Max, m.TMin, m.TMax = fptr(0), fptr(100), 2700, 6500
 	}
 	if input != "" {
 		m.InputOn = ptr(c.st.Path(input, "state").Bool())
@@ -170,17 +192,43 @@ func (c *g2ctx) cover(idx int) Module {
 	key := fmt.Sprintf("cover:%d", idx)
 	s := c.st.Get(key)
 	cal := s.Get("pos_control").Bool()
-	m := Module{Kind: KindCover, Index: idx, Label: c.label(key, ""), State: s.Get("state").Str(""), Calibrated: ptr(cal), Source: s.Get("source").Str("-")}
+	m := Module{Kind: KindCover, Index: idx, Key: key, Label: c.label(key, ""), State: s.Get("state").Str(""), Calibrated: ptr(cal), Source: s.Get("source").Str("-")}
 	if cal {
 		m.Position = ptr(s.Get("current_pos").Int())
 	}
 	return m
 }
 
-// input: g2 Input (i4 family).
+// input: g2 Input; the events are the webhooks of this input (Webhooks:
+// hooks with cid < 200 grouped by event origin + cid, in list order).
 func (c *g2ctx) input(idx int) Module {
 	key := fmt.Sprintf("input:%d", idx)
-	return Module{Kind: KindInput, Index: idx, Label: c.cfg.Path(key, "name").Str(""), InputOn: ptr(c.st.Path(key, "state").Bool())}
+	return Module{Kind: KindInput, Index: idx, Key: key, Label: c.cfg.Path(key, "name").Str(""), InputOn: ptr(c.st.Path(key, "state").Bool()),
+		Enabled: ptr(c.cfg.Path(key, "enable").Bool()), Events: hookEvents(c.hooks, "input", idx, nil)}
+}
+
+// hookEvents lists the webhooks of component origin:cid; cond, when not nil,
+// keeps only hooks with that condition (BLU device inputs).
+func hookEvents(hooks node, origin string, cid int, cond *string) []InputEvent {
+	var out []InputEvent
+	list := hooks.Get("hooks")
+	for i := 0; i < list.Len(); i++ {
+		h := list.Idx(i)
+		ev := h.Get("event").Str("")
+		dot := strings.IndexByte(ev, '.')
+		if h.Get("cid").Int() != cid || dot <= 0 || ev[:dot] != origin {
+			continue
+		}
+		if cond != nil && h.Get("condition").Str("") != *cond {
+			continue
+		}
+		e := InputEvent{Event: ev, Enabled: h.Get("enable").Bool()}
+		for j := 0; j < h.Get("urls").Len(); j++ {
+			e.URLs = append(e.URLs, h.Get("urls").Idx(j).Str(""))
+		}
+		out = append(out, e)
+	}
+	return out
 }
 
 func sensorModule(label string, on bool) Module {
@@ -249,7 +297,7 @@ func twoPM(c *g2ctx) {
 		return
 	}
 	cv := c.cover(0)
-	cv.InputOn = ptr(c.st.Path("input:0", "state").Bool())
+	cv.InputOn, cv.InputOn1 = ptr(c.st.Path("input:0", "state").Bool()), ptr(c.st.Path("input:1", "state").Bool())
 	c.modules(cv)
 	c.meters(c.wvipf("cover:0"))
 	c.temp("cover:0")
@@ -354,20 +402,15 @@ func proRGBWW(c *g2ctx) {
 
 func wallDisplay(c *g2ctx) {
 	c.meters(set("", T, c.st.Path("temperature:0", "tC").Float(), H, c.st.Path("humidity:0", "rh").Float(), L, float64(c.st.Path("illuminance:0", "lux").Int())))
-	if c.st.Get("thermostat:0").Exists() {
+	// WallDisplay.getModules: the thermostat when configured, else the relay.
+	if c.cfg.Get("thermostat:0").Exists() {
 		th := c.st.Get("thermostat:0")
-		c.modules(Module{Kind: KindThermostat, Label: c.label("thermostat:0", ""), On: ptr(th.Get("output").Bool()),
-			Target: ptr(th.Get("target_C").Float())})
+		c.modules(Module{Kind: KindThermostat, Key: "thermostat:0", Label: c.cfg.Path("thermostat:0", "name").Str(""),
+			Enabled: ptr(th.Get("enable").Bool()), Running: ptr(th.Get("output").Bool()), Target: ptr(th.Get("target_C").Float()),
+			Min: fptr(5), Max: fptr(35), Div: 2})
+		return
 	}
-	for i := 0; i < 2; i++ {
-		if c.st.Get(fmt.Sprintf("switch:%d", i)).Exists() {
-			in := ""
-			if i == 0 {
-				in = "input:0"
-			}
-			c.modules(c.relay(i, in))
-		}
-	}
+	c.modules(c.relay(0, "input:0"))
 }
 
 var gen2Models = map[string]modelFn{
@@ -418,7 +461,11 @@ var gen2Models = map[string]modelFn{
 		}
 		dimmer(true)(c)
 	},
-	"PlusWallDimmer": func(c *g2ctx) { c.modules(c.light("light:0", 0, "")) },
+	"PlusWallDimmer": func(c *g2ctx) {
+		l := c.light("light:0", 0, "")
+		l.Min = fptr(1) // ShellyWallDimmer: new LightWhite(this, 1, 0)
+		c.modules(l)
+	},
 	// 2PM / covers
 	"Plus2PM": twoPM, "Pro2PM": twoPM, "Pro2PMProAddon": twoPM, "S2PMG3": twoPM, "S4SW-002P16EU": twoPM,
 	"S2PMG3Shutter": func(c *g2ctx) {
@@ -459,7 +506,9 @@ var gen2Models = map[string]modelFn{
 	// lights
 	"PlusRGBWPM": plusRGBW, "ProRGBWWPM": proRGBWW,
 	"DuoBulbG3": func(c *g2ctx) {
-		c.modules(c.cct("cct:0", 0, ""))
+		l := c.cct("cct:0", 0, "")
+		l.TMin, l.TMax = 2700, 6500 // ShellyBulbDuoG3: fixed range
+		c.modules(l)
 		c.meters(set("", W, c.st.Path("cct:0", "apower").Float()))
 	},
 	"RGBCCTBulbG3": func(c *g2ctx) {
@@ -470,15 +519,18 @@ var gen2Models = map[string]modelFn{
 	"WallDisplay": wallDisplay, "WallDisplayV2": wallDisplay,
 	"ProCB": func(c *g2ctx) {
 		cb := c.st.Get("cb:0")
-		c.modules(Module{Kind: KindBreaker, Label: c.label("cb:0", ""), On: ptr(cb.Get("output").Bool()), Source: cb.Get("source").Str("-")})
+		c.modules(Module{Kind: KindBreaker, Key: "cb:0", Label: c.cfg.Path("cb:0", "name").Str(""), On: ptr(cb.Get("output").Bool()),
+			Locked: ptr(cb.Get("safety").Bool()), Source: cb.Get("source").Str("-")})
 		c.meters(set("", V, c.st.Path("voltmeter:0", "voltage").Float()))
 		if t := cb.Path("temperature", "tC"); t.Exists() {
 			c.r.InternalTemp = ptr(t.Float())
 		}
 	},
 	"Camera": func(c *g2ctx) {
-		c.modules(Module{Kind: KindCamera, Label: c.name, On: ptr(c.st.Path("camera:0", "privacy").Bool())})
+		cam := c.st.Get("camera:0")
+		c.modules(Module{Kind: KindCamera, Key: "camera:0", Label: c.name, On: ptr(cam.Get("privacy").Bool()), Motion: ptr(cam.Get("motion").Bool())})
 	},
+	"XT1": xt1,
 	"XMOD1": func(c *g2ctx) {
 		if c.st.Get("switch:0").Exists() {
 			c.modules(c.relay(0, ""))
@@ -496,7 +548,10 @@ func floodG4(c *g2ctx) {
 
 func proDualCover(c *g2ctx) {
 	for i := 0; i < 2; i++ {
-		c.modules(c.cover(i))
+		cv := c.cover(i)
+		cv.InputOn = ptr(c.st.Path(fmt.Sprintf("input:%d", 2*i), "state").Bool())
+		cv.InputOn1 = ptr(c.st.Path(fmt.Sprintf("input:%d", 2*i+1), "state").Bool())
+		c.modules(cv)
 		c.meters(c.wvipf(fmt.Sprintf("cover:%d", i)))
 	}
 	c.temp("cover:0")

@@ -75,22 +75,43 @@ const (
 )
 
 // Module is the state of one controllable or observable part of a device, as
-// shown in the "Command" column. Controls arrive in Phase 4; here it is state.
+// shown in the "Command" column, plus what its controls need (ranges, input
+// events). Key names the component a command goes to ("switch:0", "relay/0",
+// "cover:1", "number:202", ...); the service maps (Kind, Key, action) to the
+// Shelly call ShellyScanner makes.
 type Module struct {
 	Kind       string   `json:"kind"`
 	Index      int      `json:"index"`
+	Key        string   `json:"key,omitempty"`
 	Label      string   `json:"label"`
 	On         *bool    `json:"on,omitempty"`
 	Brightness *int     `json:"brightness,omitempty"`
+	Gain       *int     `json:"gain,omitempty"`     // RGB gain 0–100
 	Position   *int     `json:"position,omitempty"` // cover, TRV valve
 	Calibrated *bool    `json:"calibrated,omitempty"`
 	Target     *float64 `json:"target,omitempty"` // thermostat target °C
 	InputOn    *bool    `json:"inputOn,omitempty"`
+	InputOn1   *bool    `json:"inputOn1,omitempty"` // cover: second ("down") input
 	RGB        []int    `json:"rgb,omitempty"`
 	White      *int     `json:"white,omitempty"`
 	TempK      *int     `json:"tempK,omitempty"` // colour temperature
+	ColorMode  *bool    `json:"colorMode,omitempty"`
 	State      string   `json:"state,omitempty"` // cover state, sensor text
 	Source     string   `json:"source,omitempty"`
+
+	// Ranges: brightness (lights) or target temperature (thermostats).
+	Min  *float64 `json:"min,omitempty"`
+	Max  *float64 `json:"max,omitempty"`
+	Div  int      `json:"div,omitempty"` // thermostat steps per °C (ThermostatInterface.getUnitDivision)
+	TMin int      `json:"tMin,omitempty"`
+	TMax int      `json:"tMax,omitempty"`
+
+	Enabled  *bool        `json:"enabled,omitempty"`  // thermostat enabled; input in use
+	Running  *bool        `json:"running,omitempty"`  // thermostat output active
+	Schedule *bool        `json:"schedule,omitempty"` // Gen1 TRV: schedule active
+	Locked   *bool        `json:"locked,omitempty"`   // circuit breaker safety lock
+	Motion   *bool        `json:"motion,omitempty"`   // camera
+	Events   []InputEvent `json:"events,omitempty"`
 }
 
 // Readings is everything parsed from one configuration + status pair.
@@ -109,6 +130,7 @@ type Readings struct {
 	InternalTemp   *float64   `json:"internalTemp,omitempty"`
 	Meters         []MeterSet `json:"meters,omitempty"`
 	Modules        []Module   `json:"modules,omitempty"`
+	Layout         string     `json:"layout,omitempty"`
 	AddonType      string     `json:"-"` // Gen2+ sys.device.addon_type
 }
 

@@ -6,7 +6,10 @@
 
 package parse
 
-import "strconv"
+import (
+	"math"
+	"strconv"
+)
 
 // Gen1Input is what the service has read from a Gen1 device.
 type Gen1Input struct {
@@ -14,6 +17,7 @@ type Gen1Input struct {
 	DeviceName string
 	Settings   []byte // /settings
 	Status     []byte // /status
+	Actions    []byte // /settings/actions (i3, Button 1)
 }
 
 // Gen1 parses a Gen1 device.
@@ -25,7 +29,10 @@ func Gen1(in Gen1Input) Readings {
 		if name == "" {
 			name = in.DeviceName
 		}
-		f(&g1ctx{set: set_, st: st, name: name, r: &r})
+		f(&g1ctx{set: set_, st: st, name: name, r: &r, actions: in.Actions})
+		if r.Layout == "" {
+			r.Layout = layoutOf(r.Modules)
+		}
 	}
 	return r
 }
@@ -58,6 +65,7 @@ type g1ctx struct {
 	set, st node
 	name    string
 	r       *Readings
+	actions []byte
 }
 
 func (c *g1ctx) meters(s ...MeterSet) { c.r.Meters = append(c.r.Meters, s...) }
@@ -81,50 +89,72 @@ func (c *g1ctx) label(settingsArray string, i int) string {
 // relay: g1 Relay ("ison", "source"; input state when given).
 func (c *g1ctx) relay(i int, withInput bool) Module {
 	s := c.st.Get("relays").Idx(i)
-	m := Module{Kind: KindRelay, Index: i, Label: c.label("relays", i), On: ptr(s.Get("ison").Bool()), Source: s.Get("source").Str("-")}
+	m := Module{Kind: KindRelay, Index: i, Key: "relay/" + strconv.Itoa(i), Label: c.label("relays", i), On: ptr(s.Get("ison").Bool()), Source: s.Get("source").Str("-")}
 	if withInput {
 		m.InputOn = ptr(c.st.Get("inputs").Idx(i).Get("input").Int() != 0)
 	}
 	return m
 }
 
+// light: g1 LightWhite on /light/N (dimmers, DUO: minimum brightness 1).
 func (c *g1ctx) light(i int, withInput bool) Module {
 	s := c.st.Get("lights").Idx(i)
-	m := Module{Kind: KindLight, Index: i, Label: c.label("lights", i), On: ptr(s.Get("ison").Bool()),
-		Brightness: ptr(s.Get("brightness").Int()), Source: s.Get("source").Str("-")}
+	m := Module{Kind: KindLight, Index: i, Key: "light/" + strconv.Itoa(i), Label: c.label("lights", i), On: ptr(s.Get("ison").Bool()),
+		Brightness: ptr(s.Get("brightness").Int()), Source: s.Get("source").Str("-"), Min: fptr(1), Max: fptr(100)}
 	if withInput {
 		m.InputOn = ptr(c.st.Get("inputs").Idx(i).Get("input").Int() != 0)
 	}
 	return m
 }
 
-func (c *g1ctx) colorLight(kind string) Module {
-	s := c.st.Get("lights").Idx(0)
-	m := Module{Kind: kind, Label: c.label("lights", 0), On: ptr(s.Get("ison").Bool()), Source: s.Get("source").Str("-"),
-		RGB: []int{s.Get("red").Int(), s.Get("green").Int(), s.Get("blue").Int()}, Brightness: ptr(s.Get("gain").Int())}
-	if kind == KindRGBW {
-		m.White = ptr(s.Get("white").Int())
-	}
+// white: g1 LightWhite on /white/N (RGBW2 white mode, minimum 0).
+func (c *g1ctx) white(i int) Module {
+	m := c.light(i, false)
+	m.Key, m.Min = "white/"+strconv.Itoa(i), fptr(0)
 	return m
+}
+
+// colorRGBW: g1 LightRGBW (RGBW2 colour mode); its label is the device name.
+func (c *g1ctx) colorRGBW() Module {
+	s := c.st.Get("lights").Idx(0)
+	return Module{Kind: KindRGBW, Key: "color/0", Label: c.name, On: ptr(s.Get("ison").Bool()), Source: s.Get("source").Str("-"),
+		RGB: []int{s.Get("red").Int(), s.Get("green").Int(), s.Get("blue").Int()}, Gain: ptr(s.Get("gain").Int()),
+		Brightness: ptr(s.Get("gain").Int()), White: ptr(s.Get("white").Int())}
+}
+
+// bulbRGB: g1 LightBulbRGB (Bulb, DUO RGBW): colour mode with gain, white
+// mode with brightness and temperature 3000–6500 K.
+func (c *g1ctx) bulbRGB() Module {
+	s := c.st.Get("lights").Idx(0)
+	return Module{Kind: KindRGBCCT, Key: "light/0", Label: c.label("lights", 0), On: ptr(s.Get("ison").Bool()), Source: s.Get("source").Str("-"),
+		ColorMode: ptr(s.Get("mode").Str("") == "color"), RGB: []int{s.Get("red").Int(), s.Get("green").Int(), s.Get("blue").Int()},
+		Gain: ptr(s.Get("gain").Int()), Brightness: ptr(s.Get("brightness").Int()), TempK: ptr(s.Get("temp").Int()),
+		Min: fptr(0), Max: fptr(100), TMin: 3000, TMax: 6500}
 }
 
 // roller: g1 Roller (label is the device name).
 func (c *g1ctx) roller() Module {
 	s := c.st.Get("rollers").Idx(0)
 	cal := s.Get("positioning").Bool()
-	m := Module{Kind: KindCover, Label: c.name, State: s.Get("state").Str(""), Calibrated: ptr(cal), Source: s.Get("source").Str("-")}
+	pos := s.Get("current_pos").Int()
+	if pos > 100 { // Roller.fillStatus: an out-of-range position means not calibrated
+		cal = false
+	}
+	m := Module{Kind: KindCover, Key: "roller/0", Label: c.name, State: s.Get("state").Str(""), Calibrated: ptr(cal), Source: s.Get("source").Str("-")}
 	if cal {
-		m.Position = ptr(s.Get("current_pos").Int())
+		m.Position = ptr(pos)
 	}
 	return m
 }
 
-// inputs: Actions input list (i3, Button 1).
+// inputs: Actions input list (i3, Button 1) with the action URLs of each
+// input, in the order of /settings/actions.
 func (c *g1ctx) inputs() {
+	events := gen1Actions(c.actions)
 	for i := 0; i < c.st.Get("inputs").Len(); i++ {
 		in := c.st.Get("inputs").Idx(i)
-		c.modules(Module{Kind: KindInput, Index: i, Label: c.label("inputs", i), InputOn: ptr(in.Get("input").Int() != 0),
-			State: in.Get("event").Str("")})
+		c.modules(Module{Kind: KindInput, Index: i, Key: "input/" + strconv.Itoa(i), Label: c.label("inputs", i), InputOn: ptr(in.Get("input").Int() != 0),
+			State: in.Get("event").Str(""), Enabled: ptr(true), Events: events[i]})
 	}
 }
 
@@ -229,19 +259,19 @@ var gen1Models = map[string]func(c *g1ctx){
 				V, e.Get("voltage").Float(), I, e.Get("current").Float()))
 		}
 	},
-	"SHBLB-1":  func(c *g1ctx) { c.modules(c.colorLight(KindRGBW)); c.meters(c.w(0)) },
-	"SHCB-1":   func(c *g1ctx) { c.modules(c.colorLight(KindRGBW)); c.meters(c.w(0)) },
+	"SHBLB-1":  func(c *g1ctx) { c.modules(c.bulbRGB()); c.meters(c.w(0)) },
+	"SHCB-1":   func(c *g1ctx) { c.modules(c.bulbRGB()); c.meters(c.w(0)) },
 	"SHBDUO-1": func(c *g1ctx) { c.modules(c.light(0, false)); c.meters(c.w(0)) },
 	"SHDM-1":   dimmerG1,
 	"SHDM-2":   dimmerG1,
 	"SHRGBW2": func(c *g1ctx) {
 		if c.set.Get("mode").Str("") == "color" {
-			c.modules(c.colorLight(KindRGBW))
+			c.modules(c.colorRGBW())
 			c.meters(c.w(0))
 			return
 		}
 		for i := 0; i < 4; i++ {
-			c.modules(c.light(i, false))
+			c.modules(c.white(i))
 			c.meters(c.w(i))
 		}
 	},
@@ -287,11 +317,19 @@ var gen1Models = map[string]func(c *g1ctx){
 		c.modules(Module{Kind: KindSensor, Label: "Motion", On: ptr(c.st.Path("sensor", "motion").Bool())})
 	},
 	"SHTRV-01": func(c *g1ctx) {
+		// ThermostatG1: enabled is t_auto (settings); the label is the
+		// current schedule profile; target 4–31 °C in 0.5 steps.
 		th := c.st.Get("thermostats").Idx(0)
+		ts := c.set.Get("thermostats").Idx(0)
 		c.meters(set("", BAT, sensorBat(c), T, th.Path("tmp", "value").Float()))
-		m := Module{Kind: KindThermostat, Label: c.name, On: ptr(th.Get("target_t").Get("enabled").Bool()),
-			Target: ptr(th.Path("target_t", "value").Float()), Position: ptr(int(th.Get("pos").Float()))}
-		c.modules(m)
+		profile := ""
+		if p := th.Get("schedule_profile").Int(); p >= 1 {
+			profile = ts.Get("schedule_profile_names").Idx(p - 1).Str("")
+		}
+		c.modules(Module{Kind: KindThermostat, Key: "thermostats/0", Label: profile, Enabled: ptr(ts.Path("t_auto", "enabled").Bool()),
+			Running: ptr(th.Get("pos").Float() > 0), Schedule: ptr(th.Get("schedule").Bool()), Target: ptr(th.Path("target_t", "value").Float()),
+			Position: ptr(int(math.Round(th.Get("pos").Float()))), Min: fptr(4), Max: fptr(31), Div: 2})
+		c.r.Layout = LayoutTRVG1
 	},
 }
 
