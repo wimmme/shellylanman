@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/wimmme/shellylanman/internal/hub"
+	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/store"
 	"github.com/wimmme/shellylanman/internal/version"
 )
@@ -27,8 +28,9 @@ const maxBody = 64 << 10
 
 // Config wires the server.
 type Config struct {
-	Store *store.Store
-	Hub   *hub.Hub
+	Store   *store.Store
+	Hub     *hub.Hub
+	Devices *service.Devices
 	// Static is the built frontend (index.html at its root).
 	Static fs.FS
 	// Origins are extra allowed Origin hosts for state-changing requests and
@@ -53,6 +55,7 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/status", s.status)
 	mux.HandleFunc("GET /api/v1/settings", s.getSettings)
 	mux.HandleFunc("PUT /api/v1/settings", s.putSettings)
+	s.deviceRoutes(mux)
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)
 	return securityHeaders(s.sameOrigin(mux))
@@ -130,8 +133,10 @@ func (s *server) getSettings(w http.ResponseWriter, r *http.Request) {
 // putSettings accepts a partial update: only fields present in the body change.
 func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 	var patch struct {
-		FirstRunDone *bool   `json:"firstRunDone"`
-		Language     *string `json:"language"`
+		FirstRunDone *bool                  `json:"firstRunDone"`
+		Language     *string                `json:"language"`
+		Scan         *store.ScanSettings    `json:"scan"`
+		Archive      *store.ArchiveSettings `json:"archive"`
 	}
 	if !readJSON(w, r, &patch) {
 		return
@@ -143,12 +148,23 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		if patch.Language != nil {
 			st.Language = *patch.Language
 		}
+		if patch.Scan != nil {
+			st.Scan = *patch.Scan
+		}
+		if patch.Archive != nil {
+			st.Archive = *patch.Archive
+		}
 	})
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	s.Hub.Broadcast(hub.Event{Type: "settings.changed", Data: next})
+	// ShellyScanner applies a new scan mode at the next start; a server applies
+	// it at once with a rescan.
+	if (patch.Scan != nil || patch.Archive != nil) && s.Devices != nil {
+		go s.Devices.Rescan()
+	}
 	writeJSON(w, http.StatusOK, next)
 }
 

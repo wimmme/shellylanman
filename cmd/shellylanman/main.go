@@ -25,6 +25,8 @@ import (
 
 	"github.com/wimmme/shellylanman/internal/httpapi"
 	"github.com/wimmme/shellylanman/internal/hub"
+	"github.com/wimmme/shellylanman/internal/service"
+	"github.com/wimmme/shellylanman/internal/shelly"
 	"github.com/wimmme/shellylanman/internal/store"
 	"github.com/wimmme/shellylanman/internal/version"
 	"github.com/wimmme/shellylanman/internal/web"
@@ -59,19 +61,29 @@ func run(log *slog.Logger, listen, dataDir string, origins []string) error {
 	h := hub.New(origins, func() hub.Event {
 		return hub.Event{Type: "hello", Data: map[string]string{"version": version.Version}}
 	}, log)
-	h.OnClientsChanged(func(n int) { log.Debug("browsers connected", "n", n) })
+	devices := service.NewDevices(st, shelly.NewClient(), func(typ string, data any) {
+		h.Broadcast(hub.Event{Type: typ, Data: data})
+	}, log)
+	h.OnClientsChanged(func(n int) {
+		log.Debug("browsers connected", "n", n)
+		devices.SetViewers(n)
+	})
 
 	log.Warn("UI authentication is off: anyone who can reach this port can use ShellyLanMan. Keep it on a trusted LAN or behind a reverse proxy with authentication.")
 
 	srv := &http.Server{
 		Addr:              listen,
-		Handler:           httpapi.New(httpapi.Config{Store: st, Hub: h, Static: web.Files(), Origins: origins, Log: log}),
+		Handler:           httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Static: web.Files(), Origins: origins, Log: log}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	devices.Start(ctx)
+	defer func() {
+		stop()         // ends discovery and polling
+		devices.Wait() // last archive save
+	}()
 
 	errc := make(chan error, 1)
 	go func() {
