@@ -28,3 +28,20 @@ Still to test on hardware when available: a password-protected Gen1 and Gen2+
 device, a BLU device behind a gateway, a range extender and a battery device
 waking up. Rows D8 (range extender), D9 (BLU) and D18 (protected devices) of
 `FEATURE_PARITY.md` stay 🔨 until then.
+
+## Phase 3 — read-only device information (2026-09-26)
+
+Same setup (dockerhostvm, host networking, port 3099).
+
+| Check | Result |
+|---|---|
+| Table columns for all 25 devices | RSSI, SSID, cloud/MQTT enabled+connected, uptime, internal temperature, measurements, logs mode, source and command state filled for every generation; Pro devices on Ethernet show RSSI 0, as in ShellyScanner |
+| Values against the devices | spot checks: PlugS (power, temperature), Mini 1PM G4 (output, voltage, temperature), Mini PM G3 (W, V, I, f) match the device's own API |
+| Energy meter | Pro 3EM (triphase): phases a/b/c with W, VA, PF, V, I, f and the total set |
+| Profiles | Plus RGBW PM ×2 and Pro RGBWW PM in "light" profile: 4 / 5 lights with W, V, I each |
+| Device info | tabs of the Pro RGBWW PM load live JSON |
+| Live logs | Dimmer 0/1-10V G3 (websocket debug enabled): log stream relayed, level filter applied |
+| Filter | filtering by text while devices keep updating |
+
+Not yet on hardware: Sensor Add-on and BLU readings, battery devices' stored data,
+the Gen1 log files of a device with debug enabled, protected devices' live log.

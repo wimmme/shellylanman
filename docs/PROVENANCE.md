@@ -22,6 +22,11 @@ header. Update this table in the same commit as the code.
 | `internal/discovery/mdns.go` | 3 | RFC 6762/6763; service type from `Devices.SERVICE_TYPE1` |
 | `internal/discovery/ipscan.go` | 2 | `IPCollection`, `Devices.scanByIP` |
 | `internal/store/archive.go` | 2 | field names of `DevicesStore` |
+| `internal/parse/gen1.go` | 2 | fillSettings/fillStatus and meters of `model/device/g1/*`, g1 modules |
+| `internal/parse/gen2.go` | 2 | `AbstractG2Device`, fillStatus/meters of `model/device/g2`, `g3`, `g4` classes, `g2/modules/SensorAddOn(Pro)`, `g2/meters/*`, g2 modules |
+| `internal/parse/blu.go` | 2 | `blu/modules/Sensor`, `SensorsCollection`, `blu/BluTRV` |
+| `internal/service/info.go` | 2 | `getInfoRequests()` per class, `DialogDeviceLogsG1/G2`, `LoginManagerG2.getAuthString` |
+| `web/src/format.ts` | 2 | `METER_LBL_*`, `METER_VAL_*`, uptime formats of `LabelsBundle.properties` |
 | `internal/store` | 4 | — |
 | `internal/hub` | 4 | — |
 | `internal/httpapi` | 4 | — |

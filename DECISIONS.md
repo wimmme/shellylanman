@@ -409,3 +409,14 @@ Technical choices made while building discovery, within the scope agreed above.
 | P2-4 | IDs: the MAC (upper case, no separators); unmanaged hosts without a MAC in their name get `addr:<ip:port>` | ShellyScanner uses an empty MAC there, which would merge unrelated devices. |
 | P2-5 | Gen2+ reads use `GET /rpc/<Method>` with HTTP Digest (SHA-256) | Documented Shelly transport; one mechanism for all reads. Writes (Phase 4+) will use the same connection. |
 | P2-6 | Devices are refreshed with `/status`+`/settings` (Gen1) or `Shelly.GetStatus`+`Shelly.GetConfig` (Gen2+) exactly like ShellyScanner, and the raw answers are kept for Phase 3 | The device table's remaining columns (Phase 3) parse the same payloads. |
+
+## 10. Decisions taken during Phase 3 (2026-09-26)
+
+| # | Decision | Why |
+|---|---|---|
+| P3-1 | **Per-model parsing as a table in `internal/parse`**, ported class by class: Gen2+ grouped in ~20 families (relay, dimmer, 2PM profiles, EM tri/mono, RGBW profiles, H&T, …), Gen1 one function per type, add-ons and BLU sensors separate | Faithful to each ShellyScanner class (meter types, order, labels, temperature source) without 100 files; every model owned by Wim is tested against its recorded fixture |
+| P3-2 | Display preferences of ShellyScanner's General tab (uptime format, temperature unit, double-click action, default filter column) and the column layout are **per browser** | They are view preferences; several people may use one server |
+| P3-3 | The **Command column is read-only** in Phase 3 (state text per module); controls come in Phase 4 | Read before write |
+| P3-4 | Sensor Add-on peripherals are read with `SensorAddon.GetPeripherals` at every configuration refresh when an add-on is fitted (and always for the Plus UNI, whose add-on is integrated) | Same calls as ShellyScanner; one extra request per configuration refresh |
+| P3-5 | Device info lists the generation's standard info requests; model-specific extras of a few classes (e.g. Matter, XMOD, EM data, KNX) are not listed yet | Those classes are not in this installation; added when their features are ported (FEATURE_PARITY I1 🔨) |
+| P3-6 | Live logs are relayed by the server (`/ws/log/{id}`); "On/Off" connects/disconnects without writing to the device; enabling the websocket debug log itself is a configuration change (Phase 5, Checklist) | Read-only phase |

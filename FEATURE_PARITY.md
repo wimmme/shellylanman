@@ -41,36 +41,36 @@ Status legend: `—` not started · `🔨` in progress · `✅` done and tested 
 
 | # | Feature | Where in Java | Shelly API | Gen | Web equivalent | Phase | Status |
 |---|---|---|---|---|---|---|---|
-| T1 | Columns: Status, Type, Device (hostname), Name, Keyword, MAC, IP, SSID, RSSI (dBm), Cloud (En/Con), MQTT (En/Con), Uptime, Temp, Measurements, Logs, Source, Command | `view/MainView` (`tabModel`), `view/DevicesTable` (COL_*), `updateRow` | from D15 data | all | Devices table page with the same columns and headings | 3 | — |
-| T2 | Default hidden columns: Keyword, MAC, SSID, Logs | `DevicesTable.loadColPos` | — | — | Same defaults | 3 | — |
-| T3 | Column chooser & order, separately for "default" and "detailed" view; reset on table-version change | `DevicesTable.saveColPos/loadColPos`, `DialogAppSettings` (Columns), `Main.TAB_VERSION` | — | — | Column menu; stored per browser | 3 | — |
-| T4 | Detailed / default view toggle (window resize modes: full, horizontal, estimate, as-is) | `MainView.detailedView`, setting `DETAIL_SCREEN` | — | — | View-mode toggle; resize modes are not applicable in a browser ⚠️ (§4.1) | 3 | ⚠️ |
-| T5 | Sorting per column (IP numeric, measurements, command label, source) | `DevicesTable` comparators, `IPv4Comparator` (usnalib2) | — | — | Sortable headers; same comparators | 3 | — |
-| T6 | Filter text on All / Type / Device / Name / Keyword; default filter column setting; Ctrl+F focus, Ctrl+S cycle column, Ctrl+E clear | `MainView.setColFilter`, `DevicesTable.setRowFilter`, setting `DEFAULT_FILTER` | — | — | Filter box + column select; keyboard shortcuts | 3 | — |
-| T7 | Selection helpers: all, online, reboot required, Gen1, Gen2+, Wi-Fi, BLU, stored (ghost) devices; Ctrl+Shift subtract | `MainView` (SelectionAction, `UsnaDropdownAction`) | — | — | Selection menu | 3 | — |
-| T8 | Status line: "N devices listed – M selected" / filtered variant | `MainView.displayStatus` | — | — | Summary cards + footer count | 3 | — |
-| T9 | Tooltips: uptime (d/h/m/s + since), status description, BLU parents, G1 TRV profile/target/position, measurements table | `DevicesTable.getToolTipText` | — | — | Tooltips / expandable cells | 3 | — |
-| T10 | Uptime format: seconds / days-hh-mm-ss / since date | `UptimeCellRenderer`, setting `UPTIME_MODE` | `uptime` | all | Same setting | 3 | — |
-| T11 | Temperature unit °C/°F (table, meters, command column) | `FahrenheitTableCellRenderer`, setting `TEMP_UNIT` | — | — | Same setting | 3 | — |
-| T12 | Measurements column: typed meters (P, Q, S, pf, V, I, f, T, H, L, bat, …) with labels and names | `DeviceMetersCellRenderer`, `meters/*`, per-model `getMeters()` | status payloads | all | Measurements cell | 3 | — |
-| T13 | Source column (last input event source) | `DevicesTable` COL_SOURCE, `col_last_source_tooltip` | status payloads | G2+/BLU | Same | 3 | — |
-| T14 | Copy cell / hostname / MAC (Ctrl+C on a cell) | `ExTooltipTable.activateSingleCellStringCopy` (usnalib2) | — | — | Copy buttons / selection copy | 3 | — |
-| T15 | Double-click action: device info or open Web UI (setting) | `MainView` mouse listener, setting `DCLICK_ACTION` | — | — | Row click opens detail panel; setting kept | 3 | — |
-| T16 | Context menus (device / ghost) | `MainView` `tablePopup`, `ghostDevPopup` | — | — | Row action menu | 3 | — |
+| T1 | Columns: Status, Type, Device (hostname), Name, Keyword, MAC, IP, SSID, RSSI (dBm), Cloud (En/Con), MQTT (En/Con), Uptime, Temp, Measurements, Logs, Source, Command | `view/MainView` (`tabModel`), `view/DevicesTable` (COL_*), `updateRow` | from D15 data | all | Devices table page with the same columns and headings | 3 | ✅ |
+| T2 | Default hidden columns: Keyword, MAC, SSID, Logs | `DevicesTable.loadColPos` | — | — | Same defaults | 3 | ✅ |
+| T3 | Column chooser & order, separately for "default" and "detailed" view; reset on table-version change | `DevicesTable.saveColPos/loadColPos`, `DialogAppSettings` (Columns), `Main.TAB_VERSION` | — | — | Column menu; stored per browser | 3 | ✅ |
+| T4 | Detailed / default view toggle (window resize modes: full, horizontal, estimate, as-is) | `MainView.detailedView`, setting `DETAIL_SCREEN` | — | — | View-mode toggle; resize modes are not applicable in a browser ⚠️ (§4.1) | 3 | ✅ |
+| T5 | Sorting per column (IP numeric, measurements, command label, source) | `DevicesTable` comparators, `IPv4Comparator` (usnalib2) | — | — | Sortable headers; same comparators | 3 | ✅ |
+| T6 | Filter text on All / Type / Device / Name / Keyword; default filter column setting; Ctrl+F focus, Ctrl+S cycle column, Ctrl+E clear | `MainView.setColFilter`, `DevicesTable.setRowFilter`, setting `DEFAULT_FILTER` | — | — | Filter box + column select; keyboard shortcuts | 3 | ✅ |
+| T7 | Selection helpers: all, online, reboot required, Gen1, Gen2+, Wi-Fi, BLU, stored (ghost) devices; Ctrl+Shift subtract | `MainView` (SelectionAction, `UsnaDropdownAction`) | — | — | Selection menu | 3 | ✅ |
+| T8 | Status line: "N devices listed – M selected" / filtered variant | `MainView.displayStatus` | — | — | Summary cards + footer count | 3 | ✅ |
+| T9 | Tooltips: uptime (d/h/m/s + since), status description, BLU parents, G1 TRV profile/target/position, measurements table | `DevicesTable.getToolTipText` | — | — | Tooltips / expandable cells | 3 | ✅ |
+| T10 | Uptime format: seconds / days-hh-mm-ss / since date | `UptimeCellRenderer`, setting `UPTIME_MODE` | `uptime` | all | Same setting | 3 | ✅ |
+| T11 | Temperature unit °C/°F (table, meters, command column) | `FahrenheitTableCellRenderer`, setting `TEMP_UNIT` | — | — | Same setting | 3 | ✅ |
+| T12 | Measurements column: typed meters (P, Q, S, pf, V, I, f, T, H, L, bat, …) with labels and names | `DeviceMetersCellRenderer`, `meters/*`, per-model `getMeters()` | status payloads | all | Measurements cell | 3 | ✅ |
+| T13 | Source column (last input event source) | `DevicesTable` COL_SOURCE, `col_last_source_tooltip` | status payloads | G2+/BLU | Same | 3 | ✅ |
+| T14 | Copy cell / hostname / MAC (Ctrl+C on a cell) | `ExTooltipTable.activateSingleCellStringCopy` (usnalib2) | — | — | Copy buttons / selection copy | 3 | ✅ |
+| T15 | Double-click action: device info or open Web UI (setting) | `MainView` mouse listener, setting `DCLICK_ACTION` | — | — | Row click opens detail panel; setting kept | 3 | ✅ |
+| T16 | Context menus (device / ghost) | `MainView` `tablePopup`, `ghostDevPopup` | — | — | Row action menu | 3 | ✅ |
 | T17 | Toolbar captions on/off | setting `T_CAPTIONS` | — | — | Not needed (icons + labels responsive) ⚠️ | 3 | — |
 | T18 | Print table | `MainView.printAction` | — | — | Browser print with print stylesheet | 8 | — |
 | T19 | Export table as CSV (visible columns, configurable separator) | `controller/ExportCSVAction`, setting `CSV_SEPARATOR` | — | — | "Export CSV" (download) | 8 | — |
-| T20 | Open device Web UI (confirm if > 8) | `MainView.browseAction` | — | G1–G4 | Link opening `http://ip[:port]` in a new tab (browser must reach the device) ⚠️ | 3 | — |
+| T20 | Open device Web UI (confirm if > 8) | `MainView.browseAction` | — | G1–G4 | Link opening `http://ip[:port]` in a new tab (browser must reach the device) ⚠️ | 3 | ✅ |
 
 ### 1.3 Read-only device information
 
 | # | Feature | Where in Java | Shelly API | Gen | Web equivalent | Phase | Status |
 |---|---|---|---|---|---|---|---|
-| I1 | Device info dialog: one tab per info request, raw JSON, auto-updates when device comes online, keyboard tab navigation | `view/DialogDeviceInfo`, `getInfoRequests()` per class | G1: `/shelly`, `/settings`, `/settings/actions`, `/status`; G2+: `Shelly.GetDeviceInfo?ident=true`, `Shelly.GetConfig`, `Shelly.GetStatus`, `Shelly.CheckForUpdate`, `Schedule.List`, `Webhook.List`, `Script.List`, `WiFi.ListAPClients`, `KVS.GetMany`, `Shelly.GetComponents`, `BLE.CloudRelay.ListInfos` (+ model extras: `Matter.*`, `XMOD.*`, `KNX.GetConfig`, `SensorAddon.GetPeripherals`, `EM*Data.*`…); battery G2: subset; BLU: `BTHomeDevice.*`, `BTHomeSensor.*`, `BluTrv.*` | all | Device detail panel with tabs and a JSON viewer | 3 | — |
-| I2 | Battery devices: last stored JSON shown when asleep ("stored data used") | `BatteryDeviceInterface`, `AbstractBattery*Device.getStoredJSON` | — | G1/G2+ battery | Same (kept in memory) | 3 | — |
-| I3 | Logs Gen1: `/debug/log`, `/debug/log1` snapshot | `view/DialogDeviceLogsG1` | `/debug/log`, `/debug/log1` | G1 | Logs panel | 3 | — |
-| I4 | Logs Gen2+: live stream via WebSocket (auth via query params on protected devices), BLU → parent's log | `view/DialogDeviceLogsG2`, `AbstractG2Device.connectWebSocketLogs` | `ws://host/debug/log` | G2+, BLU | Server proxies the device WS to the browser WS | 3 | — |
-| I5 | Uptime, RSSI, SSID, cloud, MQTT, temperature, meters, reboot required | per-model `fillStatus/fillSettings` | see D15 | all | Table + detail | 3 | — |
+| I1 | Device info dialog: one tab per info request, raw JSON, auto-updates when device comes online, keyboard tab navigation | `view/DialogDeviceInfo`, `getInfoRequests()` per class | G1: `/shelly`, `/settings`, `/settings/actions`, `/status`; G2+: `Shelly.GetDeviceInfo?ident=true`, `Shelly.GetConfig`, `Shelly.GetStatus`, `Shelly.CheckForUpdate`, `Schedule.List`, `Webhook.List`, `Script.List`, `WiFi.ListAPClients`, `KVS.GetMany`, `Shelly.GetComponents`, `BLE.CloudRelay.ListInfos` (+ model extras: `Matter.*`, `XMOD.*`, `KNX.GetConfig`, `SensorAddon.GetPeripherals`, `EM*Data.*`…); battery G2: subset; BLU: `BTHomeDevice.*`, `BTHomeSensor.*`, `BluTrv.*` | all | Device detail panel with tabs and a JSON viewer | 3 | 🔨 |
+| I2 | Battery devices: last stored JSON shown when asleep ("stored data used") | `BatteryDeviceInterface`, `AbstractBattery*Device.getStoredJSON` | — | G1/G2+ battery | Same (kept in memory) | 3 | ✅ |
+| I3 | Logs Gen1: `/debug/log`, `/debug/log1` snapshot | `view/DialogDeviceLogsG1` | `/debug/log`, `/debug/log1` | G1 | Logs panel | 3 | ✅ |
+| I4 | Logs Gen2+: live stream via WebSocket (auth via query params on protected devices), BLU → parent's log | `view/DialogDeviceLogsG2`, `AbstractG2Device.connectWebSocketLogs` | `ws://host/debug/log` | G2+, BLU | Server proxies the device WS to the browser WS | 3 | ✅ |
+| I5 | Uptime, RSSI, SSID, cloud, MQTT, temperature, meters, reboot required | per-model `fillStatus/fillSettings` | see D15 | all | Table + detail | 3 | ✅ |
 
 ### 1.4 Device controls ("Command" column)
 
@@ -84,7 +84,7 @@ Status legend: `—` not started · `🔨` in progress · `✅` done and tested 
 | C6 | Input: show state; execute an input's configured actions (G1 action URLs / G2+ webhooks called **by the scanner**) or `Input.Trigger` | `InputInterface`, `g1/modules/Actions.execute`, `g2/modules/Webhooks.execute`, `g2/modules/Input` | G1 action URLs; G2+ webhook URLs (`127.0.0.1` rewritten to device IP), `Input.Trigger?id=&event_type=` | G1–G4, BLU | Input event buttons; server performs the GETs ⚠️ note (§5) | 4 | — |
 | C7 | Circuit breaker toggle with confirmation, lock state | `CBreakerInterface`, `g2/modules/CBreakerPro` | `CB.Set`, `CB.GetLog` | Pro 2CB (prototype) | Toggle + confirm | 4 | — |
 | C8 | Camera privacy on/off | `CameraInterface`, `g3/modules/Camera` | `Camera.Set` (+ zones: `Camera.AddZone/DeleteZone`, `CameraZone.SetConfig`) | G3 Camera | Toggle | 4 | — |
-| C9 | Sensor states in cell: motion, flood, smoke, door/window, presence zones | `MotionInterface`, `FloodInterface`, `SmokeInterface`, `DWInterface`, `PresenceZoneInterface` | status payloads | G1–G4, BLU | Read-only badges | 3 | — |
+| C9 | Sensor states in cell: motion, flood, smoke, door/window, presence zones | `MotionInterface`, `FloodInterface`, `SmokeInterface`, `DWInterface`, `PresenceZoneInterface` | status payloads | G1–G4, BLU | Read-only badges | 3 | ✅ |
 | C10 | Reboot selected devices (confirmation; BLU only TRV) | `MainView.rebootAction`, `Devices.reboot` | G1 `/reboot`; G2+ `Shelly.Reboot`; TRV `BluTrv.call?method=Shelly.Reboot` | G1–G4, TRV | Toolbar/row action + confirm modal | 4 | — |
 
 ### 1.5 Configuration ("Devices conf." dialog, multi-device)
@@ -329,3 +329,4 @@ A per-generation recording of each of these, request and response, is what `test
 | O10 | `BLEDevice`, `BLEGateway` are unused drafts (commented-out code in `Devices.create`) | `blu/BLEDevice`, `blu/BLEGateway` | Not ported |
 | O11 | The Gen2 **BLU Gateway** (`ShellyGateway`, app `BluGw`) is not scanned for BTHome devices: `Devices.create` only scans `AbstractProDevice`, Gen3 and Gen4 | `model/Devices.java` | Replicated; to verify on a Gen2 BLU Gateway if someone has one |
 | O12 | Archive "Auto reload" only runs in the mDNS scan modes (not after an IP scan) | `Devices.scannerInit`, `PanelStore` tooltip | Replicated |
+| O13 | `ShellyPro4PM.fillStatus` reads the input state of channels 3 and 4 from `input:1` instead of `input:2` / `input:3` | `g2/ShellyPro4PM.java` | Replicated (only the input indicator); probably a typo — confirm on a Pro 4PM |

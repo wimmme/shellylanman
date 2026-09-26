@@ -5,6 +5,21 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Phase 3: read-only device information
+- All 17 device-table columns of ShellyScanner: status, type, device, name, keyword,
+  MAC, IP, SSID, RSSI, cloud and MQTT (enabled/connected), uptime, internal
+  temperature, measurements, logs, source and command (read-only state).
+- Per-model parsing ported from ShellyScanner for every Gen1, Gen2, Gen3, Gen4 and
+  BLU model (meters, temperature source, modules), Sensor Add-on and BLU sensors;
+  tested against recorded fixtures of 16 real device types.
+- Column chooser per view, default and detailed view, sorting, filter by column,
+  selection helpers, status line, tooltips, keyboard shortcuts, double-click action,
+  Web UI links.
+- Device info panel (one tab per info request, stored data for sleeping devices) and
+  logs (Gen1 files, Gen2+ live WebSocket with level filter and pause refresh).
+- Display preferences per browser: uptime format, temperature unit, double-click
+  action, default filter column.
+
 ### Added — Phase 2: discovery
 - Device discovery: full mDNS scan (all interfaces, container bridges skipped), local
   mDNS scan on a chosen interface, IP scan of up to 10 ranges, offline mode (archive
