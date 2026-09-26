@@ -99,3 +99,22 @@ func (d *digestState) header(method, uri, password string) string {
 	}
 	return h
 }
+
+// ParseChallengeParams returns the parameters of a Digest challenge header.
+func ParseChallengeParams(h string) map[string]string {
+	_, rest, _ := strings.Cut(strings.TrimSpace(h), " ")
+	return parseParams(rest)
+}
+
+// rpcHA2 is the fixed HA2 of Shelly's JSON-RPC authentication object.
+var rpcHA2 = sha256hex("dummy_method:dummy_uri")
+
+// RPCAuthResponse is the response of Shelly's JSON-RPC authentication
+// (https://shelly-api-docs.shelly.cloud/gen2/General/Authentication):
+// sha256(HA1:nonce:nc:cnonce:"auth":HA2) with HA2 = sha256("dummy_method:dummy_uri").
+// ShellyScanner uses it for the RPC auth object and the /debug/log WebSocket
+// (LoginManagerG2.getHashResponse).
+func RPCAuthResponse(realm, password, nonce, nc, cnonce string) string {
+	ha1 := sha256hex(DigestUser + ":" + realm + ":" + password)
+	return sha256hex(ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":auth:" + rpcHA2)
+}

@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/wimmme/shellylanman/internal/parse"
 )
 
 // Status mirrors ShellyScanner's ShellyAbstractDevice.Status.
@@ -46,6 +48,19 @@ type Device struct {
 	LastSeen int64  `json:"lastSeen"` // unix milliseconds of the last successful contact
 	SSID     string `json:"ssid,omitempty"`
 
+	// Read-only information (Phase 3): the remaining device-table columns.
+	RSSI           int              `json:"rssi"`
+	CloudEnabled   bool             `json:"cloudEnabled"`
+	CloudConnected bool             `json:"cloudConnected"`
+	MQTTEnabled    bool             `json:"mqttEnabled"`
+	MQTTConnected  bool             `json:"mqttConnected"`
+	Uptime         int              `json:"uptime"`  // seconds, -1 unknown
+	LogMode        string           `json:"logMode"` // NONE FILE MQTT SOCKET UDP UNDEFINED
+	InternalTemp   *float64         `json:"internalTemp,omitempty"`
+	Meters         []parse.MeterSet `json:"meters,omitempty"`
+	Modules        []parse.Module   `json:"modules,omitempty"`
+	Paused         bool             `json:"paused,omitempty"` // refresh paused (logs dialog)
+
 	RebootRequired bool `json:"rebootRequired"`
 
 	// BLU devices live behind a Gen2+ gateway.
@@ -81,4 +96,18 @@ func MACFromHostname(host string) string {
 		return tail
 	}
 	return ""
+}
+
+// ApplyReadings copies parsed readings onto the device.
+func (d *Device) ApplyReadings(r parse.Readings) {
+	if r.Name != "" || d.Gen == "1" || d.Gen == "2" || d.Gen == "3" || d.Gen == "4" {
+		d.Name = r.Name
+	}
+	if r.SSID != "" {
+		d.SSID = r.SSID
+	}
+	d.RSSI, d.CloudEnabled, d.CloudConnected = r.RSSI, r.CloudEnabled, r.CloudConnected
+	d.MQTTEnabled, d.MQTTConnected = r.MQTTEnabled, r.MQTTConnected
+	d.Uptime, d.LogMode, d.RebootRequired = r.Uptime, r.LogMode, r.RebootRequired
+	d.InternalTemp, d.Meters, d.Modules = r.InternalTemp, r.Meters, r.Modules
 }

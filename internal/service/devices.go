@@ -24,6 +24,7 @@ import (
 
 	"github.com/wimmme/shellylanman/internal/discovery"
 	"github.com/wimmme/shellylanman/internal/model"
+	"github.com/wimmme/shellylanman/internal/parse"
 	"github.com/wimmme/shellylanman/internal/shelly"
 	"github.com/wimmme/shellylanman/internal/store"
 )
@@ -88,8 +89,9 @@ type entry struct {
 	ext    bool // Gen2+ range extender enabled
 	cancel context.CancelFunc
 	now    chan struct{} // request an immediate full refresh
+	paused bool          // refresh paused by the user (logs dialog)
 
-	rawConfig, rawStatus json.RawMessage // kept for Phase 3 (device info)
+	rawConfig, rawStatus, rawPeriph json.RawMessage // last answers: table fields and "stored data" of sleeping devices
 }
 
 // bluLink connects a BLU device to its gateway.
@@ -99,6 +101,7 @@ type bluLink struct {
 	index string // component index, e.g. "200"
 	trv   bool
 	keys  string // Shelly.GetComponents keys for BTHome devices
+	known []byte // BTHomeDevice.GetKnownObjects
 }
 
 // NewDevices creates the service. emit receives events for the browsers.
@@ -460,6 +463,12 @@ func (m *Devices) poll(ctx context.Context, e *entry) {
 		case <-e.now:
 			tics = 1 << 30 // force a configuration refresh
 		}
+		m.mu.Lock()
+		paused := e.paused
+		m.mu.Unlock()
+		if paused {
+			continue
+		}
 		if tics++; tics >= m.store.Settings().Scan.ConfigTics {
 			m.refreshConfig(ctx, e)
 			tics = 0
@@ -584,107 +593,79 @@ func statusOf(err error) (model.Status, string) {
 }
 
 func (m *Devices) refreshConfig(ctx context.Context, e *entry) {
-	switch {
-	case e.blu != nil:
+	if e.blu != nil {
 		m.refreshBLU(ctx, e, true)
-	case e.info.Gen == 0:
+		return
+	}
+	path := "/rpc/Shelly.GetConfig"
+	if e.info.Gen == 0 {
+		path = "/settings"
+	}
+	raw, err := e.conn.Get(ctx, path)
+	var periph []byte
+	if err == nil && e.info.Gen != 0 {
 		var cfg struct {
-			Name   string `json:"name"`
+			Sys struct {
+				Device struct {
+					AddonType string `json:"addon_type"`
+				} `json:"device"`
+			} `json:"sys"`
+		}
+		_ = json.Unmarshal(raw, &cfg)
+		if parse.UsesAddon(e.dev.TypeID, cfg.Sys.Device.AddonType) {
+			periph, _ = e.conn.Get(ctx, "/rpc/SensorAddon.GetPeripherals")
+		}
+	}
+	m.apply(e, func(d *model.Device) {
+		d.Status, d.Error = statusOf(err)
+		if err != nil {
+			return
+		}
+		e.rawConfig, e.rawPeriph = raw, periph
+		m.reparse(e, d)
+		d.LastSeen = time.Now().UnixMilli()
+	})
+}
+
+func (m *Devices) refreshStatus(ctx context.Context, e *entry) {
+	if e.blu != nil {
+		m.refreshBLU(ctx, e, false)
+		return
+	}
+	path := "/rpc/Shelly.GetStatus"
+	if e.info.Gen == 0 {
+		path = "/status"
+	}
+	raw, err := e.conn.Get(ctx, path)
+	m.apply(e, func(d *model.Device) {
+		d.Status, d.Error = statusOf(err)
+		if err != nil {
+			return
+		}
+		e.rawStatus = raw
+		m.reparse(e, d)
+		d.LastSeen = time.Now().UnixMilli()
+	})
+}
+
+// reparse recomputes the table fields from the last configuration and status
+// (ShellyScanner: fillSettings + fillStatus). Callers hold m.mu.
+func (m *Devices) reparse(e *entry, d *model.Device) {
+	if e.info.Gen == 0 {
+		var cfg struct {
 			Device struct {
 				Hostname string `json:"hostname"`
 			} `json:"device"`
 		}
-		raw, err := e.conn.Get(ctx, "/settings")
-		if err == nil {
-			err = json.Unmarshal(raw, &cfg)
+		if json.Unmarshal(e.rawConfig, &cfg) == nil && cfg.Device.Hostname != "" {
+			d.Hostname = cfg.Device.Hostname
 		}
-		m.apply(e, func(d *model.Device) {
-			d.Status, d.Error = statusOf(err)
-			if err == nil {
-				e.rawConfig = raw
-				d.Name = cfg.Name
-				if cfg.Device.Hostname != "" {
-					d.Hostname = cfg.Device.Hostname
-				}
-				d.LastSeen = time.Now().UnixMilli()
-			}
-		})
-	default:
-		var cfg struct {
-			Sys struct {
-				Device struct {
-					Name string `json:"name"`
-				} `json:"device"`
-			} `json:"sys"`
-			WiFi struct {
-				AP struct {
-					RangeExtender struct {
-						Enable bool `json:"enable"`
-					} `json:"range_extender"`
-				} `json:"ap"`
-			} `json:"wifi"`
-		}
-		raw, err := e.conn.Get(ctx, "/rpc/Shelly.GetConfig")
-		if err == nil {
-			err = json.Unmarshal(raw, &cfg)
-		}
-		m.apply(e, func(d *model.Device) {
-			d.Status, d.Error = statusOf(err)
-			if err == nil {
-				e.rawConfig = raw
-				e.ext = cfg.WiFi.AP.RangeExtender.Enable
-				d.Name = cfg.Sys.Device.Name
-				d.LastSeen = time.Now().UnixMilli()
-			}
-		})
+		d.ApplyReadings(parse.Gen1(parse.Gen1Input{TypeID: d.TypeID, DeviceName: d.Name, Settings: e.rawConfig, Status: e.rawStatus}))
+		return
 	}
-}
-
-func (m *Devices) refreshStatus(ctx context.Context, e *entry) {
-	switch {
-	case e.blu != nil:
-		m.refreshBLU(ctx, e, false)
-	case e.info.Gen == 0:
-		var st struct {
-			WiFi struct {
-				SSID string `json:"ssid"`
-			} `json:"wifi_sta"`
-		}
-		raw, err := e.conn.Get(ctx, "/status")
-		if err == nil {
-			err = json.Unmarshal(raw, &st)
-		}
-		m.apply(e, func(d *model.Device) {
-			d.Status, d.Error = statusOf(err)
-			if err == nil {
-				e.rawStatus = raw
-				d.SSID = st.WiFi.SSID
-				d.LastSeen = time.Now().UnixMilli()
-			}
-		})
-	default:
-		var st struct {
-			Sys struct {
-				RestartRequired bool `json:"restart_required"`
-			} `json:"sys"`
-			WiFi struct {
-				SSID string `json:"ssid"`
-			} `json:"wifi"`
-		}
-		raw, err := e.conn.Get(ctx, "/rpc/Shelly.GetStatus")
-		if err == nil {
-			err = json.Unmarshal(raw, &st)
-		}
-		m.apply(e, func(d *model.Device) {
-			d.Status, d.Error = statusOf(err)
-			if err == nil {
-				e.rawStatus = raw
-				d.SSID = st.WiFi.SSID
-				d.RebootRequired = st.Sys.RestartRequired
-				d.LastSeen = time.Now().UnixMilli()
-			}
-		})
-	}
+	r := parse.Gen2(parse.Gen2Input{TypeID: d.TypeID, DeviceName: d.Name, Config: e.rawConfig, Status: e.rawStatus, Peripherals: e.rawPeriph})
+	e.ext = r.RangeExtender
+	d.ApplyReadings(r)
 }
 
 // ---- helpers ----------------------------------------------------------------

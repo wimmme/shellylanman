@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/wimmme/shellylanman/internal/model"
+	"github.com/wimmme/shellylanman/internal/parse"
 	"github.com/wimmme/shellylanman/internal/shelly"
 )
 
@@ -133,7 +134,8 @@ func (m *Devices) newBTHome(ctx context.Context, gw *entry, c component) *entry 
 	}
 	keys := []string{c.Key}
 	var ids []int
-	if err := gw.conn.GetJSON(ctx, "/rpc/BTHomeDevice.GetKnownObjects?id="+index, &objs); err == nil {
+	if raw, err := gw.conn.Get(ctx, "/rpc/BTHomeDevice.GetKnownObjects?id="+index); err == nil && json.Unmarshal(raw, &objs) == nil {
+		e.blu.known = raw
 		for _, o := range objs.Objects {
 			if strings.HasPrefix(o.Component, keyBTHomeSensor) {
 				ids = append(ids, o.ObjID)
@@ -203,13 +205,20 @@ func applyBTHomeStatus(d *model.Device, raw json.RawMessage) {
 
 func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 	if e.blu.trv {
-		var st json.RawMessage
-		err := e.blu.gw.GetJSON(ctx, "/rpc/BluTrv.GetStatus?id="+e.blu.index, &st)
+		// BluTRV.refreshStatus: GetStatus + GetRemoteStatus; refreshSettings: GetConfig + GetRemoteConfig.
+		st, err := e.blu.gw.Get(ctx, "/rpc/BluTrv.GetStatus?id="+e.blu.index)
+		var remote []byte
+		if err == nil {
+			remote, _ = e.blu.gw.Get(ctx, "/rpc/BluTrv.GetRemoteStatus?id="+e.blu.index)
+		}
 		var cfg struct {
 			Name string `json:"name"`
 		}
+		var remoteCfg []byte
 		if err == nil && config {
-			err = e.blu.gw.GetJSON(ctx, "/rpc/BluTrv.GetConfig?id="+e.blu.index, &cfg)
+			if err = e.blu.gw.GetJSON(ctx, "/rpc/BluTrv.GetConfig?id="+e.blu.index, &cfg); err == nil {
+				remoteCfg, _ = e.blu.gw.Get(ctx, "/rpc/BluTrv.GetRemoteConfig?id="+e.blu.index)
+			}
 		}
 		m.apply(e, func(d *model.Device) {
 			if err != nil {
@@ -217,11 +226,13 @@ func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 				return
 			}
 			d.Error = ""
-			e.rawStatus = st
-			applyBTHomeStatus(d, st)
 			if config {
 				d.Name = cfg.Name
+				e.rawConfig = remoteCfg
 			}
+			e.rawStatus, e.rawPeriph = st, remote
+			applyBTHomeStatus(d, st)
+			d.ApplyReadings(parse.BluTRV(parse.BluTRVInput{Name: d.Name, Status: st, RemoteStatus: remote, RemoteConfig: e.rawConfig}))
 		})
 		return
 	}
@@ -236,7 +247,6 @@ func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 		for _, c := range comps {
 			if c.Key == keyBTHomeDevice+e.blu.index {
 				found = true
-				e.rawStatus = c.Status
 				applyBTHomeStatus(d, c.Status)
 				var cfg struct {
 					Name string `json:"name"`
@@ -249,6 +259,9 @@ func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 		if !found {
 			d.Status = model.StatusOffline
 		}
+		raw, _ := json.Marshal(map[string]any{"components": comps})
+		e.rawStatus = raw
+		d.ApplyReadings(parse.BTHome(parse.BTHomeInput{Index: e.blu.index, KnownObjects: e.blu.known, Components: raw}))
 	})
 }
 

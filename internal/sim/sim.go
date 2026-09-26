@@ -18,6 +18,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/coder/websocket"
+
 	"github.com/wimmme/shellylanman/internal/fixture"
 )
 
@@ -51,6 +53,8 @@ func (d *Device) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch {
+	case r.Method == http.MethodGet && r.URL.Path == "/debug/log" && !d.gen1 && strings.EqualFold(r.Header.Get("Upgrade"), "websocket"):
+		d.serveLog(w, r)
 	case r.Method == http.MethodGet:
 		d.serveFile(w, fixture.FileName(r.URL.Path))
 	case r.Method == http.MethodPost && r.URL.Path == "/rpc":
@@ -149,4 +153,22 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(v)
+}
+
+// LogLines are sent to each /debug/log WebSocket client (Gen2+).
+var LogLines = []string{`{"ts":1790000000.1,"level":2,"data":"shelly_notification:163 Status change of switch:0: {\"output\":true}","fd":1}`}
+
+func (d *Device) serveLog(w http.ResponseWriter, r *http.Request) {
+	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{InsecureSkipVerify: true})
+	if err != nil {
+		return
+	}
+	defer c.CloseNow()
+	ctx := c.CloseRead(r.Context())
+	for _, l := range LogLines {
+		if c.Write(ctx, websocket.MessageText, []byte(l)) != nil {
+			return
+		}
+	}
+	<-ctx.Done()
 }
