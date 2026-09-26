@@ -6,6 +6,8 @@ export interface Page {
   title: Key;
   icon: string;
   render(main: HTMLElement): void | Promise<void>;
+  /** Called when the user leaves the page (stop live updates, timers). */
+  dispose?(): void;
 }
 
 export function card(title: string, badge: string | null, ...body: (Node | string)[]): HTMLElement {

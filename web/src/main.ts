@@ -8,6 +8,7 @@ import { errorState, loadingState, placeholder, type Page } from './pages/common
 import { devicesPage } from './pages/devices';
 import { settingsPage } from './pages/settings';
 import { EventSocket, type ConnState } from './socket';
+import { loadDevices, wireDeviceEvents } from './devices';
 
 const pages: Page[] = [
   devicesPage,
@@ -34,8 +35,12 @@ function connLabel(): HTMLElement {
   return h('span', { class: 'conn ' + conn, id: 'conn', role: 'status' }, t(key));
 }
 
+let shown: Page | null = null;
+
 function renderShell(): void {
   const page = currentPage();
+  shown?.dispose?.();
+  shown = page;
   const nav = h('ul', { class: 'nav' }, ...pages.map((p) =>
     h('li', {}, h('a', { href: '#/' + p.id, class: p === page ? 'active' : undefined, 'aria-current': p === page ? 'page' : undefined, title: t(p.title) },
       icon(p.icon), h('span', { class: 'label' }, t(p.title))))));
@@ -109,7 +114,9 @@ async function boot(): Promise<void> {
     const s = ev.data as { language?: string } | undefined;
     if (!storedLang() && isLang(s?.language)) { setLang(s.language, false); renderShell(); }
   });
+  wireDeviceEvents(socket);
   socket.connect();
+  void loadDevices().catch(() => { /* retried on the socket's hello */ });
 
   window.addEventListener('hashchange', renderShell);
   renderShell();

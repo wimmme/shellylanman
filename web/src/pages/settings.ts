@@ -6,9 +6,10 @@ import {
 import { h, ICONS } from '../dom';
 import { LANGUAGES, isLang, lang, setLang, t, type Key } from '../i18n';
 import { card, type Page } from './common';
+import { archive, network } from './settings-network';
 
 export function settingsPage(onLanguageChange: () => void): Page {
-  let tab: 'general' | 'appearance' = 'general';
+  let tab: 'general' | 'network' | 'archive' | 'appearance' = 'general';
   return {
     id: 'settings',
     title: 'nav.settings',
@@ -21,9 +22,11 @@ export function settingsPage(onLanguageChange: () => void): Page {
         tabs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === which)));
         body.replaceChildren();
         if (which === 'general') void general(body, onLanguageChange);
+        else if (which === 'network') void network(body);
+        else if (which === 'archive') void archive(body);
         else appearance(body);
       };
-      for (const [id, key] of [['general', 'settings.tab.general'], ['appearance', 'settings.tab.appearance']] as const) {
+      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['appearance', 'settings.tab.appearance']] as const) {
         const b = h('button', { role: 'tab', 'data-tab': id, onclick: () => show(id) }, t(key));
         tabs.append(b);
       }
