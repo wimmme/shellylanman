@@ -51,6 +51,7 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 	s.configRoutes(mux, h)
 	s.backupRoutes(mux, h)
 	s.firmwareRoutes(mux, h)
+	s.scriptRoutes(mux, h)
 }
 
 // command runs one action of the Command column (service.Command).

@@ -195,7 +195,7 @@ func isCommandMethod(m string) bool {
 	if i := strings.LastIndex(verb, "."); i >= 0 { // Thermostat.Schedule.AddProfile
 		verb = verb[i+1:]
 	}
-	for _, pre := range []string{"Set", "Add", "Delete", "Create", "Put", "Remove", "Update", "Toggle", "Call", "call", "Reboot"} {
+	for _, pre := range []string{"Set", "Add", "Delete", "Create", "Put", "Remove", "Update", "Toggle", "Call", "call", "Reboot", "Start", "Stop"} {
 		if strings.HasPrefix(verb, pre) {
 			return true
 		}

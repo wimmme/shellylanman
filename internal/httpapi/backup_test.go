@@ -139,3 +139,23 @@ func TestNoteEndpoint(t *testing.T) {
 		t.Fatalf("unknown: %d", r.StatusCode)
 	}
 }
+
+func TestScriptEndpoints(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	// The archived Gen1 device has neither scripts nor KVS.
+	if r := do(t, "GET", srv.URL+"/api/v1/devices/AABBCC000001/scripts", "", nil); r.StatusCode != http.StatusConflict {
+		t.Fatalf("gen1 scripts: %d", r.StatusCode)
+	}
+	if r := do(t, "PATCH", srv.URL+"/api/v1/devices/AABBCC000001/scripts/x", `{"enable":true}`, jsonHdr); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("bad id: %d", r.StatusCode)
+	}
+	if r := do(t, "DELETE", srv.URL+"/api/v1/devices/AABBCC000001/kvs", "", nil); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("no key: %d", r.StatusCode)
+	}
+	sbk := base64.StdEncoding.EncodeToString(testSBK(t))
+	var list []map[string]any
+	decode(t, do(t, "POST", srv.URL+"/api/v1/sbk/scripts", `{"upload":"`+sbk+`"}`, jsonHdr), &list)
+	if len(list) != 0 {
+		t.Fatalf("no scripts in a Gen1 backup: %v", list)
+	}
+}

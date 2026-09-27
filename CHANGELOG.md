@@ -10,6 +10,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   characters; only with the archive in use, as in ShellyScanner).
 - Export the devices table as CSV (shown columns and rows, separator setting per
   browser) and print it (print stylesheet).
+- Scripts and KVS of Gen2+ devices (API): list, create, rename, enable, start/stop,
+  delete, read and write code (1024-character segments), scripts inside a `.sbk`;
+  KVS list (paged), set, delete.
 
 ### Added — Phase 7: firmware
 - Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+
