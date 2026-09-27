@@ -101,9 +101,9 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 | S4 | MQTT: enable/disable, server, user/password, custom or default prefix; G1 extras (reconnect timeouts, clean session, keep-alive, QoS, retain, update period); G2+ extras (RPC notifications, generic status, MQTT control, RPC over MQTT); mixed selection panel; copy; "-slow" delay; deferrable | `view/devsettings/PanelMQTTG1`, `PanelMQTTG2`, `PanelMQTTMix`, `MQTTManagerG1/G2` | G1 `/settings/mqtt?…`; G2+ `MQTT.SetConfig` | G1–G4 | MQTT tab (variant by selection) | 5 | ✅ |
 | S5 | Others: NTP server, Cloud enable/disable, Input reset ("factory reset from switch") enable/disable; all deferrable | `view/devsettings/PanelOthers`, `TimeAndLocationManager*`, `InputResetManager*` | G1 `/settings?sntp_server=`, `/settings/cloud?enabled=`, `/settings?factory_reset_from_switch=`; G2+ `Sys.SetConfig {sntp}`, `Cloud.SetConfig`, `Input.SetConfig {factory_reset}` | G1–G4 | Others tab | 5 | ✅ |
 | S6 | Checklist view: per device Eco, LED off, Logs, BLE, AP, Roaming, Wi-Fi 1/2 (static ✓ / DHCP ✗), Extender, Scripts, Auto FW; row actions to toggle each; edit Wi-Fi; multi-selection; filter; refresh; help link | `view/checklist/CheckListView`, `CheckListTable`, `DialogWiFiDevicesInfo`, `DialogBluDevicesInfo` | G1 `/settings`; G2+ `Shelly.GetConfig`, `Shelly.GetStatus`, `WiFi.ListAPClients`, `BLE.CloudRelay.ListInfos`, `Script.List`; writes: `/settings?eco_mode_enabled=`, `/settings?led_status_disable=`, `/settings?debug_enable=`, `/settings?ap_roaming_*`, `Sys.SetConfig {device.eco_mode | debug.*}`, `BLE.SetConfig`, `WiFi.SetConfig {ap | roam | range_extender}`, `Sys.SetConfig {sys.device…}` auto-update | G1–G4, BLU | Checklist page | 5 | ✅ ⚠️ |
-| S7 | Scheduler Gen2+ (cron editor with sunrise/sunset, method hints and parameter editors, test button, load/save) | `view/scheduler/gen2plus/*`, `AbstractCronPanel`, `CronUtils`, `MethodHints`, `g2/modules/ScheduleManager` | `Schedule.List/Create/Update/Delete/DeleteAll` | G2+ (non-battery) | Scheduler modal | 8 | — |
-| S8 | Scheduler Wall Display thermostat (profiles: list/rename/delete; rules) | `view/scheduler/walldisplay/*`, `g2/modules/ScheduleManagerThermWD` | `Thermostat.Schedule.ListProfiles/RenameProfile/DeleteProfile/ListRules/UpdateRule/DeleteRule/SetConfig`, `Thermostat.Schedule` | Wall Display | Scheduler modal (WD variant) | 8 | — |
-| S9 | Scheduler BLU TRV | `view/scheduler/blutrv/*`, `blu/modules/ScheduleManagerTRV` | `BluTrv.Call` (`TRV.ListScheduleRules`, …) | BLU TRV | Scheduler modal (TRV variant) | 8 | — |
+| S7 | Scheduler Gen2+ (cron editor with sunrise/sunset, method hints and parameter editors, test button, load/save) | `view/scheduler/gen2plus/*`, `AbstractCronPanel`, `CronUtils`, `MethodHints`, `g2/modules/ScheduleManager` | `Schedule.List/Create/Update/Delete/DeleteAll` | G2+ (non-battery) | Scheduler modal | 8 | ✅ |
+| S8 | Scheduler Wall Display thermostat (profiles: list/rename/delete; rules) | `view/scheduler/walldisplay/*`, `g2/modules/ScheduleManagerThermWD` | `Thermostat.Schedule.ListProfiles/RenameProfile/DeleteProfile/ListRules/UpdateRule/DeleteRule/SetConfig`, `Thermostat.Schedule` | Wall Display | Scheduler modal (WD variant) | 8 | ✅ |
+| S9 | Scheduler BLU TRV | `view/scheduler/blutrv/*`, `blu/modules/ScheduleManagerTRV` | `BluTrv.Call` (`TRV.ListScheduleRules`, …) | BLU TRV | Scheduler modal (TRV variant) | 8 | ✅ |
 | S10 | Scripts: list, run/stop, enable, create, delete, upload from file (.js or from a .sbk), download, IDE editor (tab size, font, auto-indent, auto-close, dark mode, bracket matching, block comment, find/replace, autocomplete), save as | `view/scripts/ScriptsPanel`, `view/scripts/ide/*`, `g2/modules/Script`, settings `IDE_*` | `Script.List/GetCode/PutCode/Create/Delete/Start/Stop/SetConfig/GetConfig` | G2+ | Scripts modal with code editor | 8 | ✅ |
 | S11 | KVS: list (paged), edit value, add, delete (confirm) | `view/scripts/KVSPanel`, `g2/modules/KVS` | `KVS.GetMany` (paged), `KVS.Set`, `KVS.Delete` | G2+ | KVS tab | 8 | ✅ |
 | S12 | Notes and keyword per device (stored in archive), delete warning | `view/NotesEditor`, `GhostDevice.note/keyNote`, `DevicesStore` | — | all | Notes modal; Keyword column | 8 | ✅ |
@@ -149,11 +149,11 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 
 | # | Feature | Where in Java | Shelly API | Gen | Web equivalent | Phase | Status |
 |---|---|---|---|---|---|---|---|
-| G1 | Live time-series charts for selected devices; types: internal temp, RSSI, P, P sum, Q, S, V, VL, VX (custom expression), I, T all, H, HD, lux, frequency, distance, EM | `view/chart/MeasuresChart`, `ChartType` | samples from the refresh loop | all | Charts page (Chart.js) | 8 | — |
-| G2 | Range (auto / fixed windows), series selection, pause, markers, zoom (drag/wheel), scroll, Ctrl+P pause, help link | `MeasuresChart` | — | — | Same controls | 8 | — |
-| G3 | Export series CSV (horizontal / vertical, separator, current range when paused) | `view/chart/TimeChartsExporter` | — | — | Download CSV | 8 | — |
-| G4 | Default chart type setting; only pertinent types offered | settings `CHART_DEF`, `CHART_EXPORT` | — | — | Same | 8 | — |
-| G5 | Samples exist only while the chart window is open | `MeasuresChart` (model listener) | — | — | **Server-side in-memory ring buffer** so charts open with history (Q7); slower sampling while no browser is connected (Q8) | 8 | ⚠️ |
+| G1 | Live time-series charts for selected devices; types: internal temp, RSSI, P, P sum, Q, S, V, VL, VX (custom expression), I, T all, H, HD, lux, frequency, distance, EM | `view/chart/MeasuresChart`, `ChartType` | samples from the refresh loop | all | Charts page (Chart.js) | 8 | ✅ |
+| G2 | Range (auto / fixed windows), series selection, pause, markers, zoom (drag/wheel), scroll, Ctrl+P pause, help link | `MeasuresChart` | — | — | Same controls | 8 | ✅ |
+| G3 | Export series CSV (horizontal / vertical, separator, current range when paused) | `view/chart/TimeChartsExporter` | — | — | Download CSV | 8 | ✅ |
+| G4 | Default chart type setting; only pertinent types offered | settings `CHART_DEF`, `CHART_EXPORT` | — | — | Same | 8 | ✅ |
+| G5 | Samples exist only while the chart window is open | `MeasuresChart` (model listener) | — | — | **Server-side in-memory ring buffer** so charts open with history (Q7); slower sampling while no browser is connected (Q8) | 8 | ✅ |
 
 ### 1.10 Application settings, archive, misc
 
@@ -168,8 +168,8 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 | A7 | About dialog (author, licence, links) | `view/DialogAbout`, `aboutApp` label | — | — | About page: credits usnasoft + link, GPL-3.0, independent-project and trademark notice (EN/NL) | 1 | ✅ |
 | A8 | Application update check against usna.it; skip release | `view/util/ApplicationUpdateCHK` | `https://www.usna.it/shellyscanner/last_version.txt` | — | **GitHub releases of ShellyLanMan, opt-in, off by default** (Q18) | 10 | ⚠️ |
 | A9 | Localisation: English and Italian label bundles | `resources/LabelsBundle*.properties` | — | — | **English + Dutch** string catalogues (Q21); Italian not planned | 3 | ⚠️ |
-| A10 | Online help links (manual, checklist, charts) | `UsnaOpenUrlAction`, `*ManualUrl` labels | — | — | **Own short in-app help** (Q22); usna.it linked from About | 8 | ⚠️ |
-| A11 | Keyboard shortcuts (filter, tabs, pause, macOS cmd-C/V/X) | various | — | — | Web equivalents where sensible | 8 | — |
+| A10 | Online help links (manual, checklist, charts) | `UsnaOpenUrlAction`, `*ManualUrl` labels | — | — | **Own short in-app help** (Q22); usna.it linked from About | 8 | ✅ |
+| A11 | Keyboard shortcuts (filter, tabs, pause, macOS cmd-C/V/X) | various | — | — | Web equivalents where sensible | 8 | ✅ |
 
 ### 1.11 Command line
 
@@ -180,7 +180,7 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 | L3 | `-restore <dir>` non-interactive restore (files per hostname) | `CLIController.restore`, `RestoreAction.nonInteractiveRestoreDevice` | same | 6 | — |
 | L4 | `-list [ip|full]` | `CLIController.list` | API `GET /api/v1/devices` only (Q14) | 2 | ⚠️ |
 | L5 | `-gen <n>` filter for the above | `CLIController.getFilter` | query parameter | 2 | — |
-| L6 | `-graphs <TYPE>` headless stream `graph_data->host:channel:type:time:value` to stdout | `NonInteractiveMeasuresChart`, `MeasuresChart.setDoOutStream` | API/WebSocket stream (Q14) | 8 | ⚠️ |
+| L6 | `-graphs <TYPE>` headless stream `graph_data->host:channel:type:time:value` to stdout | `NonInteractiveMeasuresChart`, `MeasuresChart.setDoOutStream` | API/WebSocket stream (Q14) | 8 | ✅ |
 | L7 | `-font <multiplier>` | `Main` | per-browser font size | 1 | ⚠️ |
 | L8 | `-slow <ms>` extra delay for MQTT settings | `Main` → `MQTT_SLOW`, `PanelMQTT*` | setting (advanced) | 5 | ✅ |
 
@@ -347,3 +347,5 @@ A per-generation recording of each of these, request and response, is what `test
 | O28 | FW Update panel: "Select stable / beta / Deselect all" act on the selected table rows when more than one is selected, otherwise on **all** rows including those hidden by the filter; the table can be sorted | `PanelFWUpdate`, `FWUpdateTable` | The buttons act on the rows shown (filter applied); no row selection or sorting in the web table — accepted by Wim 2026-09-27 |
 | O29 | CSV export writes every value as it is, without quoting: a device name or measure containing the separator breaks the columns | `controller/ExportCSVAction`, `view/chart/TimeChartsExporter` | Values with the separator, a quote or a line break are quoted (RFC 4180) — **to ask** |
 | O30 | Opening the script editor for a running script (and running one from it) switches the device's websocket debug log on when it is off (`setDebugMode(SOCKET)`), a configuration write; it is never switched off again | `view/scripts/ide/ScriptFrame.runningStatus/activateLogConnection` | Same as the original (noted) |
+| O31 | BLU TRV scheduler calls use `Trv.UpdateScheduleRule`, `Trv.AddScheduleRule`, `Trv.RemoveScheduleRule` ("Trv") while listing and the restore use `TRV.*` | `blu/modules/ScheduleManagerTRV` | Same names as the original (RPC method names are case-insensitive on the devices — not verified: no BLU TRV here) |
+| O32 | The chart's P (sum) type is offered only when one device has two power meters, and adds the total of an EM total meter instead of the phases | `MeasuresChart.typeComboContent`, `newValue` | Same as the original |

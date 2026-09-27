@@ -105,6 +105,9 @@ func (s *server) about(w http.ResponseWriter, r *http.Request) {
 		Credits: []Credit{
 			{Name: "MikroDash", Author: "MikroDash contributors", URL: "https://github.com/SecOps-7/MikroDash", License: "MIT", What: "design tokens, palettes and appearance settings"},
 			{Name: "Bundled fonts", Author: "see OFL.txt", URL: "/fonts/OFL.txt", License: "OFL-1.1", What: "Inter, Oxanium, IBM Plex Sans, Nunito, Roboto, JetBrains Mono"},
+			{Name: "CodeMirror 6", Author: "Marijn Haverbeke and others", URL: "https://codemirror.net", License: "MIT", What: "script editor"},
+			{Name: "Chart.js", Author: "Chart.js contributors", URL: "https://www.chartjs.org", License: "MIT", What: "charts (with chartjs-plugin-zoom and Hammer.js, MIT)"},
+			{Name: "go-qrcode", Author: "Tom Harwood", URL: "https://github.com/skip2/go-qrcode", License: "MIT", What: "QR codes of the local firmware download"},
 		},
 		Notice:   "ShellyLanMan is an independent project. It is not ShellyScanner and is not affiliated with or endorsed by Shelly Group. Shelly is a trademark of its owner.",
 		Language: store.Languages,

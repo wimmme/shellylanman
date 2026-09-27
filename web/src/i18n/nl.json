@@ -694,5 +694,22 @@
   "prefs.chart": "Standaardgrafiek",
   "prefs.chartExport": "CSV-opmaak van grafieken",
   "prefs.chartExport.H": "Horizontaal (reeksen na elkaar)",
-  "prefs.chartExport.V": "Verticaal (reeksen naast elkaar)"
+  "prefs.chartExport.V": "Verticaal (reeksen naast elkaar)",
+  "help.title": "Hulp",
+  "help.devices.title": "Apparatentabel",
+  "help.devices": "Klik op een rij om ze te selecteren; Ctrl+klik en Shift+klik selecteren er meerdere. Dubbelklikken opent de apparaatinformatie (of de webpagina, zie Instellingen → Algemeen).\nCtrl+F gaat naar de filter, Ctrl+E wist ze, Ctrl+S wisselt de filterkolom. De acties in de werkbalk werken op de geselecteerde apparaten.",
+  "help.settings.title": "Apparaatinstellingen",
+  "help.settings": "Instellingen opent FW-update, Wi-Fi 1/2, beperkte login, MQTT en andere instellingen voor de geselecteerde apparaten; elke wijziging geeft een resultaatregel per apparaat. Wijzigingen voor offline apparaten komen in de wachtrij (pagina Uitgesteld).",
+  "help.checklist.title": "Checklist",
+  "help.checklist": "Een rij per apparaat met de instellingen die het controleren waard zijn (eco-modus, led, logs, Bluetooth, toegangspunt, roaming, Wi-Fi, bereikversterker, scripts, automatische firmware-update). Klik rechts op een cel voor de acties van die kolom.",
+  "help.firmware.title": "Firmware en lokale download",
+  "help.firmware": "De apparaten zoeken zelf naar nieuwe firmware; vink stabiel of bèta aan en druk op Bijwerken. De kolom Shelly-index vergelijkt elk apparaat met de firmware-index van Shelly; ⚡ toont een QR-code om die firmware met een telefoon van ShellyLanMan te downloaden, om een apparaat via zijn eigen toegangspunt bij te werken.",
+  "help.backup.title": "Back-up en terugzetten",
+  "help.backup": "ShellyLanMan bewaart de back-ups (Instellingen → Netwerk, back-ups per apparaat) en ze kunnen gedownload worden. Terugzetten stelt dezelfde vragen als ShellyScanner (ander apparaat, wachtwoorden, scripts) en vraagt een bevestiging.",
+  "help.scheduler.title": "Planner",
+  "help.scheduler": "Taken van Gen2+-apparaten, thermostaatprofielen van de Wall Display en regels van de BLU TRV. De knop ? in de planner legt de editor uit.",
+  "help.scripts.title": "Scripts en KVS",
+  "help.scripts": "Scripts van Gen2+-apparaten: starten, stoppen, inschakelen, uploaden vanuit een bestand of back-up, downloaden en bewerken (de knop ? in de editor toont de sneltoetsen). Het tabblad KVS bewerkt de sleutel-waardeopslag.",
+  "help.charts.title": "Grafieken",
+  "help.charts": "Selecteer apparaten en druk op Grafieken. ShellyLanMan bewaart 24 uur metingen; zie Hulp onder de grafiek voor zoomen, pauzeren en exporteren."
 }

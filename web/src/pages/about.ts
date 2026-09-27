@@ -1,6 +1,6 @@
 import { api } from '../api';
 import { h, ICONS } from '../dom';
-import { t } from '../i18n';
+import { t, type Key } from '../i18n';
 import { card, type Page } from './common';
 
 const link = (href: string, text: string): HTMLAnchorElement =>
@@ -13,6 +13,8 @@ export const aboutPage: Page = {
   async render(main) {
     const a = await api.about();
     main.append(
+      card(t('help.title'), null, ...(['devices', 'settings', 'checklist', 'firmware', 'backup', 'scheduler', 'scripts', 'charts'] as const).map((k) =>
+        h('details', { class: 'help-item' }, h('summary', {}, t(`help.${k}.title` as Key)), ...t(`help.${k}` as Key).split('\n').map((l) => h('p', {}, l))))),
       card(a.name, a.version,
         h('dl', { class: 'kv' },
           h('dt', {}, t('about.version')), h('dd', { class: 'mono' }, a.version + (a.commit ? ` (${a.commit})` : '')),

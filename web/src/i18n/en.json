@@ -694,5 +694,22 @@
   "prefs.chart": "Default graph",
   "prefs.chartExport": "Chart CSV layout",
   "prefs.chartExport.H": "Horizontal (series one after the other)",
-  "prefs.chartExport.V": "Vertical (series side by side)"
+  "prefs.chartExport.V": "Vertical (series side by side)",
+  "help.title": "Help",
+  "help.devices.title": "Devices table",
+  "help.devices": "Click a row to select it; Ctrl+click and Shift+click select several. Double-click opens the device information (or its web page, see Settings → General).\nCtrl+F goes to the filter, Ctrl+E clears it, Ctrl+S changes the filter column. The toolbar actions work on the selected devices.",
+  "help.settings.title": "Devices settings",
+  "help.settings": "Settings opens FW Update, Wi-Fi 1/2, restricted login, MQTT and other settings for the selected devices; each apply reports one result line per device. Changes for off-line devices are queued (Deferred page).",
+  "help.checklist.title": "Checklist",
+  "help.checklist": "A row per device with the settings worth checking (eco mode, LED, logs, Bluetooth, access point, roaming, Wi-Fi, range extender, scripts, automatic firmware update). Right-click a cell for the actions of that column.",
+  "help.firmware.title": "Firmware and local download",
+  "help.firmware": "The devices check for new firmware themselves; tick stable or beta and press Update. The Shelly index column compares each device with Shelly's firmware index; ⚡ shows a QR code to download that firmware from ShellyLanMan with a phone, for updating a device through its own access point.",
+  "help.backup.title": "Backup and restore",
+  "help.backup": "Backups are kept by ShellyLanMan (Settings → Network, backups per device) and can be downloaded. Restore asks the same questions as ShellyScanner (other device, passwords, scripts) and needs a confirmation.",
+  "help.scheduler.title": "Scheduler",
+  "help.scheduler": "Jobs of Gen2+ devices, thermostat profiles of the Wall Display and rules of the BLU TRV. The ? button in the scheduler explains the editor.",
+  "help.scripts.title": "Scripts and KVS",
+  "help.scripts": "Scripts of Gen2+ devices: run, stop, enable, upload from a file or a backup, download and edit (the ? button in the editor lists the shortcuts). The KVS tab edits the key-value store.",
+  "help.charts.title": "Charts",
+  "help.charts": "Select devices and press Charts. ShellyLanMan keeps 24 hours of readings; see Help under the chart for zoom, pause and export."
 }

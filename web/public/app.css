@@ -290,3 +290,4 @@ td.mono{font-family:var(--font-mono);font-size:.82rem}
 .sch-wd{display:grid;gap:12px}.sch-profiles{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}.sch-proftable{width:auto;min-width:220px}.sch-profname{width:100%}.sch-profbtns{flex-wrap:wrap;gap:6px}
 .chart-toolbar{flex-wrap:wrap;gap:8px}.chart-box{position:relative;height:min(62vh,560px);margin-top:8px}.chart-help{margin-top:8px}.chart-help p{margin:4px 0}
 button[aria-pressed=true].btn{border-color:var(--accent-rx);color:var(--accent-rx)}
+.help-item{margin:4px 0}.help-item summary{cursor:pointer;font-weight:600}.help-item p{margin:4px 0 4px 16px}

@@ -56,7 +56,7 @@ export const chartsPage: Page = {
     typeSel.value = type;
     const rangeSel = h('select', { 'aria-label': t('chart.range') }, ...RANGES.map((r, i) => h('option', { value: i }, t(('chart.range.' + r) as Key))));
     const seriesSel = h('select', { 'aria-label': t('chart.series') });
-    const pauseBtn = h('button', { class: 'btn', 'aria-pressed': 'false', title: t('chart.pauseTip') }, '⏸');
+    const pauseBtn = h('button', { class: 'btn', 'aria-pressed': 'false', title: t('chart.pauseTip') }, '❚❚');
     const markBtn = h('button', { class: 'btn', 'aria-pressed': 'false', title: t('chart.markersTip') }, '◆');
     const canvas = h('canvas', { 'aria-label': t('nav.charts') });
 
@@ -85,7 +85,7 @@ export const chartsPage: Page = {
     const setPaused = (p: boolean): void => {
       paused = p;
       pauseBtn.setAttribute('aria-pressed', String(p));
-      pauseBtn.textContent = p ? '▶' : '⏸';
+      pauseBtn.textContent = p ? '▶' : '❚❚';
       const z = chart.options.plugins!.zoom!;
       z.zoom!.wheel!.enabled = p; // the wheel zooms only while paused
       if (!p) { chart.resetZoom('none'); applyRange(); }
