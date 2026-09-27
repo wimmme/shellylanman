@@ -138,6 +138,7 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		Scan         *store.ScanSettings    `json:"scan"`
 		Archive      *store.ArchiveSettings `json:"archive"`
 		MQTTSlow     *int                   `json:"mqttSlow"`
+		BackupKeep   *int                   `json:"backupKeep"`
 	}
 	if !readJSON(w, r, &patch) {
 		return
@@ -157,6 +158,9 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		}
 		if patch.MQTTSlow != nil {
 			st.MQTTSlow = *patch.MQTTSlow
+		}
+		if patch.BackupKeep != nil {
+			st.BackupKeep = *patch.BackupKeep
 		}
 	})
 	if err != nil {

@@ -127,7 +127,7 @@ func describe(typ string, params any) string {
 		}
 		return "loginDisable"
 	}
-	return map[string]string{TaskNTP: "ntp", TaskCloud: "cloud", TaskInputReset: "reset"}[typ]
+	return map[string]string{TaskNTP: "ntp", TaskCloud: "cloud", TaskInputReset: "reset", TaskBackup: "backup", TaskRestore: "restore"}[typ]
 }
 
 // defer_ queues an action (DeferrablesContainer.addOrUpdate): a waiting task
@@ -248,6 +248,19 @@ func (m *Devices) execDeferred(tid, id, typ, sealed string) string {
 	raw, err := m.store.Unseal("deferred:"+tid, sealed)
 	if err != nil {
 		return err.Error()
+	}
+	if typ == TaskBackup || typ == TaskRestore { // also BLU devices
+		e, err := m.entryFor(id)
+		if err != nil {
+			return err.Error()
+		}
+		m.mu.Lock()
+		ctx := m.run
+		m.mu.Unlock()
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		return m.runBackupRestoreTask(ctx, e, typ, raw)
 	}
 	ts, err := m.targets([]string{id})
 	if err != nil {

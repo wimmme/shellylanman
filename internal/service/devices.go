@@ -95,9 +95,12 @@ type entry struct {
 	paused    bool          // refresh paused by the user (logs dialog)
 	rebooting bool          // refresh paused after a reboot command
 	g1Reboot  bool          // Gen1: a setting that needs a reboot was changed (eco mode)
+	busy      bool          // refresh paused while a backup or restore runs
 
-	rawConfig, rawStatus, rawPeriph json.RawMessage // last answers: table fields and "stored data" of sleeping devices
-	rawActions, rawHooks, rawComps  json.RawMessage // Gen1 /settings/actions, Gen2+ Webhook.List, XT1 components
+	rawConfig, rawStatus, rawPeriph json.RawMessage            // last answers: table fields and "stored data" of sleeping devices
+	rawActions, rawHooks, rawComps  json.RawMessage            // Gen1 /settings/actions, Gen2+ Webhook.List, XT1 components
+	rawShelly                       json.RawMessage            // the /shelly answer
+	stored                          map[string]json.RawMessage // other answers kept for a sleeping battery device
 }
 
 // bluLink connects a BLU device to its gateway.
@@ -303,21 +306,21 @@ func (m *Devices) handle(ctx context.Context, addr, hint string, force bool) {
 		m.mu.Unlock()
 	}()
 
-	info, _, err := m.client.Probe(ctx, addr, ProbeTimeout)
+	info, raw, err := m.client.Probe(ctx, addr, ProbeTimeout)
 	if err != nil {
 		if force && (strings.HasPrefix(hint, "shelly") || strings.HasPrefix(hint, "Shelly")) {
 			m.addUnmanaged(addr, hint, err)
 		}
 		return
 	}
-	m.create(ctx, addr, info, hint)
+	m.create(ctx, addr, info, hint, raw)
 }
 
-func (m *Devices) create(ctx context.Context, addr string, info shelly.Info, hint string) {
+func (m *Devices) create(ctx context.Context, addr string, info shelly.Info, hint string, rawShelly []byte) {
 	mdl := model.Lookup(info)
 	ip, port := splitAddr(addr)
 	gen1 := info.Gen == 0
-	e := &entry{info: info, now: make(chan struct{}, 1)}
+	e := &entry{info: info, now: make(chan struct{}, 1), rawShelly: rawShelly}
 	e.conn = m.client.Conn(addr, gen1)
 	e.dev = model.Device{
 		ID: model.NormalizeMAC(info.MAC), MAC: info.MAC, Gen: info.Generation(),
@@ -475,7 +478,7 @@ func (m *Devices) poll(ctx context.Context, e *entry) {
 			tics = 1 << 30 // force a configuration refresh
 		}
 		m.mu.Lock()
-		paused := e.paused || e.rebooting
+		paused := e.paused || e.rebooting || e.busy
 		m.mu.Unlock()
 		if paused {
 			continue

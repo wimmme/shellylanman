@@ -138,8 +138,23 @@ func (m *Devices) Info(ctx context.Context, id string, index int) (InfoResult, e
 	}
 	if !json.Valid(b) {
 		b, _ = json.Marshal(string(b))
+	} else if m.keepStored(id) { // a battery device: keep the answer for when it sleeps
+		m.mu.Lock()
+		if e.stored == nil {
+			e.stored = map[string]json.RawMessage{}
+		}
+		e.stored[reqs[index].Path] = b
+		m.mu.Unlock()
 	}
 	return InfoResult{Data: b}, nil
+}
+
+// keepStored: answers of battery devices are kept for when they sleep.
+func (m *Devices) keepStored(id string) bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	e, ok := m.devs[id]
+	return ok && e.dev.Battery
 }
 
 // storedFor returns the kept answer for the main requests. Callers hold m.mu.

@@ -49,6 +49,9 @@ type Settings struct {
 	// when MQTT settings are applied to several devices (ShellyScanner's
 	// "-slow" command-line option, MQTT_SLOW).
 	MQTTSlow int `json:"mqttSlow"`
+	// BackupKeep is how many backups are kept per device; older ones are
+	// deleted (0 = keep all). DECISIONS Q12.
+	BackupKeep int `json:"backupKeep"`
 }
 
 // Scan modes (ShellyScanner: setting SCAN_MODE, dialog "Network scan mode").
@@ -80,9 +83,10 @@ type ArchiveSettings struct {
 // Defaults are the settings of a fresh installation (ScannerProperties defaults).
 func Defaults() Settings {
 	return Settings{
-		Language: "en",
-		Scan:     ScanSettings{Mode: ScanFull, RefreshSeconds: 2, ConfigTics: 5},
-		Archive:  ArchiveSettings{Use: true, AutoReload: true},
+		Language:   "en",
+		Scan:       ScanSettings{Mode: ScanFull, RefreshSeconds: 2, ConfigTics: 5},
+		Archive:    ArchiveSettings{Use: true, AutoReload: true},
+		BackupKeep: 10,
 	}
 }
 
@@ -114,6 +118,9 @@ func (s Settings) Validate() error {
 	}
 	if s.Scan.RefreshSeconds < 1 || s.Scan.RefreshSeconds > 3600 {
 		return errors.New("status refresh must be 1–3600 seconds")
+	}
+	if s.BackupKeep < 0 || s.BackupKeep > 1000 {
+		return errors.New("backups to keep must be 0–1000")
 	}
 	if s.MQTTSlow < 0 || s.MQTTSlow > 600 {
 		return errors.New("MQTT delay must be 0–600 tenths of a second")
