@@ -274,3 +274,4 @@ td.mono{font-family:var(--font-mono);font-size:.82rem}
 .lfw-qr{background:#fff;padding:8px;border-radius:8px;max-width:100%;height:auto}.lfw-info{display:grid;gap:8px;min-width:200px}
 .lfw-badge{display:flex;flex-direction:column}.lfw input[readonly]{flex:1;min-width:0}
 .notes{display:grid;gap:10px}.notes-text{width:100%;min-height:220px;font:inherit;resize:vertical}
+@media print{.shell{display:block!important;height:auto!important}.sidebar,.topbar,.toolbar,.banner,.summary,.toasts,.card-head .status-line,th.sel,td.sel{display:none!important}.main,.content,.card,.table-wrap{overflow:visible!important;max-height:none!important;box-shadow:none!important;border:0!important;margin:0!important;padding:0!important}body{background:#fff!important;color:#000!important}table.data{font-size:9pt;width:100%}table.data th,table.data td{color:#000!important;background:#fff!important}}

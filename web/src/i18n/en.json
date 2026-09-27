@@ -500,5 +500,10 @@
   "action.notesTip": "Notes and keyword of the device",
   "notes.title": "Notes - {device}",
   "notes.note": "Notes",
-  "notes.keyword": "Keyword"
+  "notes.keyword": "Keyword",
+  "action.csv": "Export CSV",
+  "action.csvTip": "Save the table (shown columns and rows) as a CSV file",
+  "action.print": "Print",
+  "action.printTip": "Print the table",
+  "prefs.csv": "CSV separator"
 }

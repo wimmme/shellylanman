@@ -8,7 +8,7 @@ export type UptimeMode = 'SEC' | 'DAY' | 'FROM';
 export type TempUnit = 'C' | 'F';
 export type DblClick = 'DET' | 'WEB';
 
-const KEYS = { uptime: 'sl_uptime_mode', temp: 'sl_temp_unit', dbl: 'sl_dclick', filter: 'sl_default_filter' } as const;
+const KEYS = { uptime: 'sl_uptime_mode', temp: 'sl_temp_unit', dbl: 'sl_dclick', filter: 'sl_default_filter', csv: 'sl_csv_sep' } as const;
 
 function lsGet(k: string): string | null {
   try { return localStorage.getItem(k); } catch { return null; }
@@ -26,6 +26,8 @@ export const prefs = {
   setTemp: (v: TempUnit) => lsSet(KEYS.temp, v),
   setDblClick: (v: DblClick) => lsSet(KEYS.dbl, v),
   setDefaultFilter: (v: number) => lsSet(KEYS.filter, String(v)),
+  csvSeparator: (): string => lsGet(KEYS.csv) || ',', // CSV_SEPARATOR, default ","
+  setCsvSeparator: (v: string) => lsSet(KEYS.csv, v),
 };
 
 /** METER_LBL_*: the short label in front of a value. */

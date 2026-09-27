@@ -11,6 +11,7 @@ import { backupDevices, restoreDevice, restoreDevices } from '../panels/backup';
 import { openDeviceSettings } from '../panels/devsettings';
 import { openLogs } from '../panels/logs';
 import { openNotes } from '../panels/notes';
+import { download, toCSV } from '../csv';
 import { toast } from '../toast';
 import { emptyState, type Page } from './common';
 
@@ -244,6 +245,13 @@ function dropdown(label: string, items: { label: string; onClick: () => void; ch
   return h('div', { class: 'dropdown' }, btn, menu);
 }
 
+/** ExportCSVAction: the columns and rows shown, as their cells read. */
+function exportCSV(rows: Device[], cols: Col[]): void {
+  const header = cols.map((c) => t(c.label));
+  const body = rows.map((d) => cols.map((c) => (c.live && !hasLive(d) ? '' : c.text(d))));
+  download('shellylanman-devices.csv', toCSV(header, body, prefs.csvSeparator()));
+}
+
 // ---- page ------------------------------------------------------------------------
 
 export const devicesPage: Page = {
@@ -309,6 +317,8 @@ export const devicesPage: Page = {
         h('button', { class: 'btn', 'aria-pressed': String(view === 'detailed'), title: t('action.viewTip'),
           onclick: () => { view = view === 'detailed' ? 'default' : 'detailed'; lsSet('sl_view', view); redraw(); } },
         t(view === 'detailed' ? 'action.viewDetailed' : 'action.viewDefault')),
+        h('button', { class: 'btn', onclick: () => exportCSV(rows, cols), title: t('action.csvTip') }, t('action.csv')),
+        h('button', { class: 'btn', onclick: () => { selected.clear(); redraw(); window.print(); }, title: t('action.printTip') }, t('action.print')),
         h('button', { class: 'btn', onclick: () => devicesApi.refresh(), title: t('action.refreshTip') }, icon(ICONS.refresh, 16), t('action.refresh')),
         h('button', { class: 'btn', onclick: () => devicesApi.rescan(), title: t('action.rescanTip') }, icon(ICONS.radar, 16), t('action.rescan')));
 

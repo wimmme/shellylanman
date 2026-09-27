@@ -58,8 +58,8 @@ Status legend: `—` not started · `🔨` in progress · `✅` done and tested 
 | T15 | Double-click action: device info or open Web UI (setting) | `MainView` mouse listener, setting `DCLICK_ACTION` | — | — | Row click opens detail panel; setting kept | 3 | ✅ |
 | T16 | Context menus (device / ghost) | `MainView` `tablePopup`, `ghostDevPopup` | — | — | Row action menu | 3 | ✅ |
 | T17 | Toolbar captions on/off | setting `T_CAPTIONS` | — | — | Not needed (icons + labels responsive) ⚠️ | 3 | — |
-| T18 | Print table | `MainView.printAction` | — | — | Browser print with print stylesheet | 8 | — |
-| T19 | Export table as CSV (visible columns, configurable separator) | `controller/ExportCSVAction`, setting `CSV_SEPARATOR` | — | — | "Export CSV" (download) | 8 | — |
+| T18 | Print table | `MainView.printAction` | — | — | Browser print with print stylesheet | 8 | ✅ |
+| T19 | Export table as CSV (visible columns, configurable separator) | `controller/ExportCSVAction`, setting `CSV_SEPARATOR` | — | — | "Export CSV" (download) | 8 | ✅ |
 | T20 | Open device Web UI (confirm if > 8) | `MainView.browseAction` | — | G1–G4 | Link opening `http://ip[:port]` in a new tab (browser must reach the device) ⚠️ | 3 | ✅ |
 
 ### 1.3 Read-only device information
@@ -345,3 +345,4 @@ A per-generation recording of each of these, request and response, is what `test
 | O26 | A Gen1 restore with `tzautodetect=true` also sends the stored `lat`/`lng`; the device then locates itself again and the stored coordinates are replaced (seen on the PlugS, Phase 6 hardware test) | `AbstractG1Device.restoreCommons` | Same as the original (firmware behaviour); noted only |
 | O27 | Battery Gen2+ firmware from stored data: when only `Shelly.GetStatus` is stored, the current version is set to the available stable version (`stableBuild = current = …`), so a sleeping device without stored `/shelly` or config shows no update | `g2/modules/FirmwareManagerG2.init` | Same as the original (noted, not fixed) — accepted by Wim 2026-09-27 |
 | O28 | FW Update panel: "Select stable / beta / Deselect all" act on the selected table rows when more than one is selected, otherwise on **all** rows including those hidden by the filter; the table can be sorted | `PanelFWUpdate`, `FWUpdateTable` | The buttons act on the rows shown (filter applied); no row selection or sorting in the web table — accepted by Wim 2026-09-27 |
+| O29 | CSV export writes every value as it is, without quoting: a device name or measure containing the separator breaks the columns | `controller/ExportCSVAction`, `view/chart/TimeChartsExporter` | Values with the separator, a quote or a line break are quoted (RFC 4180) — **to ask** |

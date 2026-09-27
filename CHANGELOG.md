@@ -8,6 +8,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 ### Added — Phase 8: advanced functions
 - Notes and keyword per device (Notes action, kept in the archive; keyword up to 32
   characters; only with the archive in use, as in ShellyScanner).
+- Export the devices table as CSV (shown columns and rows, separator setting per
+  browser) and print it (print stylesheet).
 
 ### Added — Phase 7: firmware
 - Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+

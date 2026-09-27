@@ -47,6 +47,12 @@ function field(label: string, control: HTMLElement): HTMLElement {
   return h('div', { class: 'field' }, h('label', { for: control.id }, label), control);
 }
 
+function csvInput(): HTMLInputElement {
+  const i = h('input', { id: 'prefCsv', size: 3, maxlength: 3, value: prefs.csvSeparator() });
+  i.addEventListener('change', () => prefs.setCsvSeparator(i.value));
+  return i;
+}
+
 async function general(body: HTMLElement, onLanguageChange: () => void): Promise<void> {
   // ShellyScanner's General tab display options, kept per browser here.
   body.append(
@@ -61,6 +67,7 @@ async function general(body: HTMLElement, onLanguageChange: () => void): Promise
       { value: '0', label: t('filter.all') }, { value: '1', label: t('col.type') }, { value: '2', label: t('col.device') },
       { value: '3', label: t('col.name') }, { value: '4', label: t('col.keyword') },
     ], String(prefs.defaultFilter()), (v) => prefs.setDefaultFilter(Number(v)))),
+    field(t('prefs.csv'), csvInput()),
     h('p', { class: 'muted' }, t('prefs.note')),
   );
   const langs = LANGUAGES.map((l) => ({ value: l.id, label: l.label }));

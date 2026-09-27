@@ -500,5 +500,10 @@
   "action.notesTip": "Notities en trefwoord van het apparaat",
   "notes.title": "Notities - {device}",
   "notes.note": "Notities",
-  "notes.keyword": "Trefwoord"
+  "notes.keyword": "Trefwoord",
+  "action.csv": "CSV exporteren",
+  "action.csvTip": "De tabel (getoonde kolommen en rijen) opslaan als CSV-bestand",
+  "action.print": "Afdrukken",
+  "action.printTip": "De tabel afdrukken",
+  "prefs.csv": "CSV-scheidingsteken"
 }
