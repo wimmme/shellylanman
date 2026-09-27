@@ -280,3 +280,11 @@ td.mono{font-family:var(--font-mono);font-size:.82rem}
 .ide-editor .cm-editor{height:100%}.ide-log{flex:1;min-height:80px;margin:0;overflow:auto;border:1px solid var(--border);border-radius:6px;padding:6px;font-family:var(--font-mono,monospace);font-size:12px;white-space:pre-wrap}
 .ide-log.dark{background:#282c34;color:#fff}.ide-logbar{display:flex;align-items:center;gap:8px}.ide-caret{font-family:var(--font-mono,monospace)}
 .scr-body{min-height:240px}.scr-tab{display:grid;gap:8px}.scr-buttons{flex-wrap:wrap}.scr-name,.kvs-value{width:100%;min-width:12em}table.data.scr tr,table.data.kvs tr{cursor:pointer}
+.sch-body{flex:1;min-height:0;overflow:auto}.sch-lines{display:grid;gap:0}.sch-line{display:flex;gap:10px;align-items:flex-start;padding:10px 6px;border-bottom:1px solid var(--border)}
+.sch-line:nth-child(even){background:rgba(127,127,127,.06)}.sch-job{flex:1;display:grid;gap:6px;min-width:0}.sch-ops{display:flex;flex-direction:column;gap:4px}
+.sch-frags{gap:14px;flex-wrap:wrap}.sch-fraglabel{display:grid;gap:2px}.sch-frag{width:7em}.sch-checks{flex-wrap:wrap;gap:6px}.sch-check{display:flex;flex-direction:column;align-items:center;font-size:12px}
+.sch-exp{width:100%;font-family:var(--font-mono,monospace)}input.invalid{color:var(--accent-err);border-color:var(--accent-err)}.sch-calls{display:grid;gap:4px}.sch-call{flex-wrap:wrap;gap:4px}
+.sch-method{width:14em}.sch-par{flex:1;min-width:14em;font-family:var(--font-mono,monospace)}.sch-callhead{gap:9em;font-size:12px;color:var(--text-muted)}
+.sch-enable[aria-pressed=true]{color:var(--accent-ok);border-color:var(--accent-ok)}.sch-target{width:6em}.sch-values{display:grid;grid-template-columns:repeat(6,auto);gap:4px 12px;max-height:60vh;overflow:auto}
+.sch-params{display:grid;gap:10px;min-width:300px}.sch-slider{display:grid;grid-template-columns:9em 1fr 3em;align-items:center;gap:8px}
+.sch-wd{display:grid;gap:12px}.sch-profiles{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}.sch-proftable{width:auto;min-width:220px}.sch-profname{width:100%}.sch-profbtns{flex-wrap:wrap;gap:6px}

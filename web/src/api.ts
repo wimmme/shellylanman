@@ -206,3 +206,13 @@ export const scriptsApi = {
   logOn: (id: string) => request<unknown>('POST', `${dev(id)}/scripts/log`),
   backupScripts: (upload: string) => request<{ name: string; code: string }[]>('POST', '/sbk/scripts', { upload }),
 };
+
+// ---- schedulers (Phase 8) ----
+
+export interface MethodHint { name: string; method?: string; params?: string }
+export const scheduleApi = {
+  rpc: async (id: string, method: string, params: unknown): Promise<unknown> =>
+    (await request<{ result: unknown }>('POST', `/devices/${encodeURIComponent(id)}/rpc`, { method, params })).result,
+  hints: (id: string) => request<MethodHint[]>('GET', `/devices/${encodeURIComponent(id)}/schedule/hints`),
+  backupJSON: (upload: string) => request<Record<string, unknown>>('POST', '/sbk/json', { upload }),
+};

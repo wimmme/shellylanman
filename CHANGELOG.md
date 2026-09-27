@@ -18,6 +18,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   go to line, completion, comments, case change; editor settings per browser.
 - Scheduler back end: RPC call to a Gen2+ device (BLU TRV through its gateway),
   method hints from the device's components, JSON entries of a `.sbk`.
+- Scheduler dialogs: Gen2+ jobs (cron editor with sunrise/sunset, value pickers,
+  weekdays and months, calls with method hints, parameter editor and test button,
+  enable, add/duplicate/remove/copy/paste, load from a backup), Wall Display thermostat
+  profiles and rules, BLU TRV rules (temperature or valve position).
 
 ### Added — Phase 7: firmware
 - Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+
