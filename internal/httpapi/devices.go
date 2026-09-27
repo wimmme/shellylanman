@@ -96,8 +96,20 @@ func (s *server) reboot(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
+// listDevices: all devices, or of one generation with ?gen= ("1".."4", "blu",
+// "bth"), the API form of ShellyScanner's "-gen <n>" (CLIController.getFilter).
 func (s *server) listDevices(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, s.Devices.List())
+	list := s.Devices.List()
+	if gen := r.URL.Query().Get("gen"); gen != "" {
+		out := list[:0:0]
+		for _, d := range list {
+			if d.Gen == gen {
+				out = append(out, d)
+			}
+		}
+		list = out
+	}
+	writeJSON(w, http.StatusOK, list)
 }
 
 func (s *server) getDevice(w http.ResponseWriter, r *http.Request) {

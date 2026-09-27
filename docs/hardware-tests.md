@@ -16,3 +16,20 @@ script or KVS change was applied.
 Not checked in the browser: notes, CSV export and print (unit tests for the CSV text). Not tested on hardware: writing schedules, scripts or KVS (no Gen2+ test device for
 writes — simulator tests cover the calls), Wall Display and BLU TRV schedulers (no such
 devices here), the EM chart on a real Pro 3EM over a long period.
+
+## Phase 9 — parity review (2026-09-27)
+
+New test device **ShellyTestPlug** (Plug S Gen3, 192.168.0.150, firmware 1.2.3 at start).
+
+| Check | Result |
+|---|---|
+| Discovery of the new plug | found while it was still starting: "unmanaged, error" (timeout on `/shelly`) until Reload — same as the original (O33); after Reload: Plug S G3, relay, W/V/I |
+| Local mDNS scan (one interface, eth0) | 25 instances found; set back to full scan |
+| Reboot (Gen3) | offline ~70 s, back on line, `restart_required` cleared |
+| Firmware check | before the reboot the plug offered nothing; after it: stable 2.0.1 (preselected); Shelly index: 2.0.1, ⚡ offered |
+| Firmware update 1.2.3 → 2.0.1 from the Firmware page | `Shelly.Update` sent, first `ota_progress` (1 %) shown as "load 1%"; the plug then reported nothing more and a second request answered "Already in progress"; after 20 minutes still 1.2.3 — the download on the plug appears stuck (weak Wi-Fi, −73 dBm) |
+| KVS set / list / delete | ok |
+| Schedule create (disabled) / list / delete through the RPC endpoint | ok |
+| Script create, put code (1609 characters, two segments), read back, delete | ok |
+| Backup, restore own backup (scripts overwrite + enable like backup), backup again | success; the two backups are identical except `rev` counters |
+

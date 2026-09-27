@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed — Phase 9: parity review
+- Right-click menu on the devices table (device: info, web UI, settings, backup,
+  restore, notes, reload; archived device: reload, notes, remove) — it was missing.
+- API: `GET /api/v1/devices?gen=` (ShellyScanner's `-gen`).
+
 ### Added — Phase 8: advanced functions
 - Notes and keyword per device (Notes action, kept in the archive; keyword up to 32
   characters; only with the archive in use, as in ShellyScanner).

@@ -378,6 +378,35 @@ export const devicesPage: Page = {
             }
             redraw();
           });
+          tr.addEventListener('contextmenu', (e) => { // MainView tablePopup / ghostDevPopup
+            e.preventDefault();
+            if (!selected.has(d.id)) { selected.clear(); selected.add(d.id); anchor = d.id; redraw(); }
+            const sel = selectedDevices();
+            const one = sel.length === 1 ? sel[0]! : null;
+            const items: { label: Key; run: () => void; on: boolean }[] = d.status === 'ghost'
+              ? [
+                { label: 'action.reload', run: () => reload(sel), on: true },
+                { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
+                { label: 'action.removeGhost', run: () => void removeGhosts(sel), on: sel.every((x) => x.status === 'ghost') },
+              ]
+              : [
+                { label: 'action.info', run: () => one && openInfo(one.id), on: !!one },
+                { label: 'action.webUI', run: () => void openWebUI(sel.filter((x) => !isBLU(x))), on: sel.some((x) => !isBLU(x) && x.status !== 'ghost') },
+                { label: 'action.settings', run: () => openDeviceSettings(sel.map((x) => x.id)), on: sel.some((x) => x.gen !== 'bth') },
+                { label: 'action.backup', run: () => void backupDevices(sel), on: true },
+                { label: 'action.restore', run: () => void (one ? restoreDevice(one) : restoreDevices(sel)), on: true },
+                { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
+                { label: 'action.reload', run: () => reload(sel), on: true },
+              ];
+            document.querySelectorAll('.ctx-menu').forEach((m) => m.remove());
+            const m = h('div', { class: 'menu ctx-menu', role: 'menu' }, ...items.filter((x) => x.on).map((it) =>
+              h('button', { role: 'menuitem', onclick: () => { m.remove(); it.run(); } }, t(it.label))));
+            m.style.left = `${e.clientX}px`;
+            m.style.top = `${e.clientY}px`;
+            document.body.append(m);
+            const away = (): void => { m.remove(); document.removeEventListener('click', away); };
+            setTimeout(() => document.addEventListener('click', away), 0);
+          });
           tr.addEventListener('dblclick', () => {
             if (prefs.dblClick() === 'WEB' && d.status !== 'ghost' && !isBLU(d)) void openWebUI([d]);
             else openInfo(d.id);

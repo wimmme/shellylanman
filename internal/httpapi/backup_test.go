@@ -159,3 +159,16 @@ func TestScriptEndpoints(t *testing.T) {
 		t.Fatalf("no scripts in a Gen1 backup: %v", list)
 	}
 }
+
+func TestDevicesGenFilter(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	var list []map[string]any
+	decode(t, do(t, "GET", srv.URL+"/api/v1/devices?gen=1", "", nil), &list)
+	if len(list) != 1 {
+		t.Fatalf("gen 1: %v", list)
+	}
+	decode(t, do(t, "GET", srv.URL+"/api/v1/devices?gen=2", "", nil), &list)
+	if len(list) != 0 {
+		t.Fatalf("gen 2: %v", list)
+	}
+}
