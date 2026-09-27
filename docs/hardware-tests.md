@@ -116,7 +116,7 @@ Test container on dockerhostvm (port 3099). No firmware update was sent to any d
 | Live index/download test (`SHELLYLANMAN_LIVE=1 go test -run TestLive ./internal/firmware`) | SHPLG-S 1.14.0 (Gen1, HTTP), Plus1 1.7.5, MiniPMG3 2.0.1, Mini1PMG4 2.0.1 downloaded and verified |
 | UI | Firmware page with index column and ⚡, QR modal, FW Update as first settings tab; no console errors |
 
-Not tested on hardware: an actual firmware update with progress and restart (every
+Not tested on hardware (Wim: leave the LampSalon update for now): an actual firmware update with progress and restart (every
 test-allowed device is up to date; the only candidate, LampSalon, is not a test
 device — simulator tests cover progress, restart and recheck), BLU TRV update,
 flashing a downloaded file through a device's access point.
