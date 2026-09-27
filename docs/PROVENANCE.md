@@ -39,6 +39,7 @@ header. Update this table in the same commit as the code.
 | `internal/service/firmware.go` | 2 | `FirmwareManager.getShortVersion`, `FirmwareManagerG1/G2/TRV`, `PanelFWUpdate` (rows, apply, deferral, `FMUpdateListener`, back-on-line rule) |
 | `internal/firmware`, `internal/service/localfw.go` | 4 | (new feature; index formats observed on Shelly's servers, DECISIONS §4.2–4.4) |
 | `internal/service/scripts.go` | 2 | `g2/modules/Script`, `g2/modules/KVS`, `view/scripts/DialogDeviceScripts`, `ScriptsPanel.loadCodeFromFile`, `ScriptFrame.activateLogConnection` |
+| `internal/service/schedule.go` | 2 | `view/scheduler/gen2plus/MethodHints`, `G2JobPanel` (test), `blu/BluTRV.getTRVJSON/postTRVCommand` |
 | `internal/service/control.go` | 2 | commands of `g1/modules/*`, `g2/modules/*`, `g3/modules/*`, `blu/BluTRV`; `MainView.rebootAction`, `Devices.reboot`, `Webhooks.execute`, `Actions.execute` |
 | `internal/service/config.go` | 2 | `view/devsettings/*` panels; `WIFIManager*`, `LoginManager*`, `MQTTManager*`, `TimeAndLocationManager*`, `InputResetManager*`, `setCloudEnabled` |
 | `internal/service/deferred.go` | 2 | `controller/DeferrableTask`, `DeferrablesContainer` |

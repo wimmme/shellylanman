@@ -16,6 +16,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Scripts dialog (Scripts and KVS tabs) and the script editor (CodeMirror 6, loaded on
   demand): open/save files, upload, run/stop, upload and run, script output, find,
   go to line, completion, comments, case change; editor settings per browser.
+- Scheduler back end: RPC call to a Gen2+ device (BLU TRV through its gateway),
+  method hints from the device's components, JSON entries of a `.sbk`.
 
 ### Added — Phase 7: firmware
 - Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+

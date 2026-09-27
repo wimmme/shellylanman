@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -201,4 +202,59 @@ func (s *server) backupScripts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, list)
+}
+
+// scheduleRoutes: the scheduler dialogs (Phase 8).
+func (s *server) scheduleRoutes(mux *http.ServeMux, h func(http.HandlerFunc) http.HandlerFunc) {
+	mux.HandleFunc("POST /api/v1/devices/{id}/rpc", h(s.deviceRPC))
+	mux.HandleFunc("GET /api/v1/devices/{id}/schedule/hints", h(s.scheduleHints))
+	mux.HandleFunc("POST /api/v1/sbk/json", h(s.backupJSON))
+}
+
+func (s *server) deviceRPC(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Method string          `json:"method"`
+		Params json.RawMessage `json:"params"`
+	}
+	if !readJSON(w, r, &body) {
+		return
+	}
+	res, err := s.Devices.DeviceRPC(r.Context(), r.PathValue("id"), body.Method, body.Params)
+	if err != nil {
+		writeError(w, scriptErrorCode(err), err.Error())
+		return
+	}
+	if len(res) == 0 {
+		res = json.RawMessage("null")
+	}
+	writeJSON(w, http.StatusOK, map[string]json.RawMessage{"result": res})
+}
+
+func (s *server) scheduleHints(w http.ResponseWriter, r *http.Request) {
+	list, err := s.Devices.ScheduleHints(r.Context(), r.PathValue("id"))
+	if err != nil {
+		writeError(w, scriptErrorCode(err), err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, list)
+}
+
+func (s *server) backupJSON(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Upload string `json:"upload"`
+	}
+	if !readBigJSON(w, r, &body) {
+		return
+	}
+	data, err := base64.StdEncoding.DecodeString(body.Upload)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "upload is not base64")
+		return
+	}
+	files, err := service.BackupJSON(data)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, files)
 }

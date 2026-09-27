@@ -216,6 +216,7 @@ func TestBLUThroughGateway(t *testing.T) {
 		"rpc_BluTrv.GetRemoteDeviceInfo.json":   `{"device_info":{"id":"shellyblutrv-aabbcc000020"}}`,
 		"rpc_BluTrv.GetStatus.json":             `{"id":200,"rssi":-70,"last_updated_ts":1790000000,"battery":90}`,
 		"rpc_BluTrv.GetConfig.json":             `{"id":200,"name":"Radiator"}`,
+		"rpc_BluTrv.Call.json":                  `{"rules":[{"rule_id":1,"timespec":"0 0 7 * * *","target_C":21}]}`,
 	}), nil)
 	m.handle(ctx, gw, "shellydimmerg3-aabbcc000010", true)
 
@@ -240,6 +241,11 @@ func TestBLUThroughGateway(t *testing.T) {
 	}
 	if n != 1 || len(m.List()) != 4 {
 		t.Fatalf("devices: %d (TRV rows %d), want 4 (1)", len(m.List()), n)
+	}
+	// The scheduler's calls to a TRV go to the gateway as BluTrv.Call.
+	res, err := m.DeviceRPC(ctx, "AABBCC000020", "TRV.ListScheduleRules", []byte(`{"id":0}`))
+	if err != nil || !strings.Contains(string(res), `"rule_id":1`) {
+		t.Fatalf("TRV rpc %s %v", res, err)
 	}
 }
 
