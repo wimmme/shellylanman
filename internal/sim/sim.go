@@ -40,6 +40,14 @@ type Device struct {
 	mu     sync.Mutex
 	calls  []string       // "GET /relay/0?turn=on", "RPC Switch.Set {"id":0,"on":true}"
 	status map[string]any // served status, changed by relay commands
+	down   bool           // drop every connection: the device looks off line
+}
+
+// SetDown makes the device unreachable (connections are closed unanswered).
+func (d *Device) SetDown(down bool) {
+	d.mu.Lock()
+	d.down = down
+	d.mu.Unlock()
 }
 
 // Calls returns the requests received so far (except /shelly), oldest first.
@@ -73,6 +81,18 @@ func New(dir string) (*Device, error) {
 }
 
 func (d *Device) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	d.mu.Lock()
+	down := d.down
+	d.mu.Unlock()
+	if down {
+		if hj, ok := w.(http.Hijacker); ok {
+			if c, _, err := hj.Hijack(); err == nil {
+				c.Close()
+				return
+			}
+		}
+		panic(http.ErrAbortHandler)
+	}
 	rpcPost := r.Method == http.MethodPost && r.URL.Path == "/rpc"
 	var body []byte
 	if rpcPost {
@@ -165,12 +185,19 @@ func isCommand(r *http.Request) bool {
 
 // isCommandMethod: RPC methods that change something.
 func isCommandMethod(m string) bool {
-	for _, suf := range []string{".Set", ".SetConfig", ".SetAuth", ".Toggle", ".Create", ".Delete", ".Update"} {
-		if strings.HasSuffix(m, suf) {
+	_, verb, ok := strings.Cut(m, ".")
+	if !ok {
+		return false
+	}
+	if i := strings.LastIndex(verb, "."); i >= 0 { // Thermostat.Schedule.AddProfile
+		verb = verb[i+1:]
+	}
+	for _, pre := range []string{"Set", "Add", "Delete", "Create", "Put", "Remove", "Update", "Toggle", "Call", "call", "Reboot"} {
+		if strings.HasPrefix(verb, pre) {
 			return true
 		}
 	}
-	return strings.Contains(m, ".Call") || strings.EqualFold(m, "BluTrv.call") || m == "Shelly.Reboot"
+	return false
 }
 
 // setRelay applies on/off/toggle to relay idx and returns the relay state

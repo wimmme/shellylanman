@@ -28,6 +28,13 @@ header. Update this table in the same commit as the code.
 | `internal/service/info.go` | 2 | `getInfoRequests()` per class, `DialogDeviceLogsG1/G2`, `LoginManagerG2.getAuthString` |
 | `internal/parse/gen2_ctl.go` | 2 | `g2/modules/SensorAddOnPro.getDigitalOut`, `g3/PbSXT1St1820`, `g3/PbSXT1St802`, `g3/modules/XT1Thermostat` |
 | `internal/parse/actions.go` | 2 | `g1/modules/Actions` (fillSettings, Action.isActive) |
+| `internal/ojson` | 4 | (ordered JSON model standing in for Jackson's `ObjectNode`) |
+| `internal/sbk/backup.go` | 2 | `AbstractG1Device.backup`, `AbstractG2Device.backup`, `AbstractBatteryG2Device.backup`, backup of `ShellyPlusUNI`, `WallDisplay(X2i)`, `PbSXT1*`, `ShellyXMOD1`, `BTHomeDevice`, `BluTRV`; `RestoreAction.readBackupFile` |
+| `internal/sbk/restore.go`, `device.go` | 2 | `RestoreMsg`, `AbstractG1Device.restoreCheck/restore/restoreCommonsG1`, `g1/modules/*` restore, `AbstractG2Device.restoreCheck/restore/restoreCommonConfig`, `g2/modules/Webhooks`, `KVS`, `Script(s)`, `LoginManagerG2`, `WIFIManagerG2`, `Devices`/`getJSON`/`postCommand` semantics |
+| `internal/sbk/g1.go` | 2 | `restoreCheck`/`restore` of every `model/device/g1` class and their modules |
+| `internal/sbk/g2.go` | 2 | `restoreCheck`/`restore` of every `model/device/g2`, `g3`, `g4` class, `g2/modules/SensorAddOn(Pro)`, `LoRaAddOn`, `ThermostatG2`, `g3/modules/XT1Thermostat`, `WallDisplay`, `DynamicComponents` |
+| `internal/sbk/blu.go` | 2 | `BTHomeDevice.restoreCheck/restore`, `BluTRV.restoreCheck/restore`, `blu/modules/ScheduleManagerTRV`, `SensorsCollection.deleteAll` |
+| `internal/service/backup.go` | 2 | `controller/BackupAction`, `controller/RestoreAction` (single and multi restore, deferred tasks, reboot offer) |
 | `internal/service/control.go` | 2 | commands of `g1/modules/*`, `g2/modules/*`, `g3/modules/*`, `blu/BluTRV`; `MainView.rebootAction`, `Devices.reboot`, `Webhooks.execute`, `Actions.execute` |
 | `internal/service/config.go` | 2 | `view/devsettings/*` panels; `WIFIManager*`, `LoginManager*`, `MQTTManager*`, `TimeAndLocationManager*`, `InputResetManager*`, `setCloudEnabled` |
 | `internal/service/deferred.go` | 2 | `controller/DeferrableTask`, `DeferrablesContainer` |

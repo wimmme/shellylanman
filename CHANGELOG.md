@@ -5,6 +5,18 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Phase 6: backup and restore
+- Backup engine for every generation (`.sbk`, compatible with ShellyScanner): Gen1
+  settings and actions; Gen2+ configuration, schedules, webhooks, KVS, scripts,
+  dynamic components, add-on peripherals and the model-specific sections; battery
+  devices from their stored data when they sleep; BTHome devices and the BLU TRV
+  through their gateway.
+- Restore engine with the checks of the original (other host, model, profile, mode,
+  add-on, passwords to ask, script conflicts) and the restore steps per model.
+- Backups are kept in `/data/backups/<device>/`, newest first, with a retention
+  setting (default 10 per device); backup and restore of an off-line device are
+  queued as deferred tasks; multi-device restore from the newest backups.
+
 ### Added — Phase 5: configuration
 - Devices settings for one or more devices: Wi-Fi 1 and Wi-Fi 2 (enable/disable,
   DHCP/static/keep, copy from another device, warning before applying), restricted
