@@ -85,3 +85,21 @@ Not tested on hardware: Wi-Fi changes (the device's Wi-Fi password cannot be rea
 back, so a test could not restore it — simulator tests only), Gen2+ writes (no Gen2+
 test device), deferred tasks on a real device going off line and back (simulator
 tests), BLE info of BLU devices (none here), auto firmware update schedule (Gen2+).
+
+## Phase 6 — backup and restore (2026-09-27)
+
+Same setup (test container on dockerhostvm, port 3099). Backups and restore checks
+only read; the only restore was on **Grondwaterpomp** (PlugS Gen1, .86), with its own
+backup.
+
+| Check | Result |
+|---|---|
+| Backup of all 25 devices (Gen1 PlugS/1/1L/i3/RGBW2/UNI, Plus 1/RGBW PM/UNI, Pro RGBWW PM/3EM, Gen3 Dimmer/0-10V/i4/Mini PM, Gen4 Mini 1PM) | 25 × success in ~20 s per batch; Gen1 files 2 entries, Gen2+ 7 entries (+UNI with peripherals), scripts included |
+| Restore check of every device with its own backup (read only) | no errors; i4 G3 and +UNI ask about the colliding script name, +UNI asks the protected AP password — as the Java checks would |
+| Restore wizard on Grondwaterpomp | source list (own / other device / file, download link), confirmation, "Success"; device stayed on line |
+| Backup after restore compared with the one before | identical except time and `lat`/`lng`: `tzautodetect=true` makes the device locate itself again after the `/settings` write (O26, same in the original) |
+
+Not tested on hardware: Gen2+ restore (no Gen2+ test device for writes — simulator
+tests cover G2 order, scripts, schedules, KVS, webhooks, login last), Wi-Fi/login/MQTT
+password questions with real values, BLU backup/restore (no BLU devices here), battery
+devices from stored data, multi restore (simulator and API tests).

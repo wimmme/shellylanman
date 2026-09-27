@@ -446,3 +446,16 @@ Technical choices made while building discovery, within the scope agreed above.
 | P5-6 | Checklist page: from the device table for the selection (`#/checklist?ids=`) or from the sidebar for all devices; rows computed on the server with the same requests as CheckListView; right-click menu per column; Scripts edit waits for Phase 8 | The sidebar entry has no selection to work from |
 | P5-7 | Gen1 "reboot required" after an eco-mode change is remembered by the server until the device is rebooted (Gen1 does not report it) | AbstractG1Device.setEcoMode sets rebootRequired |
 | P5-8 | MQTT `-slow` becomes a setting (tenths of a second between devices) on the Network settings page | Q14: no command line |
+
+## 13. Decisions taken during Phase 6 (2026-09-27)
+
+| # | Decision | Why |
+|---|---|---|
+| P6-1 | Backups are kept on the server in `/data/backups/<device id>/<hostname>-<yyyymmdd-hhmmss>.sbk`, newest first, the last N per device (setting `backupKeep`, default 10, 0 = all); every backup can be downloaded | Q12; the browser has no folder to choose, the server does |
+| P6-2 | The `.sbk` layout is the one of ShellyScanner (same entry names, scripts as `<name>.mjs`), so backups can be moved between both programs | Costs nothing (Q11) |
+| P6-3 | JSON of backups is handled with an ordered model (`internal/ojson`) so Gen1 restores send parameters in the backup's order and numbers keep their literal text, like Jackson in the original | Some Gen1 firmware is order-sensitive |
+| P6-4 | Restore source: a backup of the device itself, a backup of another device or an uploaded `.sbk` (base64 in the JSON request, 24 MB limit) | Replaces the file chooser |
+| P6-5 | The restore wizard asks the questions of RestoreAction in the same order (other host → error → warnings → passwords login / Wi-Fi 1 / Wi-Fi 2 / AP / MQTT → script conflicts → enable scripts), then an explicit confirmation (brief: destructive actions); API needs `confirm:true`; after success the reboot offer when a setting needs it | Original flow + the brief's rule |
+| P6-6 | Multi restore uses **the newest stored backup of each device** (the original: one file per host name in a chosen folder); the UI keeps the per-device "other host" question and warnings, passwords are not asked, scripts are overwritten and enabled; `POST /api/v1/restore/multi` is the non-interactive variant (nonInteractiveRestoreDevice: a question or error stops that device) | No folder on the server side; newest backup is what "restore all" means here — **to confirm** |
+| P6-7 | Backup of an off-line / not-logged-in / archived device and restore of an archived device are queued as deferred tasks (backup data and answers sealed); an archived device is checked from the file alone (GhostDevice.restoreCheck); the check of a reachable device that turns out to be off line is an error, as in the original | Same behaviour, persistent queue (P5-5) |
+| P6-8 | Refresh of a device is paused while its backup or restore runs, and it is refreshed right after | model.pauseRefresh / activateRefresh |
