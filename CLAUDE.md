@@ -61,8 +61,9 @@ internal/fixture   fixture naming + scrubbing (public repo!)
   "fixed".
 - **Read before write.** Nothing writes to a device until reading is solid.
   **Never write to a real device without asking**, except the agreed test
-  device **Grondwaterpomp** (Shelly Plug S Gen1, 192.168.0.86) in phases that
-  need writes — and even then say what you will do first.
+  devices **Grondwaterpomp** (Shelly Plug S Gen1, 192.168.0.86) and
+  **ShellyTestPlug** (Shelly Plug S Gen3, 192.168.0.150, firmware updates allowed)
+  in phases that need writes — and even then say what you will do first.
 - **Destructive actions** (reboot, restore, firmware update, factory reset)
   always need explicit confirmation in the UI and `confirm: true` in the API.
 - **No cloud dependency, no telemetry.** Nothing leaves the LAN except what the
