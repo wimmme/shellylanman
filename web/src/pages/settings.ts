@@ -1,3 +1,4 @@
+import { ideprefs, setIdeprefs, type Indent } from '../ideprefs';
 import { api } from '../api';
 import {
   APPEAR_DEFAULT, FONTS, FONT_SIZES, PALETTES, SLIDER_MAX, applyFont, applyFontSize, applyLevel, applyPalette,
@@ -10,7 +11,7 @@ import { card, type Page } from './common';
 import { archive, network } from './settings-network';
 
 export function settingsPage(onLanguageChange: () => void): Page {
-  let tab: 'general' | 'network' | 'archive' | 'appearance' = 'general';
+  let tab: 'general' | 'network' | 'archive' | 'ide' | 'appearance' = 'general';
   return {
     id: 'settings',
     title: 'nav.settings',
@@ -25,9 +26,10 @@ export function settingsPage(onLanguageChange: () => void): Page {
         if (which === 'general') void general(body, onLanguageChange);
         else if (which === 'network') void network(body);
         else if (which === 'archive') void archive(body);
+        else if (which === 'ide') ide(body);
         else appearance(body);
       };
-      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['appearance', 'settings.tab.appearance']] as const) {
+      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['ide', 'settings.tab.ide'], ['appearance', 'settings.tab.appearance']] as const) {
         const b = h('button', { role: 'tab', 'data-tab': id, onclick: () => show(id) }, t(key));
         tabs.append(b);
       }
@@ -83,6 +85,33 @@ async function general(body: HTMLElement, onLanguageChange: () => void): Promise
     await api.updateSettings({ language: v });
     saved.textContent = t('settings.saved');
   })), saved);
+}
+
+/** PanelIDE: script editor settings, per browser. */
+function ide(body: HTMLElement): void {
+  const p = ideprefs();
+  const save = (): void => setIdeprefs(p);
+  const num = (id: string, v: number, min: number, max: number, set: (n: number) => void): HTMLInputElement => {
+    const i = h('input', { id, type: 'number', min, max, value: v });
+    i.addEventListener('change', () => { const n = Number(i.value); if (n >= min && n <= max) { set(n); save(); } });
+    return i;
+  };
+  const chk = (label: string, v: boolean, set: (b: boolean) => void): HTMLElement => {
+    const c = h('input', { type: 'checkbox', checked: v });
+    c.addEventListener('change', () => { set(c.checked); save(); });
+    return h('label', { class: 'row' }, c, label);
+  };
+  body.append(
+    field(t('ide.tab'), num('ideTab', p.tabSize, 1, 16, (n) => { p.tabSize = n; })),
+    field(t('ide.font'), num('ideFont', p.fontSize, 8, 32, (n) => { p.fontSize = n; })),
+    field(t('ide.indent'), select('ideIndent', [{ value: 'NO', label: t('ide.indent.NO') }, { value: 'STD', label: t('ide.indent.STD') }, { value: 'SMART', label: t('ide.indent.SMART') }],
+      p.indent, (v) => { p.indent = v as Indent; save(); })),
+    h('div', { class: 'field' }, h('span', { class: 'cfg-label' }, t('ide.close')),
+      chk('{ }', p.closeCurly, (b) => { p.closeCurly = b; }), chk('( )', p.closeBracket, (b) => { p.closeBracket = b; }),
+      chk('[ ]', p.closeSquare, (b) => { p.closeSquare = b; }), chk('" "', p.closeString, (b) => { p.closeString = b; })),
+    chk(t('ide.dark'), p.dark, (b) => { p.dark = b; }),
+    h('p', { class: 'muted' }, t('ide.note')),
+  );
 }
 
 function appearance(body: HTMLElement): void {

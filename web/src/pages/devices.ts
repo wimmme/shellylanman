@@ -11,6 +11,7 @@ import { backupDevices, restoreDevice, restoreDevices } from '../panels/backup';
 import { openDeviceSettings } from '../panels/devsettings';
 import { openLogs } from '../panels/logs';
 import { openNotes } from '../panels/notes';
+import { openScripts } from '../panels/scripts';
 import { download, toCSV } from '../csv';
 import { toast } from '../toast';
 import { emptyState, type Page } from './common';
@@ -304,6 +305,7 @@ export const devicesPage: Page = {
         act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(sel), 'action.rebootTip'),
         act('action.checklist', sel.length > 0, () => { location.hash = '#/checklist?ids=' + encodeURIComponent(sel.map((d) => d.id).join(',')); }, 'action.checklistTip'),
         act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(sel.map((d) => d.id)), 'action.settingsTip'),
+        act('action.scripts', !!one && one.status !== 'ghost' && ['2', '3', '4'].includes(one.gen), () => one && void openScripts(one), 'action.scriptsTip'),
         act('action.notes', !!one && archiveInUse(), () => one && openNotes(one), 'action.notesTip'),
         act('action.backup', sel.length > 0, () => void backupDevices(sel), 'action.backupTip'),
         act('action.restore', sel.length > 0, () => void (one ? restoreDevice(one) : restoreDevices(sel)), 'action.restoreTip'),

@@ -175,8 +175,8 @@ func (m *Devices) ScriptRun(ctx context.Context, id string, sid int, run, withLo
 	if err != nil {
 		return err
 	}
-	if run && withLog && d.LogMode != "SOCKET" {
-		_ = g2call(ctx, c, "Sys.SetConfig", map[string]any{"config": map[string]any{"debug": map[string]any{"websocket": map[string]any{"enable": true}}}})
+	if run && withLog {
+		enableSocketLog(ctx, c, d)
 	}
 	method := "Script.Stop"
 	if run {
@@ -184,6 +184,24 @@ func (m *Devices) ScriptRun(ctx context.Context, id string, sid int, run, withLo
 	}
 	_, err = c.Get(ctx, "/rpc/"+method+"?id="+strconv.Itoa(sid))
 	return err
+}
+
+// enableSocketLog: the script editor switches the device's websocket debug
+// log on when it is off (ScriptFrame.activateLogConnection → setDebugMode(SOCKET)).
+func enableSocketLog(ctx context.Context, c *shelly.Conn, d model.Device) {
+	if d.LogMode != "SOCKET" {
+		_ = g2call(ctx, c, "Sys.SetConfig", map[string]any{"config": map[string]any{"debug": map[string]any{"websocket": map[string]any{"enable": true}}}})
+	}
+}
+
+// ScriptLogOn prepares the log of a running script shown in the editor.
+func (m *Devices) ScriptLogOn(ctx context.Context, id string) error {
+	c, d, err := m.g2conn(id)
+	if err != nil {
+		return err
+	}
+	enableSocketLog(ctx, c, d)
+	return nil
 }
 
 var crlfRe = regexp.MustCompile(`\r+\n`)

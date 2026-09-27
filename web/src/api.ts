@@ -21,7 +21,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     (init.headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
   const resp = await fetch('/api/v1' + path, init);
-  const data = await resp.json().catch(() => ({}));
+  const data = resp.status === 204 ? {} : await resp.json().catch(() => ({}));
   if (!resp.ok) throw new ApiError(resp.status, (data as { error?: string }).error || resp.statusText);
   return data as T;
 }
@@ -184,4 +184,25 @@ export interface LocalLink {
 export const localFwApi = {
   index: (ids: string[]) => request<IndexRow[]>('GET', '/firmware/index' + (ids.length ? '?' + idsQuery(ids) : '')),
   link: (id: string) => request<LocalLink>('POST', `/firmware/${encodeURIComponent(id)}/local`),
+};
+
+// ---- scripts and KVS (Phase 8) ----
+
+export interface ScriptInfo { id: number; name: string; enable: boolean; running: boolean }
+export interface KVItem { key: string; etag: string; value: string }
+export interface ScriptsView { scripts: ScriptInfo[] | null; kvs: KVItem[] | null }
+
+const dev = (id: string): string => `/devices/${encodeURIComponent(id)}`;
+export const scriptsApi = {
+  list: (id: string) => request<ScriptsView>('GET', `${dev(id)}/scripts`),
+  create: (id: string) => request<ScriptInfo>('POST', `${dev(id)}/scripts`),
+  update: (id: string, sid: number, patch: { name?: string; enable?: boolean }) => request<unknown>('PATCH', `${dev(id)}/scripts/${sid}`, patch),
+  remove: (id: string, sid: number) => request<unknown>('DELETE', `${dev(id)}/scripts/${sid}`),
+  run: (id: string, sid: number, run: boolean, log: boolean) => request<unknown>('POST', `${dev(id)}/scripts/${sid}/${run ? 'start' : 'stop'}${log ? '?log=true' : ''}`),
+  code: async (id: string, sid: number): Promise<string> => (await request<{ code: string }>('GET', `${dev(id)}/scripts/${sid}/code`)).code,
+  putCode: (id: string, sid: number, code: string) => request<unknown>('PUT', `${dev(id)}/scripts/${sid}/code`, { code }),
+  kvsSet: (id: string, key: string, value: string) => request<KVItem>('POST', `${dev(id)}/kvs`, { key, value }),
+  kvsDelete: (id: string, key: string) => request<unknown>('DELETE', `${dev(id)}/kvs?key=${encodeURIComponent(key)}`),
+  logOn: (id: string) => request<unknown>('POST', `${dev(id)}/scripts/log`),
+  backupScripts: (upload: string) => request<{ name: string; code: string }[]>('POST', '/sbk/scripts', { upload }),
 };

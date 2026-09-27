@@ -22,6 +22,7 @@ func (s *server) scriptRoutes(mux *http.ServeMux, h func(http.HandlerFunc) http.
 	mux.HandleFunc("POST /api/v1/devices/{id}/kvs", h(s.setKVS))
 	mux.HandleFunc("DELETE /api/v1/devices/{id}/kvs", h(s.deleteKVS))
 	mux.HandleFunc("POST /api/v1/sbk/scripts", h(s.backupScripts))
+	mux.HandleFunc("POST /api/v1/devices/{id}/scripts/log", h(s.scriptLogOn))
 }
 
 func scriptErrorCode(err error) int {
@@ -167,6 +168,14 @@ func (s *server) deleteKVS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.KVSDelete(r.Context(), r.PathValue("id"), key); err != nil {
+		writeError(w, scriptErrorCode(err), err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *server) scriptLogOn(w http.ResponseWriter, r *http.Request) {
+	if err := s.Devices.ScriptLogOn(r.Context(), r.PathValue("id")); err != nil {
 		writeError(w, scriptErrorCode(err), err.Error())
 		return
 	}

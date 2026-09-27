@@ -144,6 +144,55 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
+## JavaScript bundled into the frontend
+
+The script editor (Scripts dialog) is built on CodeMirror 6; it is bundled into
+a separate file that is loaded only when the editor opens.
+
+| Package | Version | Licence |
+|---|---|---|
+| `codemirror` | 6.0.2 | MIT |
+| `@codemirror/autocomplete` | 6.20.3 | MIT |
+| `@codemirror/commands` | 6.11.1 | MIT |
+| `@codemirror/lang-javascript` | 6.2.5 | MIT |
+| `@codemirror/language` | 6.12.4 | MIT |
+| `@codemirror/lint` | 6.9.7 | MIT |
+| `@codemirror/search` | 6.7.2 | MIT |
+| `@codemirror/state` | 6.7.6 | MIT |
+| `@codemirror/theme-one-dark` | 6.1.3 | MIT |
+| `@codemirror/view` | 6.43.13 | MIT |
+| `@lezer/common`, `@lezer/highlight`, `@lezer/javascript`, `@lezer/lr` | 1.5.3, 1.2.4, 1.5.5, 1.4.10 | MIT |
+| `@marijn/find-cluster-break`, `crelt`, `style-mod`, `w3c-keyname` | 1.0.4, 1.0.7, 4.1.4, 2.2.8 | MIT |
+
+All by Marijn Haverbeke and others, under this licence (copyright years
+2016–2024 per package):
+
+```
+MIT License
+
+Copyright (C) 2018-2021 by Marijn Haverbeke <marijn@haverbeke.berlin> and others
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+---
+
 ## Build-time only (not shipped in the image)
 
 | Tool | Licence |
