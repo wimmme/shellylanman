@@ -193,6 +193,22 @@ THE SOFTWARE.
 
 ---
 
+## Chart libraries (Charts page)
+
+Bundled into a separate file loaded only by the Charts page.
+
+| Package | Version | Licence | Copyright |
+|---|---|---|---|
+| `chart.js` | 4.5.1 | MIT | (c) 2014-2024 Chart.js Contributors |
+| `@kurkle/color` | 0.3.4 | MIT | (c) 2018-2024 Jukka Kurkela |
+| `chartjs-plugin-zoom` | 2.2.0 | MIT | (c) 2013-2021 chartjs-plugin-zoom contributors |
+| `hammerjs` | 2.0.8 | MIT | (C) 2011-2014 by Jorik Tangelder (Eight Media) |
+
+Each under the MIT licence text quoted above for CodeMirror, with its own
+copyright line.
+
+---
+
 ## Build-time only (not shipped in the image)
 
 | Tool | Licence |

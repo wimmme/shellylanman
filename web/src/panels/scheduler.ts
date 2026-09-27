@@ -27,7 +27,7 @@ function iconBtn(label: string, tip: Key, onClick: () => void, disabled = false)
 /** The enable toggle of a line (Standby icons in the original). */
 function enableToggle(on: boolean, onChange: (on: boolean) => Promise<boolean>): { el: HTMLButtonElement; value: () => boolean } {
   let state = on;
-  const el = h('button', { class: 'btn small sch-enable', 'aria-pressed': String(on), title: t(on ? 'sch.enabled' : 'sch.disabled') }, '⏻');
+  const el = h('button', { class: 'btn small sch-enable', 'aria-pressed': String(on), title: t(on ? 'sch.enabled' : 'sch.disabled') }, '●');
   el.addEventListener('click', async () => {
     if (await onChange(!state)) {
       state = !state;

@@ -4,7 +4,8 @@ import { initAppearance } from './appearance';
 import { h, icon, ICONS } from './dom';
 import { isLang, setLang, storedLang, t } from './i18n';
 import { aboutPage } from './pages/about';
-import { errorState, loadingState, placeholder, type Page } from './pages/common';
+import { errorState, loadingState, type Page } from './pages/common';
+import { chartsPage } from './pages/charts';
 import { checklistPage } from './pages/checklist';
 import { deferredPage, sidebarBadge, wireDeferredEvents } from './pages/deferred';
 import { devicesPage } from './pages/devices';
@@ -17,7 +18,7 @@ import { loadDevices, setArchiveInUse, wireDeviceEvents } from './devices';
 const pages: Page[] = [
   devicesPage,
   checklistPage,
-  placeholder('charts', 'nav.charts', ICONS.charts, 'page.charts.text'),
+  chartsPage,
   firmwarePage,
   deferredPage,
   settingsPage(() => renderShell()),

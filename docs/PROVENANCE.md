@@ -57,6 +57,7 @@ header. Update this table in the same commit as the code.
 | `web/src/csv.ts`, CSV/print in `web/src/pages/devices.ts` | 2 | `controller/ExportCSVAction`, `MainView.printAction` |
 | `web/src/panels/scripts.ts`, `web/src/panels/scripteditor.ts`, `web/src/editor/codemirror.ts`, `web/src/ideprefs.ts` | 2 | `view/scripts/DialogDeviceScripts`, `ScriptsPanel`, `KVSPanel`, `ide/ScriptFrame`, `ide/EditorPanel` (word lists), `appsettings/PanelIDE` |
 | `web/src/panels/scheduler.ts`, `web/src/cronlogic.ts` | 2 | `view/scheduler/*` (AbstractCronPanel, CronUtils, CronValuesDialog, gen2plus, pareditor, walldisplay, blutrv), `ScheduleManager`, `ScheduleManagerThermWD`, `ScheduleManagerTRV` |
+| `web/src/pages/charts.ts`, `web/src/chartlogic.ts`, `web/src/charts/chartjs.ts` | 2 | `view/chart/MeasuresChart`, `ChartType`, `TimeChartsExporter`, `UtilMiscellaneous.getDescName` |
 | `web/src/panels/lights.ts` | 2 | `view/lightsEditor/*` |
 | `web/src/format.ts` | 2 | `METER_LBL_*`, `METER_VAL_*`, uptime formats of `LabelsBundle.properties` |
 | `internal/store` | 4 | — |

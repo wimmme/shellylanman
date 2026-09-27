@@ -48,6 +48,7 @@ type MeterValue struct {
 type MeterSet struct {
 	Label  string       `json:"label,omitempty"`
 	Values []MeterValue `json:"values"`
+	Total  bool         `json:"total,omitempty"` // EMTotalMeters (Pro 3EM triphase total): left out of per-meter charts
 }
 
 func set(label string, kv ...any) MeterSet {

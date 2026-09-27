@@ -72,7 +72,7 @@ internal/fixture   fixture naming + scrubbing (public repo!)
   recorded with `cmd/record` and reviewed before commit.
 - **Dependencies:** Go stdlib first. Each dependency needs a reason and its
   licence in `THIRD_PARTY_NOTICES.md` before it is added. Current: `coder/websocket`,
-  `golang.org/x/net`, `golang.org/x/sys`, `skip2/go-qrcode`; frontend: CodeMirror 6 (script editor only).
+  `golang.org/x/net`, `golang.org/x/sys`, `skip2/go-qrcode`; frontend: CodeMirror 6 (script editor only), Chart.js + chartjs-plugin-zoom + hammerjs (charts page only).
 - **Attribution:** ported code gets the "Portions derived from ShellyScanner"
   header and a `docs/PROVENANCE.md` row, in the same commit.
 - **Frontend:** plain TypeScript, no framework. Text via `textContent` only

@@ -255,7 +255,9 @@ func (c *g2ctx) emPhases() {
 		c.meters(set(label, W, em.Get(p+"_act_power").Float(), VA, em.Get(p+"_aprt_power").Float(), PF, em.Get(p+"_pf").Float(),
 			V, em.Get(p+"_voltage").Float(), I, em.Get(p+"_current").Float(), FREQ, em.Get(p+"_freq").Float()))
 	}
-	c.meters(set("", W, em.Get("total_act_power").Float(), VA, em.Get("total_aprt_power").Float(), I, em.Get("total_current").Float()))
+	total := set("", W, em.Get("total_act_power").Float(), VA, em.Get("total_aprt_power").Float(), I, em.Get("total_current").Float())
+	total.Total = true
+	c.meters(total)
 }
 
 // ---- model families -----------------------------------------------------------

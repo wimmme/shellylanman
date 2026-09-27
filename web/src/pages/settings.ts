@@ -1,3 +1,4 @@
+import { CHART_TYPES } from '../chartlogic';
 import { ideprefs, setIdeprefs, type Indent } from '../ideprefs';
 import { api } from '../api';
 import {
@@ -70,6 +71,9 @@ async function general(body: HTMLElement, onLanguageChange: () => void): Promise
       { value: '3', label: t('col.name') }, { value: '4', label: t('col.keyword') },
     ], String(prefs.defaultFilter()), (v) => prefs.setDefaultFilter(Number(v)))),
     field(t('prefs.csv'), csvInput()),
+    field(t('prefs.chart'), select('prefChart', CHART_TYPES.map((c) => ({ value: c.type, label: t(('chart.t.' + c.type) as Key) })), prefs.chartDefault(), (v) => prefs.setChartDefault(v))),
+    field(t('prefs.chartExport'), select('prefChartExp', [{ value: 'H', label: t('prefs.chartExport.H') }, { value: 'V', label: t('prefs.chartExport.V') }],
+      prefs.chartExport(), (v) => prefs.setChartExport(v as 'H' | 'V'))),
     h('p', { class: 'muted' }, t('prefs.note')),
   );
   const langs = LANGUAGES.map((l) => ({ value: l.id, label: l.label }));

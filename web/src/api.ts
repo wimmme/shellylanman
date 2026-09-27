@@ -51,7 +51,7 @@ export interface Device {
 export type Layout = 'relay' | 'roller' | 'rgbcct' | 'rgbw' | 'rgb' | 'thermostat' | 'trvg1' | 'cb' | 'mixed';
 
 export interface MeterValue { type: string; value: number; name?: string }
-export interface MeterSet { label?: string; values: MeterValue[] }
+export interface MeterSet { label?: string; values: MeterValue[]; total?: boolean }
 export interface Module {
   kind: string; index: number; key?: string; label: string; on?: boolean; brightness?: number; gain?: number; position?: number;
   calibrated?: boolean; target?: number; inputOn?: boolean; inputOn1?: boolean; rgb?: number[]; white?: number; tempK?: number;
@@ -215,4 +215,14 @@ export const scheduleApi = {
     (await request<{ result: unknown }>('POST', `/devices/${encodeURIComponent(id)}/rpc`, { method, params })).result,
   hints: (id: string) => request<MethodHint[]>('GET', `/devices/${encodeURIComponent(id)}/schedule/hints`),
   backupJSON: (upload: string) => request<Record<string, unknown>>('POST', '/sbk/json', { upload }),
+};
+
+// ---- charts (Phase 8) ----
+
+export interface Sample { t: number; rssi: number; temp?: number; meters?: MeterSet[] }
+export interface EMSeries { meter: string; lines: number; data: [number, number][] }
+export const chartsApi = {
+  samples: (ids: string[]) => request<Record<string, Sample[]>>('GET', `/samples?${idsQuery(ids)}`),
+  clear: (ids: string[]) => request<unknown>('DELETE', `/samples?${idsQuery(ids)}`),
+  emdata: (id: string, start: number, end: number) => request<EMSeries[]>('GET', `/devices/${encodeURIComponent(id)}/emdata?start=${start}&end=${end}`),
 };

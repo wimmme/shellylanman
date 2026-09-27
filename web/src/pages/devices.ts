@@ -306,6 +306,7 @@ export const devicesPage: Page = {
         act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(sel), 'action.rebootTip'),
         act('action.checklist', sel.length > 0, () => { location.hash = '#/checklist?ids=' + encodeURIComponent(sel.map((d) => d.id).join(',')); }, 'action.checklistTip'),
         act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(sel.map((d) => d.id)), 'action.settingsTip'),
+        act('action.charts', sel.length > 0 && sel.every((d) => d.status !== 'ghost'), () => { location.hash = '#/charts?ids=' + encodeURIComponent(sel.map((d) => d.id).join(',')); }, 'action.chartsTip'),
         act('action.scheduler', !!one && schedulerKind(one) !== null, () => one && openScheduler(one), 'action.schedulerTip'),
         act('action.scripts', !!one && one.status !== 'ghost' && ['2', '3', '4'].includes(one.gen), () => one && void openScripts(one), 'action.scriptsTip'),
         act('action.notes', !!one && archiveInUse(), () => one && openNotes(one), 'action.notesTip'),

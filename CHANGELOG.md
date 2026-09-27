@@ -25,6 +25,9 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Chart samples kept on the server per device (24 h in memory), so charts open with
   history; EM energy records (EMData / EM1Data) for the EM chart. API: `GET/DELETE
   /api/v1/samples`, `GET /api/v1/devices/{id}/emdata`.
+- Charts page (Chart.js, loaded on demand): the graph types of ShellyScanner for the
+  selected devices, range, series, markers, pause, zoom and pan, CSV export
+  (horizontal / vertical), image copy, clear; default graph and CSV layout settings.
 
 ### Added — Phase 7: firmware
 - Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+
