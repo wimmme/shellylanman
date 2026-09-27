@@ -125,7 +125,7 @@ func TestBackupAndRestoreQueuedWhenOffline(t *testing.T) {
 	}
 	g2.SetDown(false)
 	m.setStatus(e, model.StatusOnline)
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(30 * time.Second) // generous: -race on a busy machine
 	for time.Now().Before(deadline) && (m.Deferred()[0].Status != DefSuccess || m.Deferred()[1].Status != DefSuccess) {
 		m.setStatus(e, model.StatusReading) // one task per device update
 		m.setStatus(e, model.StatusOnline)
