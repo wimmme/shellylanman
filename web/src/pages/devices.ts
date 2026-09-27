@@ -7,6 +7,7 @@ import { dateTime, formatTemp, formatUptime, meterSetText, metersText, moduleTex
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
 import { openInfo } from '../panels/info';
+import { backupDevices, restoreDevice, restoreDevices } from '../panels/backup';
 import { openDeviceSettings } from '../panels/devsettings';
 import { openLogs } from '../panels/logs';
 import { toast } from '../toast';
@@ -294,6 +295,8 @@ export const devicesPage: Page = {
         act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(sel), 'action.rebootTip'),
         act('action.checklist', sel.length > 0, () => { location.hash = '#/checklist?ids=' + encodeURIComponent(sel.map((d) => d.id).join(',')); }, 'action.checklistTip'),
         act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(sel.map((d) => d.id)), 'action.settingsTip'),
+        act('action.backup', sel.length > 0, () => void backupDevices(sel), 'action.backupTip'),
+        act('action.restore', sel.length > 0, () => void (one ? restoreDevice(one) : restoreDevices(sel)), 'action.restoreTip'),
         sel.length > 0 && sel.every((d) => d.status === 'ghost') ? act('action.removeGhost', true, () => void removeGhosts(sel)) : null,
       ].filter((x): x is HTMLElement => x !== null));
       controlsBox.replaceChildren(

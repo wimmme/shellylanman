@@ -86,6 +86,13 @@ export async function network(body: HTMLElement): Promise<void> {
     try { await devicesApi.updateSettings({ mqttSlow: Number(slow.value) }); sres.ok(); } catch (e) { sres.fail(e); }
   } }, t('common.save'));
 
+  // Backups kept per device
+  const keep = h('input', { type: 'number', min: 0, max: 1000, value: settings.backupKeep ?? 10 });
+  const kres = result();
+  const ksave = h('button', { class: 'btn', onclick: async () => {
+    try { await devicesApi.updateSettings({ backupKeep: Number(keep.value) }); kres.ok(); } catch (e) { kres.fail(e); }
+  } }, t('common.save'));
+
   body.append(
     modeBox, extra,
     field('scanRefresh', t('scan.refresh'), refresh),
@@ -99,6 +106,9 @@ export async function network(body: HTMLElement): Promise<void> {
     h('h3', { class: 'card-title', style: 'margin-top:24px' }, t('slow.title')),
     field('mqttSlow', t('slow.label'), slow, t('slow.help')),
     h('div', { class: 'row' }, ssave, sres.el),
+    h('h3', { class: 'card-title', style: 'margin-top:24px' }, t('backupKeep.title')),
+    field('backupKeep', t('backupKeep.label'), keep, t('backupKeep.help')),
+    h('div', { class: 'row' }, ksave, kres.el),
   );
 }
 

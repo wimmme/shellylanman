@@ -257,7 +257,8 @@ table.devices td.c-command{min-width:170px}
 .cfg-part legend{padding:0 4px}
 .hidden{display:none!important}
 ul.results{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-.res.ok{color:var(--accent-ok)}.res.fail,.res.excluded{color:var(--accent-err)}.res.queued{color:var(--accent-warn)}
+.res.ok{color:var(--accent-ok)}.res.fail,.res.excluded{color:var(--accent-err)}.res.queued,.res.cancel{color:var(--accent-warn)}.res.stored{color:var(--accent-alt)}
+.restore-msg p{margin:0 0 6px}.restore-src{display:grid;gap:8px}.restore-src select,.restore-src input[type=file]{width:100%;margin-left:24px;max-width:calc(100% - 24px)}
 .pick-list{display:flex;flex-direction:column;gap:4px;max-height:50vh;overflow:auto;margin-top:8px}
 .pick{font:inherit;text-align:left;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text-main);cursor:pointer}
 .pick:hover{border-color:var(--accent-rx)}

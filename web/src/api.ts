@@ -74,7 +74,7 @@ export interface ScanState {
 export interface IPRange { base: string; first: number; last: number }
 export interface ScanSettings { mode: string; interface?: string; ranges?: IPRange[]; refreshSeconds: number; configTics: number }
 export interface ArchiveSettings { use: boolean; autoReload: boolean }
-export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number }
+export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number; backupKeep?: number }
 export interface CredentialsInfo { globalSet: boolean; globalUser: string }
 export interface NetInterface { name: string; addrs: string[] }
 
@@ -109,7 +109,7 @@ export const devicesApi = {
 // ---- configuration (Phase 5) ----
 
 export interface DeviceRef { id: string; name: string }
-export interface ResultLine extends DeviceRef { result: 'ok' | 'fail' | 'queued' | 'excluded'; message?: string }
+export interface ResultLine extends DeviceRef { result: 'ok' | 'fail' | 'queued' | 'excluded' | 'stored' | 'cancel'; message?: string }
 export interface WiFiForm { enabled: boolean; ssid: string; static: boolean | null; ip: string; netmask: string; gateway: string; dns: string }
 export interface LoginForm { enabled: boolean; user: string }
 export interface MQTTForm {
@@ -144,4 +144,22 @@ export const configApi = {
     request<{ errors: ResultLine[]; rows: ChecklistRow[] }>('POST', '/checklist/action', { ids, action, value, mode }),
   deferred: () => request<DeferredTask[]>('GET', '/deferred'),
   cancelDeferred: (id: string) => request<unknown>('DELETE', `/deferred/${encodeURIComponent(id)}`),
+};
+
+// ---- backup and restore (Phase 6) ----
+
+export interface BackupFile { deviceId: string; name: string; hostname: string; time: number; size: number }
+/** A stored backup (of any device) or an uploaded .sbk (base64). */
+export interface RestoreSource { deviceId?: string; file?: string; upload?: string }
+export interface RestoreItem { key: string; type: 'pre' | 'error' | 'warn' | 'ask'; value?: string; args?: string[] }
+export interface RestorePlan { items: RestoreItem[]; queue: boolean }
+export interface RestoreResult { result: 'ok' | 'queued' | 'fail'; problems?: string[]; reboot?: boolean }
+
+export const backupApi = {
+  backup: (ids: string[]) => request<{ results: ResultLine[] }>('POST', '/backup', { ids }),
+  list: (id?: string) => request<BackupFile[]>('GET', '/backups' + (id ? '?id=' + encodeURIComponent(id) : '')),
+  downloadURL: (f: BackupFile): string => `/api/v1/devices/${encodeURIComponent(f.deviceId)}/backups/${encodeURIComponent(f.name)}`,
+  check: (id: string, source: RestoreSource) => request<RestorePlan>('POST', `/devices/${encodeURIComponent(id)}/restore/check`, { source }),
+  restore: (id: string, source: RestoreSource, answers: Record<string, string>) =>
+    request<RestoreResult>('POST', `/devices/${encodeURIComponent(id)}/restore`, { source, answers, confirm: true }),
 };

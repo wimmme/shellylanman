@@ -18,6 +18,12 @@ versions follow [Semantic Versioning](https://semver.org/).
   queued as deferred tasks; multi-device restore from the newest backups.
 - REST API: `POST /api/v1/backup`, `GET /api/v1/backups`, backup download,
   restore check, restore and multi restore (both need `confirm: true`).
+- Backup and Restore buttons on the devices table: backup results per device; restore
+  wizard (backup of this device, of another device or an uploaded `.sbk`, download
+  link), the questions of the original (other host, errors, warnings, passwords for
+  login / Wi-Fi / AP / MQTT, script name conflicts and enabling), confirmation, and a
+  reboot offer; multi-device restore from the newest backups. Retention setting on
+  the network settings page.
 
 ### Added — Phase 5: configuration
 - Devices settings for one or more devices: Wi-Fi 1 and Wi-Fi 2 (enable/disable,
