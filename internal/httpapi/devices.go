@@ -44,6 +44,7 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/devices/{id}/info/{index}", h(s.infoResult))
 	mux.HandleFunc("GET /api/v1/devices/{id}/log", h(s.logSnapshot))
 	mux.HandleFunc("PUT /api/v1/devices/{id}/pause", h(s.pauseDevice))
+	mux.HandleFunc("PUT /api/v1/devices/{id}/note", h(s.putNote))
 	mux.HandleFunc("GET /ws/log/{id}", h(s.logStream))
 	mux.HandleFunc("POST /api/v1/devices/{id}/command", h(s.command))
 	mux.HandleFunc("POST /api/v1/devices/reboot", h(s.reboot))
@@ -292,4 +293,23 @@ func (s *server) logStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c.Close(websocket.StatusNormalClosure, "")
+}
+
+func (s *server) putNote(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Note    string `json:"note"`
+		Keyword string `json:"keyword"`
+	}
+	if !readJSON(w, r, &body) {
+		return
+	}
+	if err := s.Devices.SetNote(r.PathValue("id"), body.Note, body.Keyword); err != nil {
+		code := deviceErrorCode(err)
+		if errors.Is(err, service.ErrNoArchive) {
+			code = http.StatusConflict
+		}
+		writeError(w, code, err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

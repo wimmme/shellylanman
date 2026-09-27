@@ -6,6 +6,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"time"
 
@@ -116,3 +117,30 @@ func (m *Devices) ClearArchive() error {
 // Wait blocks until the service has stopped (its context ended) and the
 // archive has been saved a last time.
 func (m *Devices) Wait() { <-m.done }
+
+// maxKeyword: NotesEditor.MAX_KEYWORD_SIZE.
+const maxKeyword = 32
+
+// ErrNoArchive: notes are kept in the archive, which is switched off.
+var ErrNoArchive = errors.New("notes need the archive (Settings → Archive)")
+
+// SetNote stores a device's note and keyword (NotesEditor save); the
+// keyword is cut to 32 characters. Only with the archive in use, like the
+// original's Notes action.
+func (m *Devices) SetNote(id, note, keyword string) error {
+	if !m.store.Settings().Archive.Use {
+		return ErrNoArchive
+	}
+	e, err := m.entryFor(id)
+	if err != nil {
+		return err
+	}
+	if r := []rune(keyword); len(r) > maxKeyword {
+		keyword = string(r[:maxKeyword])
+	}
+	m.apply(e, func(d *model.Device) { d.Note, d.Keyword = note, keyword })
+	m.mu.Lock()
+	m.dirty = true
+	m.mu.Unlock()
+	return nil
+}

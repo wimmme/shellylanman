@@ -7,6 +7,11 @@ type Listener = () => void;
 
 const devices = new Map<string, Device>();
 let scan: ScanState | null = null;
+let useArchive = true;
+
+/** Settings → Archive "use archive" (notes live in the archive). */
+export function archiveInUse(): boolean { return useArchive; }
+export function setArchiveInUse(v: boolean): void { useArchive = v; changed(); }
 const listeners = new Set<Listener>();
 let scheduled = false;
 

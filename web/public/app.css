@@ -273,3 +273,4 @@ td.mono{font-family:var(--font-mono);font-size:.82rem}
 .btn.small{padding:2px 8px;min-height:0}.lfw-cell{gap:6px}.lfw-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
 .lfw-qr{background:#fff;padding:8px;border-radius:8px;max-width:100%;height:auto}.lfw-info{display:grid;gap:8px;min-width:200px}
 .lfw-badge{display:flex;flex-direction:column}.lfw input[readonly]{flex:1;min-width:0}
+.notes{display:grid;gap:10px}.notes-text{width:100%;min-height:220px;font:inherit;resize:vertical}

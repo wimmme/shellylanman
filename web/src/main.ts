@@ -1,5 +1,5 @@
 // Application shell: sidebar, top bar, hash router, connection state, first run.
-import { api, type Status } from './api';
+import { api, type FullSettings, type Status } from './api';
 import { initAppearance } from './appearance';
 import { h, icon, ICONS } from './dom';
 import { isLang, setLang, storedLang, t } from './i18n';
@@ -12,7 +12,7 @@ import { firmwarePage } from './pages/firmware';
 import { wireFirmwareEvents } from './panels/firmware';
 import { settingsPage } from './pages/settings';
 import { EventSocket, type ConnState } from './socket';
-import { loadDevices, wireDeviceEvents } from './devices';
+import { loadDevices, setArchiveInUse, wireDeviceEvents } from './devices';
 
 const pages: Page[] = [
   devicesPage,
@@ -109,13 +109,15 @@ async function boot(): Promise<void> {
   version = about.version;
   const stored = storedLang();
   setLang(stored ?? (isLang(settings.language) ? settings.language : 'en'), false);
+  setArchiveInUse((settings as FullSettings).archive?.use !== false);
 
   const socket = new EventSocket((s) => {
     conn = s;
     document.getElementById('conn')?.replaceWith(connLabel());
   });
   socket.on('settings.changed', (ev) => {
-    const s = ev.data as { language?: string } | undefined;
+    const s = ev.data as { language?: string; archive?: { use?: boolean } } | undefined;
+    if (s?.archive) setArchiveInUse(s.archive.use !== false);
     if (!storedLang() && isLang(s?.language)) { setLang(s.language, false); renderShell(); }
   });
   wireDeviceEvents(socket);

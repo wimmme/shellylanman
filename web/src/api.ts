@@ -95,6 +95,7 @@ export const devicesApi = {
   clearArchive: () => request<unknown>('DELETE', '/archive'),
   infoRequests: (id: string) => request<InfoRequest[]>('GET', `/devices/${encodeURIComponent(id)}/info`),
   info: (id: string, index: number) => request<InfoResult>('GET', `/devices/${encodeURIComponent(id)}/info/${index}`),
+  setNote: (id: string, note: string, keyword: string) => request<unknown>('PUT', `/devices/${encodeURIComponent(id)}/note`, { note, keyword }),
   pause: (id: string, paused: boolean) => request<unknown>('PUT', `/devices/${encodeURIComponent(id)}/pause`, { paused }),
   command: (id: string, cmd: Command) => request<unknown>('POST', `/devices/${encodeURIComponent(id)}/command`, cmd),
   reboot: (ids: string[]) => request<unknown>('POST', '/devices/reboot', { ids, confirm: true }),

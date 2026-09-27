@@ -126,3 +126,16 @@ func TestLocalFirmwareEndpoints(t *testing.T) {
 		t.Fatalf("stored %q", got)
 	}
 }
+
+func TestNoteEndpoint(t *testing.T) {
+	srv, devs := newDeviceServer(t)
+	if r := do(t, "PUT", srv.URL+"/api/v1/devices/AABBCC000001/note", `{"note":"n","keyword":"kw"}`, jsonHdr); r.StatusCode != http.StatusNoContent {
+		t.Fatalf("note: %d", r.StatusCode)
+	}
+	if d, _ := devs.Get("AABBCC000001"); d.Note != "n" || d.Keyword != "kw" {
+		t.Fatalf("device %+v", d)
+	}
+	if r := do(t, "PUT", srv.URL+"/api/v1/devices/NOPE/note", `{"note":"n"}`, jsonHdr); r.StatusCode != http.StatusNotFound {
+		t.Fatalf("unknown: %d", r.StatusCode)
+	}
+}

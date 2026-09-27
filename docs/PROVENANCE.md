@@ -50,6 +50,7 @@ header. Update this table in the same commit as the code.
 | `web/src/panels/backup.ts`, `web/src/restorelogic.ts` | 2 | `controller/BackupAction`, `controller/RestoreAction.restoreDevice`, `view/DialogAuthentication`, `msgRestore*`/`errRestore*`/`lbl_*` texts of `LabelsBundle.properties` |
 | `web/src/panels/firmware.ts`, `web/src/firmwarelogic.ts`, `web/src/pages/firmware.ts` | 2 | `view/devsettings/PanelFWUpdate`, `FWUpdateTable`, FW labels of `LabelsBundle.properties` |
 | `web/src/panels/localfw.ts` | 4 | (new feature) |
+| `web/src/panels/notes.ts`, `SetNote` in `internal/service/archive.go` | 2 | `view/NotesEditor` |
 | `web/src/panels/lights.ts` | 2 | `view/lightsEditor/*` |
 | `web/src/format.ts` | 2 | `METER_LBL_*`, `METER_VAL_*`, uptime formats of `LabelsBundle.properties` |
 | `internal/store` | 4 | — |

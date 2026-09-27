@@ -495,5 +495,10 @@
   "lfw.warn.badBase": "Het adres voor telefoons is ongeldig. Controleer het bij Instellingen → Netwerk.",
   "phone.title": "Lokale firmware-download",
   "phone.label": "Adres van ShellyLanMan voor telefoons",
-  "phone.help": "Gebruikt in de QR-codes van de lokale firmware-download, bv. http://192.168.1.10:3082. Leeg: het adres dat deze browser gebruikt."
+  "phone.help": "Gebruikt in de QR-codes van de lokale firmware-download, bv. http://192.168.1.10:3082. Leeg: het adres dat deze browser gebruikt.",
+  "action.notes": "Notities",
+  "action.notesTip": "Notities en trefwoord van het apparaat",
+  "notes.title": "Notities - {device}",
+  "notes.note": "Notities",
+  "notes.keyword": "Trefwoord"
 }

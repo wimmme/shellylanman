@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Phase 8: advanced functions
+- Notes and keyword per device (Notes action, kept in the archive; keyword up to 32
+  characters; only with the archive in use, as in ShellyScanner).
+
 ### Added — Phase 7: firmware
 - Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+
   `Shelly.CheckForUpdate` + `Shelly.GetDeviceInfo`, BLU TRV through its gateway; stored
