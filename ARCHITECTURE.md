@@ -271,7 +271,7 @@ internal/model/          device model, meters, modules, registry/ (gen1.go, gen2
 internal/discovery/      mdns.go, ipscan.go, extender.go, blu.go
 internal/poller/         refresh scheduling and pacing
 internal/service/        one file (or small package) per service in §2.3
-internal/firmware/       index.go, cache.go, qr.go
+internal/firmware/       firmware.go (index, pinned TLS, verified file cache); QR in service/localfw.go
 internal/store/          settings, secrets (AES-256-GCM), archive, deferred, paths
 internal/httpapi/        router, handlers, ws hub, auth, origin, health
 web/src/                 TypeScript: pages/, ui/ (components), api.ts, socket.ts, appearance.ts

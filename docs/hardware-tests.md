@@ -103,3 +103,20 @@ Not tested on hardware: Gen2+ restore (no Gen2+ test device for writes — simul
 tests cover G2 order, scripts, schedules, KVS, webhooks, login last), Wi-Fi/login/MQTT
 password questions with real values, BLU backup/restore (no BLU devices here), battery
 devices from stored data, multi restore (simulator and API tests).
+
+## Phase 7 — firmware (2026-09-27)
+
+Test container on dockerhostvm (port 3099). No firmware update was sent to any device.
+
+| Check | Result |
+|---|---|
+| FW rows of all 25 devices (read only: `/ota/check` + `/ota`, `Shelly.CheckForUpdate` + `Shelly.GetDeviceInfo`) | Gen1 all 1.14.0 with beta 1.14.1-rc1 offered; Gen2 Plus1 1.7.5 (nothing newer); Plus/Pro/Gen3/Gen4 2.0.1; LampSalon (Dimmer G3) 2.0.0 with stable 2.0.1 offered and preselected |
+| Shelly index, live (pinned TLS) for every device | 25 answers; types and apps match (Gen4 app `Mini1PMG4`); only LampSalon newer (2.0.0 → 2.0.1) — same as the device's own check |
+| Local download for LampSalon | link + QR created; file fetched once (3.8 MB, 0.3 s), SHA-256 and manifest (`DimmerG3 2.0.1`) verified, cached; second download from cache |
+| Live index/download test (`SHELLYLANMAN_LIVE=1 go test -run TestLive ./internal/firmware`) | SHPLG-S 1.14.0 (Gen1, HTTP), Plus1 1.7.5, MiniPMG3 2.0.1, Mini1PMG4 2.0.1 downloaded and verified |
+| UI | Firmware page with index column and ⚡, QR modal, FW Update as first settings tab; no console errors |
+
+Not tested on hardware: an actual firmware update with progress and restart (every
+test-allowed device is up to date; the only candidate, LampSalon, is not a test
+device — simulator tests cover progress, restart and recheck), BLU TRV update,
+flashing a downloaded file through a device's access point.
