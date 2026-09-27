@@ -139,6 +139,7 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		Archive      *store.ArchiveSettings `json:"archive"`
 		MQTTSlow     *int                   `json:"mqttSlow"`
 		BackupKeep   *int                   `json:"backupKeep"`
+		PhoneBaseURL *string                `json:"phoneBaseURL"`
 	}
 	if !readJSON(w, r, &patch) {
 		return
@@ -161,6 +162,9 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		}
 		if patch.BackupKeep != nil {
 			st.BackupKeep = *patch.BackupKeep
+		}
+		if patch.PhoneBaseURL != nil {
+			st.PhoneBaseURL = strings.TrimRight(strings.TrimSpace(*patch.PhoneBaseURL), "/")
 		}
 	})
 	if err != nil {

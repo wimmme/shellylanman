@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -52,6 +53,9 @@ type Settings struct {
 	// BackupKeep is how many backups are kept per device; older ones are
 	// deleted (0 = keep all). DECISIONS Q12.
 	BackupKeep int `json:"backupKeep"`
+	// PhoneBaseURL is the address phones use for local firmware downloads
+	// ("http://host:port"); empty = the address the browser used. DECISIONS §4.4.
+	PhoneBaseURL string `json:"phoneBaseURL"`
 }
 
 // Scan modes (ShellyScanner: setting SCAN_MODE, dialog "Network scan mode").
@@ -118,6 +122,12 @@ func (s Settings) Validate() error {
 	}
 	if s.Scan.RefreshSeconds < 1 || s.Scan.RefreshSeconds > 3600 {
 		return errors.New("status refresh must be 1–3600 seconds")
+	}
+	if s.PhoneBaseURL != "" {
+		u, err := url.Parse(s.PhoneBaseURL)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || (u.Path != "" && u.Path != "/") || u.RawQuery != "" {
+			return errors.New("phone address must look like http://host:port")
+		}
 	}
 	if s.BackupKeep < 0 || s.BackupKeep > 1000 {
 		return errors.New("backups to keep must be 0–1000")

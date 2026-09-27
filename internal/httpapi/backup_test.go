@@ -102,3 +102,27 @@ func TestFirmwareEndpoints(t *testing.T) {
 		t.Fatalf("update: %d %s", r.StatusCode, b)
 	}
 }
+
+func TestLocalFirmwareEndpoints(t *testing.T) {
+	srv, _, st := newDeviceServerStore(t)
+	var rows []map[string]any
+	decode(t, do(t, "GET", srv.URL+"/api/v1/firmware/index", "", nil), &rows)
+	if len(rows) != 0 { // the archived device has no /shelly data
+		t.Fatalf("index rows %v", rows)
+	}
+	if r := do(t, "POST", srv.URL+"/api/v1/firmware/AABBCC000001/local", "", nil); r.StatusCode != http.StatusConflict {
+		t.Fatalf("no local firmware: %d", r.StatusCode)
+	}
+	if r := do(t, "GET", srv.URL+"/fw/bogus/SHPLG-S.zip", "", nil); r.StatusCode != http.StatusGone {
+		t.Fatalf("bad token: %d", r.StatusCode)
+	}
+	if r := do(t, "PUT", srv.URL+"/api/v1/settings", `{"phoneBaseURL":"ftp://x"}`, jsonHdr); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("bad phone address: %d", r.StatusCode)
+	}
+	if r := do(t, "PUT", srv.URL+"/api/v1/settings", `{"phoneBaseURL":"http://192.168.0.12:3082/"}`, jsonHdr); r.StatusCode != 200 {
+		t.Fatalf("phone address: %d", r.StatusCode)
+	}
+	if got := st.Settings().PhoneBaseURL; got != "http://192.168.0.12:3082" {
+		t.Fatalf("stored %q", got)
+	}
+}

@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/wimmme/shellylanman/internal/discovery"
+	"github.com/wimmme/shellylanman/internal/firmware"
 	"github.com/wimmme/shellylanman/internal/model"
 	"github.com/wimmme/shellylanman/internal/parse"
 	"github.com/wimmme/shellylanman/internal/shelly"
@@ -84,6 +85,9 @@ type Devices struct {
 	deferred deferredQueue // tasks for devices that were off line (Phase 5)
 	fw       fwState       // firmware updates being followed (Phase 7)
 	fwOnce   sync.Once
+
+	fwIndex     *firmware.Index // Shelly firmware index for the local download (Phase 7)
+	fwIndexOnce sync.Once
 }
 
 type entry struct {

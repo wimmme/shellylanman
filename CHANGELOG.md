@@ -12,6 +12,13 @@ versions follow [Semantic Versioning](https://semver.org/).
   download progress and restart followed over the device's WebSocket, the row checked
   again when the device is back; archived and off-line devices get a deferred update.
 - API: `GET /api/v1/firmware`, `POST /api/v1/firmware/update` (needs `confirm: true`).
+- **New: local firmware download via QR code.** The server compares every Wi-Fi device
+  with Shelly's firmware index (Gen1: official index, fallback shelly-tools archive;
+  Gen2+: `updates.shelly.cloud`, stable only, pinned certificates) and, for a newer
+  stable version, makes a 24-hour link on this server with a QR code; the file is
+  downloaded once, verified (SHA-256 / manifest) and cached in `/data/firmware`.
+  API: `GET /api/v1/firmware/index`, `POST /api/v1/firmware/{id}/local`, `GET /fw/{token}/{file}`;
+  setting `phoneBaseURL`. Dependency: `skip2/go-qrcode` (MIT).
 - FW Update panel as the first tab of Devices settings (as in ShellyScanner) and on the
   Firmware page (all devices or `#/firmware?ids=`): current / new stable / new beta,
   select buttons, counters, filter, Check, confirmation, live progress.

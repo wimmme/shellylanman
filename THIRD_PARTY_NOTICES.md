@@ -67,6 +67,7 @@ per-family copyright notices and the full licence text are in
 | `github.com/coder/websocket` | v1.8.15 | ISC |
 | `golang.org/x/net` | v0.58.0 | BSD-3-Clause (mDNS message parsing, IPv4 multicast) |
 | `golang.org/x/sys` | v0.47.0 | BSD-3-Clause (socket options for sharing UDP 5353) |
+| `github.com/skip2/go-qrcode` | v0.0.0-20200617195104-da1b6568686e | MIT (QR code of the local firmware download) |
 
 `github.com/coder/websocket` licence:
 
@@ -86,6 +87,30 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
+
+`github.com/skip2/go-qrcode` licence:
+
+```
+Copyright (c) 2014 Tom Harwood
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
 
 `golang.org/x/net` and `golang.org/x/sys` licence (identical text):
 
