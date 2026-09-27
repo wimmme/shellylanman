@@ -121,6 +121,11 @@ func describe(typ string, params any) string {
 			return "mqttEnable"
 		}
 		return "mqttDisable"
+	case fwParams:
+		if p.Stable {
+			return "fwStable"
+		}
+		return "fwBeta"
 	case LoginApply:
 		if p.Enabled {
 			return "loginEnable"
@@ -249,7 +254,7 @@ func (m *Devices) execDeferred(tid, id, typ, sealed string) string {
 	if err != nil {
 		return err.Error()
 	}
-	if typ == TaskBackup || typ == TaskRestore { // also BLU devices
+	if typ == TaskBackup || typ == TaskRestore || typ == TaskFWUpdate { // also BLU devices
 		e, err := m.entryFor(id)
 		if err != nil {
 			return err.Error()
@@ -259,6 +264,9 @@ func (m *Devices) execDeferred(tid, id, typ, sealed string) string {
 		m.mu.Unlock()
 		if ctx == nil {
 			ctx = context.Background()
+		}
+		if typ == TaskFWUpdate {
+			return m.runFWTask(ctx, e, raw)
 		}
 		return m.runBackupRestoreTask(ctx, e, typ, raw)
 	}

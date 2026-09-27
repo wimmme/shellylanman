@@ -82,6 +82,8 @@ type Devices struct {
 	scan      ScanState
 
 	deferred deferredQueue // tasks for devices that were off line (Phase 5)
+	fw       fwState       // firmware updates being followed (Phase 7)
+	fwOnce   sync.Once
 }
 
 type entry struct {
@@ -581,6 +583,7 @@ func (m *Devices) setStatus(e *entry, s model.Status) {
 // updated runs after a device changed: a device that is on line runs its
 // next deferred task (DeferrablesContainer listens to UPDATE events).
 func (m *Devices) updated(d model.Device) {
+	m.fwUpdated(d)
 	if d.Status == model.StatusOnline && m.deferredWaiting(d.ID) {
 		m.runDeferred(d.ID)
 	}

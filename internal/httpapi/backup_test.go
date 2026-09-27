@@ -78,3 +78,27 @@ func TestBackupEndpoints(t *testing.T) {
 		t.Fatalf("multi: %d %s", r.StatusCode, b)
 	}
 }
+
+func TestFirmwareEndpoints(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	var rows []map[string]any
+	decode(t, do(t, "GET", srv.URL+"/api/v1/firmware", "", nil), &rows)
+	if len(rows) != 1 || rows[0]["known"] != false {
+		t.Fatalf("rows %v", rows)
+	}
+	if r := do(t, "GET", srv.URL+"/api/v1/firmware?ids=NOPE", "", nil); r.StatusCode != http.StatusNotFound {
+		t.Fatalf("unknown: %d", r.StatusCode)
+	}
+	body := `{"items":[{"id":"AABBCC000001","stage":"any"}]}`
+	if r := do(t, "POST", srv.URL+"/api/v1/firmware/update", body, jsonHdr); r.StatusCode != http.StatusPreconditionRequired {
+		t.Fatalf("without confirm: %d", r.StatusCode)
+	}
+	if r := do(t, "POST", srv.URL+"/api/v1/firmware/update", `{"items":[{"id":"AABBCC000001","stage":"x"}],"confirm":true}`, jsonHdr); r.StatusCode != http.StatusBadRequest {
+		t.Fatalf("bad stage: %d", r.StatusCode)
+	}
+	r := do(t, "POST", srv.URL+"/api/v1/firmware/update", `{"items":[{"id":"AABBCC000001","stage":"any"}],"confirm":true}`, jsonHdr)
+	b, _ := io.ReadAll(r.Body)
+	if r.StatusCode != 200 || !strings.Contains(string(b), `"result":"queued"`) {
+		t.Fatalf("update: %d %s", r.StatusCode, b)
+	}
+}

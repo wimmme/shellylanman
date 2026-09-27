@@ -5,6 +5,14 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Phase 7: firmware
+- Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+
+  `Shelly.CheckForUpdate` + `Shelly.GetDeviceInfo`, BLU TRV through its gateway; stored
+  data for sleeping battery devices), short version names, update to stable or beta,
+  download progress and restart followed over the device's WebSocket, the row checked
+  again when the device is back; archived and off-line devices get a deferred update.
+- API: `GET /api/v1/firmware`, `POST /api/v1/firmware/update` (needs `confirm: true`).
+
 ### Added — Phase 6: backup and restore
 - Backup engine for every generation (`.sbk`, compatible with ShellyScanner): Gen1
   settings and actions; Gen2+ configuration, schedules, webhooks, KVS, scripts,

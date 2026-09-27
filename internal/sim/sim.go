@@ -38,9 +38,10 @@ type Device struct {
 	User, Password string
 
 	mu     sync.Mutex
-	calls  []string       // "GET /relay/0?turn=on", "RPC Switch.Set {"id":0,"on":true}"
-	status map[string]any // served status, changed by relay commands
-	down   bool           // drop every connection: the device looks off line
+	calls  []string                 // "GET /relay/0?turn=on", "RPC Switch.Set {"id":0,"on":true}"
+	status map[string]any           // served status, changed by relay commands
+	down   bool                     // drop every connection: the device looks off line
+	rpcWS  map[chan []byte]struct{} // RPC WebSocket clients (notifications)
 }
 
 // SetDown makes the device unreachable (connections are closed unanswered).
@@ -110,6 +111,8 @@ func (d *Device) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == http.MethodGet && r.URL.Path == "/debug/log" && !d.gen1 && strings.EqualFold(r.Header.Get("Upgrade"), "websocket"):
 		d.serveLog(w, r)
+	case r.Method == http.MethodGet && r.URL.Path == "/rpc" && !d.gen1 && strings.EqualFold(r.Header.Get("Upgrade"), "websocket"):
+		d.serveRPCWS(w, r)
 	case r.Method == http.MethodGet:
 		if r.URL.Path != "/shelly" {
 			d.logCall("GET " + r.URL.RequestURI())
@@ -393,4 +396,60 @@ func (d *Device) serveLog(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	<-ctx.Done()
+}
+
+// serveRPCWS: the device's RPC WebSocket. After the client's first request
+// it receives the notifications sent with Notify.
+func (d *Device) serveRPCWS(w http.ResponseWriter, r *http.Request) {
+	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{InsecureSkipVerify: true})
+	if err != nil {
+		return
+	}
+	defer c.CloseNow()
+	if _, _, err := c.Read(r.Context()); err != nil {
+		return
+	}
+	ch := make(chan []byte, 16)
+	d.mu.Lock()
+	if d.rpcWS == nil {
+		d.rpcWS = map[chan []byte]struct{}{}
+	}
+	d.rpcWS[ch] = struct{}{}
+	d.mu.Unlock()
+	defer func() {
+		d.mu.Lock()
+		delete(d.rpcWS, ch)
+		d.mu.Unlock()
+	}()
+	ctx := c.CloseRead(r.Context())
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case b := <-ch:
+			if c.Write(ctx, websocket.MessageText, b) != nil {
+				return
+			}
+		}
+	}
+}
+
+// RPCClients is the number of connected RPC WebSocket clients.
+func (d *Device) RPCClients() int {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return len(d.rpcWS)
+}
+
+// Notify sends a NotifyEvent with the given events to the RPC WebSocket clients.
+func (d *Device) Notify(events ...map[string]any) {
+	b, _ := json.Marshal(map[string]any{"src": d.id, "dst": "shellylanman", "method": "NotifyEvent", "params": map[string]any{"events": events}})
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	for ch := range d.rpcWS {
+		select {
+		case ch <- b:
+		default:
+		}
+	}
 }
