@@ -6,7 +6,7 @@
 // checkbox per version, the select buttons, a filter, "Check" and the update
 // of the ticked devices. Used as the first tab of Devices settings and on the
 // Firmware page.
-import { ApiError, firmwareApi, type FirmwareRow } from '../api';
+import { ApiError, firmwareApi, localFwApi, type FirmwareRow, type IndexRow } from '../api';
 import { allDevices } from '../devices';
 import { h } from '../dom';
 import { betaCell, count, initialChoice, matches, requests, selectAll, stableCell, toggle, type Cell, type Choice } from '../firmwarelogic';
@@ -14,6 +14,7 @@ import { t, type Key } from '../i18n';
 import { confirmDialog } from '../modal';
 import type { EventSocket } from '../socket';
 import { showResults } from './devsettings';
+import { indexCell } from './localfw';
 
 const tr = (k: string, v?: Record<string, number>): string => t(k as Key, v);
 
@@ -30,9 +31,14 @@ export interface FirmwarePanel {
   dispose(): void;
 }
 
-/** The panel for the given devices (all devices when ids is empty). */
-export function firmwarePanel(ids: string[]): FirmwarePanel {
+/**
+ * The panel for the given devices (all devices when ids is empty). withIndex
+ * adds the "Shelly index" column with the local download (Firmware page only).
+ */
+export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
   let rows: FirmwareRow[] = [];
+  let index = new Map<string, IndexRow>();
+  let indexLoading = withIndex;
   const choice = new Map<string, Choice>();
   const checking = new Set<string>();
   let filter = '';
@@ -70,7 +76,8 @@ export function firmwarePanel(ids: string[]): FirmwarePanel {
         h('td', {}, r.name),
         h('td', { title: r.currentBuild ?? '' }, r.current ?? ''),
         h('td', {}, cellNode(r, stableCell(r, tr), 'stable')),
-        h('td', {}, cellNode(r, betaCell(r), 'beta')));
+        h('td', {}, cellNode(r, betaCell(r), 'beta')),
+        withIndex ? h('td', {}, indexCell(index.get(r.id), indexLoading)) : null);
       tr_.addEventListener('dblclick', () => { // browseAction
         const d = allDevices().find((x) => x.id === r.id);
         if (d && d.status !== 'ghost' && d.gen !== 'blu' && d.gen !== 'bth') window.open(`http://${d.port === 80 ? d.ip : `${d.ip}:${d.port}`}`, '_blank', 'noopener');
@@ -94,14 +101,25 @@ export function firmwarePanel(ids: string[]): FirmwarePanel {
       choice.clear();
       for (const r of rows) choice.set(r.id, initialChoice(r));
       body.replaceChildren(h('div', { class: 'table-wrap' }, h('table', { class: 'data fw' },
-        h('thead', {}, h('tr', {}, ...(['col.status', 'col.device', 'fw.col.current', 'fw.col.stable', 'fw.col.beta'] as Key[]).map((k) => h('th', { scope: 'col' }, t(k))))),
+        h('thead', {}, h('tr', {}, ...(['col.status', 'col.device', 'fw.col.current', 'fw.col.stable', 'fw.col.beta', ...(withIndex ? ['lfw.col'] : [])] as Key[]).map((k) => h('th', { scope: 'col', title: k === 'lfw.col' ? t('lfw.colTip') : undefined }, t(k))))),
         tbody)));
       draw();
+      if (withIndex) void loadIndex();
     } catch (e) {
       body.replaceChildren(h('p', { class: 'banner warn' }, e instanceof ApiError ? e.message : String(e)));
     } finally {
       checkBtn.disabled = false;
     }
+  };
+
+  // The server-side comparison with Shelly's index (cached there for hours).
+  const loadIndex = async (): Promise<void> => {
+    indexLoading = true;
+    try {
+      index = new Map((await localFwApi.index(ids)).map((r) => [r.id, r]));
+    } catch { /* the column stays empty: the rest of the page works without it */ }
+    indexLoading = false;
+    draw();
   };
 
   // "Check": every row is read again, each as soon as it is ready.

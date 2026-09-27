@@ -19,7 +19,7 @@ export const firmwarePage: Page = {
   icon: ICONS.firmware,
   render(main) {
     const ids = wantedIds();
-    panel = firmwarePanel(ids);
+    panel = firmwarePanel(ids, true);
     const p = panel;
     const update = h('button', { class: 'btn primary', onclick: async () => {
       update.setAttribute('disabled', '');

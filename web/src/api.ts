@@ -74,7 +74,7 @@ export interface ScanState {
 export interface IPRange { base: string; first: number; last: number }
 export interface ScanSettings { mode: string; interface?: string; ranges?: IPRange[]; refreshSeconds: number; configTics: number }
 export interface ArchiveSettings { use: boolean; autoReload: boolean }
-export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number; backupKeep?: number }
+export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number; backupKeep?: number; phoneBaseURL?: string }
 export interface CredentialsInfo { globalSet: boolean; globalUser: string }
 export interface NetInterface { name: string; addrs: string[] }
 
@@ -175,4 +175,12 @@ export interface FirmwareRow {
 export const firmwareApi = {
   rows: (ids: string[]) => request<FirmwareRow[]>('GET', '/firmware' + (ids.length ? '?' + idsQuery(ids) : '')),
   update: (items: { id: string; stage: string }[]) => request<{ results: ResultLine[] }>('POST', '/firmware/update', { items, confirm: true }),
+};
+export interface IndexRow { id: string; key?: string; current?: string; latest?: string; source?: string; newer: boolean; error?: string }
+export interface LocalLink {
+  url: string; qr: string; name: string; model: string; current: string; version: string; source: string; fileName: string; expires: number; warning?: string;
+}
+export const localFwApi = {
+  index: (ids: string[]) => request<IndexRow[]>('GET', '/firmware/index' + (ids.length ? '?' + idsQuery(ids) : '')),
+  link: (id: string) => request<LocalLink>('POST', `/firmware/${encodeURIComponent(id)}/local`),
 };

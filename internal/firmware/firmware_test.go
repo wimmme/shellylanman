@@ -199,3 +199,24 @@ func mustTime(t *testing.T) (tm time.Time) {
 	t.Helper()
 	return time.Now().Add(-time.Hour)
 }
+
+// TestLive runs against Shelly's real servers (SHELLYLANMAN_LIVE=1); CI skips it.
+func TestLive(t *testing.T) {
+	if os.Getenv("SHELLYLANMAN_LIVE") == "" {
+		t.Skip("set SHELLYLANMAN_LIVE=1 to query Shelly's servers")
+	}
+	x := New(t.TempDir())
+	ctx := context.Background()
+	for _, c := range [][2]string{{"1", "SHPLG-S"}, {"2", "Plus1"}, {"3", "MiniPMG3"}, {"4", "Mini1PMG4"}} {
+		l, err := x.Latest(ctx, c[0], c[1])
+		if err != nil {
+			t.Errorf("%s: %v", c[1], err)
+			continue
+		}
+		p, err := x.File(ctx, l)
+		t.Logf("%s: %s (%s) %s → %s %v", c[1], l.Version, l.Source, l.URL, filepath.Base(p), err)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}

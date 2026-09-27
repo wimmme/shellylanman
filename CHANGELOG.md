@@ -19,6 +19,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   downloaded once, verified (SHA-256 / manifest) and cached in `/data/firmware`.
   API: `GET /api/v1/firmware/index`, `POST /api/v1/firmware/{id}/local`, `GET /fw/{token}/{file}`;
   setting `phoneBaseURL`. Dependency: `skip2/go-qrcode` (MIT).
+- Firmware page: "Shelly index" column with the ⚡ local download (QR code, link, device,
+  model, version change, source, expiry); "Address of ShellyLanMan for phones" setting.
 - FW Update panel as the first tab of Devices settings (as in ShellyScanner) and on the
   Firmware page (all devices or `#/firmware?ids=`): current / new stable / new beta,
   select buttons, counters, filter, Check, confirmation, live progress.

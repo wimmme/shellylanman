@@ -93,6 +93,13 @@ export async function network(body: HTMLElement): Promise<void> {
     try { await devicesApi.updateSettings({ backupKeep: Number(keep.value) }); kres.ok(); } catch (e) { kres.fail(e); }
   } }, t('common.save'));
 
+  // Address of this server for phones (local firmware download)
+  const phone = h('input', { type: 'url', placeholder: location.origin, value: settings.phoneBaseURL ?? '', size: 32 });
+  const pres = result();
+  const psave = h('button', { class: 'btn', onclick: async () => {
+    try { await devicesApi.updateSettings({ phoneBaseURL: phone.value }); pres.ok(); } catch (e) { pres.fail(e); }
+  } }, t('common.save'));
+
   body.append(
     modeBox, extra,
     field('scanRefresh', t('scan.refresh'), refresh),
@@ -109,6 +116,9 @@ export async function network(body: HTMLElement): Promise<void> {
     h('h3', { class: 'card-title', style: 'margin-top:24px' }, t('backupKeep.title')),
     field('backupKeep', t('backupKeep.label'), keep, t('backupKeep.help')),
     h('div', { class: 'row' }, ksave, kres.el),
+    h('h3', { class: 'card-title', style: 'margin-top:24px' }, t('phone.title')),
+    field('phoneBase', t('phone.label'), phone, t('phone.help')),
+    h('div', { class: 'row' }, psave, pres.el),
   );
 }
 
