@@ -209,6 +209,9 @@ func (s *server) scheduleRoutes(mux *http.ServeMux, h func(http.HandlerFunc) htt
 	mux.HandleFunc("POST /api/v1/devices/{id}/rpc", h(s.deviceRPC))
 	mux.HandleFunc("GET /api/v1/devices/{id}/schedule/hints", h(s.scheduleHints))
 	mux.HandleFunc("POST /api/v1/sbk/json", h(s.backupJSON))
+	mux.HandleFunc("GET /api/v1/samples", h(s.getSamples))
+	mux.HandleFunc("DELETE /api/v1/samples", h(s.clearSamples))
+	mux.HandleFunc("GET /api/v1/devices/{id}/emdata", h(s.emData))
 }
 
 func (s *server) deviceRPC(w http.ResponseWriter, r *http.Request) {
@@ -257,4 +260,29 @@ func (s *server) backupJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, files)
+}
+
+func (s *server) getSamples(w http.ResponseWriter, r *http.Request) {
+	since, _ := strconv.ParseInt(r.URL.Query().Get("since"), 10, 64)
+	writeJSON(w, http.StatusOK, s.Devices.Samples(idsParam(r), since))
+}
+
+func (s *server) clearSamples(w http.ResponseWriter, r *http.Request) {
+	s.Devices.ClearSamples(idsParam(r))
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *server) emData(w http.ResponseWriter, r *http.Request) {
+	start, err1 := strconv.ParseInt(r.URL.Query().Get("start"), 10, 64)
+	end, err2 := strconv.ParseInt(r.URL.Query().Get("end"), 10, 64)
+	if err1 != nil || err2 != nil || start <= 0 || end <= start {
+		writeError(w, http.StatusBadRequest, "start and end (unix seconds) needed")
+		return
+	}
+	list, err := s.Devices.EMEnergy(r.Context(), r.PathValue("id"), start, end)
+	if err != nil {
+		writeError(w, scriptErrorCode(err), err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, list)
 }

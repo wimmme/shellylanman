@@ -88,6 +88,9 @@ type Devices struct {
 
 	fwIndex     *firmware.Index // Shelly firmware index for the local download (Phase 7)
 	fwIndexOnce sync.Once
+
+	ring        sampleRing // chart samples (Phase 8)
+	samplesOnce sync.Once
 }
 
 type entry struct {
@@ -588,6 +591,7 @@ func (m *Devices) setStatus(e *entry, s model.Status) {
 // next deferred task (DeferrablesContainer listens to UPDATE events).
 func (m *Devices) updated(d model.Device) {
 	m.fwUpdated(d)
+	m.recordSample(d)
 	if d.Status == model.StatusOnline && m.deferredWaiting(d.ID) {
 		m.runDeferred(d.ID)
 	}

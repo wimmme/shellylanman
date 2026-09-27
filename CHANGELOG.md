@@ -22,6 +22,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   weekdays and months, calls with method hints, parameter editor and test button,
   enable, add/duplicate/remove/copy/paste, load from a backup), Wall Display thermostat
   profiles and rules, BLU TRV rules (temperature or valve position).
+- Chart samples kept on the server per device (24 h in memory), so charts open with
+  history; EM energy records (EMData / EM1Data) for the EM chart. API: `GET/DELETE
+  /api/v1/samples`, `GET /api/v1/devices/{id}/emdata`.
 
 ### Added — Phase 7: firmware
 - Firmware check per device like ShellyScanner (Gen1 `/ota/check` + `/ota`, Gen2+
