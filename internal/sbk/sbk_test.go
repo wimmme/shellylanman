@@ -288,3 +288,33 @@ func TestReadScriptsAndFileName(t *testing.T) {
 		t.Fatal(p)
 	}
 }
+
+func TestCheckStored(t *testing.T) {
+	keys := func(c Check) string {
+		var s []string
+		for _, it := range c.Items() {
+			s = append(s, it.Key+"="+it.Value)
+		}
+		return strings.Join(s, ",")
+	}
+	g1 := Files{"settings.json": ojson.MustParse(`{"device":{"type":"SHPLG-S","hostname":"old"},"login":{"enabled":true,"username":"u"},"mqtt":{"enable":true,"user":"m"}}`)}
+	d := &Device{Gen: "1", TypeID: "SHPLG-S", Hostname: "new"}
+	if got := keys(CheckStored(d, g1)); got != "PRE_QUESTION_RESTORE_HOST=old,RESTORE_LOGIN=u,RESTORE_MQTT=m" {
+		t.Fatalf("g1: %s", got)
+	}
+	g2 := Files{"Shelly.GetDeviceInfo.json": ojson.MustParse(`{"id":"h","app":"Plus1","auth_en":true}`), "Shelly.GetConfig.json": ojson.MustParse(`{"mqtt":{"enable":false}}`)}
+	if got := keys(CheckStored(&Device{TypeID: "Plus1", Hostname: "h"}, g2)); got != "RESTORE_LOGIN=admin" {
+		t.Fatalf("g2: %s", got)
+	}
+	if got := keys(CheckStored(&Device{TypeID: "Pro1"}, g2)); got != "ERR_RESTORE_MODEL=" {
+		t.Fatalf("other model: %s", got)
+	}
+	blu := Files{bluFile: ojson.MustParse(`{"index":"200","type":"SBBT-002C","mac":"x"}`),
+		"Shelly.GetComponents.json": ojson.MustParse(`{"components":[{"key":"bthomedevice:200","config":{"addr":"aa:bb"}}]}`)}
+	if got := keys(CheckStored(&Device{TypeID: "SBBT-002C", MAC: "cc:dd"}, blu)); got != "PRE_QUESTION_RESTORE_HOST=SBBT-002C-aa:bb" {
+		t.Fatalf("blu: %s", got)
+	}
+	if got := keys(CheckStored(d, Files{})); got != "ERR_RESTORE_MODEL=" {
+		t.Fatalf("empty: %s", got)
+	}
+}

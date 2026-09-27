@@ -113,9 +113,8 @@ func TestBackupAndRestoreQueuedWhenOffline(t *testing.T) {
 	if res, _ := m.Backup(ctx, []string{"AABBCC000002"}); res[0].Result != ResultQueued {
 		t.Fatalf("backup queued: %+v", res)
 	}
-	plan, _ := m.RestoreCheck(ctx, "AABBCC000002", RestoreSource{DeviceID: "AABBCC000002", File: name})
-	if !plan.Queue {
-		t.Fatal("restore of an off-line device is queued")
+	if _, err := m.RestoreCheck(ctx, "AABBCC000002", RestoreSource{DeviceID: "AABBCC000002", File: name}); !errors.Is(err, ErrNoConnection) {
+		t.Fatalf("the check needs the device: %v", err)
 	}
 	if r, err := m.Restore(ctx, "AABBCC000002", RestoreSource{DeviceID: "AABBCC000002", File: name}, sbk.Answers{}); err != nil || r.Result != ResultQueued {
 		t.Fatalf("restore queued: %+v %v", r, err)

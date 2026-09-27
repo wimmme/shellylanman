@@ -276,16 +276,35 @@ func (m *Devices) RestoreCheck(ctx context.Context, id string, src RestoreSource
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrInvalid, err)
 	}
-	m.mu.Lock()
-	st := e.dev.Status
-	m.mu.Unlock()
-	plan := &RestorePlan{Items: []sbk.Item{}}
-	if e.conn == nil && e.blu == nil || waitingStatus(st) {
-		plan.Queue = true
-		return plan, nil
+	items, queue, err := m.check(ctx, e, files)
+	if err != nil {
+		return nil, err
 	}
-	plan.Items = sbk.CheckRestore(ctx, m.sbkDevice(e), files).Items()
-	return plan, nil
+	return &RestorePlan{Items: items, Queue: queue}, nil
+}
+
+// stored: an archived device (GhostDevice) — checked from the file alone,
+// its restore is queued.
+func stored(e *entry) bool {
+	return e.dev.Status == model.StatusGhost || e.conn == nil && e.blu == nil
+}
+
+// check runs restoreCheck; an unreachable device is an error, as in the
+// original (only the restore itself is queued).
+func (m *Devices) check(ctx context.Context, e *entry, files sbk.Files) ([]sbk.Item, bool, error) {
+	m.mu.Lock()
+	ghost := stored(e)
+	m.mu.Unlock()
+	sd := m.sbkDevice(e)
+	if ghost {
+		return sbk.CheckStored(sd, files).Items(), true, nil
+	}
+	items := sbk.CheckRestore(ctx, sd, files).Items()
+	if sd.Offline() {
+		m.setStatus(e, model.StatusOffline)
+		return nil, false, ErrNoConnection
+	}
+	return items, false, nil
 }
 
 // RestoreResult is the outcome of a restore.
@@ -325,8 +344,14 @@ func (m *Devices) restoreData(ctx context.Context, e *entry, data []byte, answer
 		m.defer_(cfgTarget{e: e, d: d}, TaskRestore, restoreParams{Data: data, Answers: answers})
 		return RestoreResult{Result: ResultQueued}, nil
 	}
-	if mayQueue && (e.conn == nil && e.blu == nil || waitingStatus(d.Status)) {
-		return queue()
+	m.mu.Lock()
+	ghost := stored(e)
+	m.mu.Unlock()
+	if ghost {
+		if mayQueue {
+			return queue()
+		}
+		return RestoreResult{Result: ResultFail, Problems: []string{"Status-" + string(model.StatusGhost)}}, nil
 	}
 	m.setBusy(e, true)
 	sd := m.sbkDevice(e)
@@ -336,8 +361,13 @@ func (m *Devices) restoreData(ctx context.Context, e *entry, data []byte, answer
 	if len(problems) == 0 {
 		return RestoreResult{Result: ResultOK, Reboot: sd.RestartRequired() || d.RebootRequired}, nil
 	}
-	if mayQueue && sd.Offline() {
+	if sd.Offline() {
 		m.setStatus(e, model.StatusOffline)
+	}
+	m.mu.Lock()
+	st := e.dev.Status
+	m.mu.Unlock()
+	if mayQueue && (st == model.StatusOffline || st == model.StatusLogin) { // the error came from the device being unreachable
 		return queue()
 	}
 	return RestoreResult{Result: ResultFail, Problems: problems}, nil
@@ -368,23 +398,26 @@ func (m *Devices) RestoreMulti(ctx context.Context, ids []string) ([]ResultLine,
 			out = append(out, ResultLine{DeviceRef: ref, Result: ResultFail, Message: err.Error()})
 			continue
 		}
-		if !(e.conn == nil && e.blu == nil || waitingStatus(d.Status)) {
-			files, err := sbk.Read(data)
-			if err != nil {
-				out = append(out, ResultLine{DeviceRef: ref, Result: ResultFail, Message: err.Error()})
-				continue
+		files, err := sbk.Read(data)
+		if err != nil {
+			out = append(out, ResultLine{DeviceRef: ref, Result: ResultFail, Message: err.Error()})
+			continue
+		}
+		items, _, err := m.check(ctx, e, files)
+		if err != nil {
+			out = append(out, ResultLine{DeviceRef: ref, Result: ResultFail, Message: msgOf(err)})
+			continue
+		}
+		stop := ""
+		for _, it := range items {
+			if it.Type == "pre" || it.Type == "error" {
+				stop = it.Key
+				break
 			}
-			stop := ""
-			for _, it := range sbk.CheckRestore(ctx, m.sbkDevice(e), files).Items() {
-				if it.Type == "pre" || it.Type == "error" {
-					stop = it.Key
-					break
-				}
-			}
-			if stop != "" {
-				out = append(out, ResultLine{DeviceRef: ref, Result: ResultFail, Message: stop})
-				continue
-			}
+		}
+		if stop != "" {
+			out = append(out, ResultLine{DeviceRef: ref, Result: ResultFail, Message: stop})
+			continue
 		}
 		r, err := m.restoreData(ctx, e, data, sbk.Multi(), true)
 		switch {

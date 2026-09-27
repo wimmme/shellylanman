@@ -54,7 +54,7 @@ func TestBackupEndpoints(t *testing.T) {
 	src := `{"deviceId":"AABBCC000001","file":"shellyplug-s-AABBCC000001-20260101-120000.sbk"}`
 	r = do(t, "POST", srv.URL+"/api/v1/devices/AABBCC000001/restore/check", `{"source":`+src+`}`, jsonHdr)
 	b, _ = io.ReadAll(r.Body)
-	if r.StatusCode != 200 || !strings.Contains(string(b), `"queue":true`) {
+	if r.StatusCode != 200 || !strings.Contains(string(b), `"queue":true`) || !strings.Contains(string(b), `"items":[]`) {
 		t.Fatalf("check: %d %s", r.StatusCode, b)
 	}
 	up := `{"upload":"` + base64.StdEncoding.EncodeToString([]byte("junk")) + `"}`

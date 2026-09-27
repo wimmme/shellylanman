@@ -29,7 +29,7 @@ func newDeviceServerStore(t *testing.T) (*httptest.Server, *service.Devices, *st
 		t.Fatal(err)
 	}
 	st.Update(func(s *store.Settings) { s.Scan.Mode = store.ScanOffline })
-	st.SaveArchive([]store.ArchivedDevice{{TypeID: "SHPLG-S", TypeName: "PlugS", MAC: "AABBCC000001", IP: "192.0.2.1", Port: 80, Gen: "1"}})
+	st.SaveArchive([]store.ArchivedDevice{{TypeID: "SHPLG-S", TypeName: "PlugS", Host: "shellyplug-s-AABBCC000001", MAC: "AABBCC000001", IP: "192.0.2.1", Port: 80, Gen: "1"}})
 	h := hub.New(nil, nil, nil)
 	devs := service.NewDevices(st, shelly.NewClient(), func(typ string, data any) { h.Broadcast(hub.Event{Type: typ, Data: data}) }, nil)
 	ctx, cancel := context.WithCancel(context.Background())
