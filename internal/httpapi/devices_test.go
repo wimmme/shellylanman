@@ -18,6 +18,12 @@ import (
 
 func newDeviceServer(t *testing.T) (*httptest.Server, *service.Devices) {
 	t.Helper()
+	srv, devs, _ := newDeviceServerStore(t)
+	return srv, devs
+}
+
+func newDeviceServerStore(t *testing.T) (*httptest.Server, *service.Devices, *store.Store) {
+	t.Helper()
 	st, err := store.Open(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +37,7 @@ func newDeviceServer(t *testing.T) (*httptest.Server, *service.Devices) {
 	devs.Start(ctx)
 	srv := httptest.NewServer(New(Config{Store: st, Hub: h, Devices: devs, Static: fstest.MapFS{"index.html": {Data: []byte("x")}}}))
 	t.Cleanup(srv.Close)
-	return srv, devs
+	return srv, devs, st
 }
 
 func TestDeviceEndpoints(t *testing.T) {

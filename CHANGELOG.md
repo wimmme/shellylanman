@@ -16,6 +16,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Backups are kept in `/data/backups/<device>/`, newest first, with a retention
   setting (default 10 per device); backup and restore of an off-line device are
   queued as deferred tasks; multi-device restore from the newest backups.
+- REST API: `POST /api/v1/backup`, `GET /api/v1/backups`, backup download,
+  restore check, restore and multi restore (both need `confirm: true`).
 
 ### Added — Phase 5: configuration
 - Devices settings for one or more devices: Wi-Fi 1 and Wi-Fi 2 (enable/disable,

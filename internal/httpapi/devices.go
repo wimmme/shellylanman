@@ -48,6 +48,7 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/devices/{id}/command", h(s.command))
 	mux.HandleFunc("POST /api/v1/devices/reboot", h(s.reboot))
 	s.configRoutes(mux, h)
+	s.backupRoutes(mux, h)
 }
 
 // command runs one action of the Command column (service.Command).
