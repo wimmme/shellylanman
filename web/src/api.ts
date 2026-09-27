@@ -163,3 +163,16 @@ export const backupApi = {
   restore: (id: string, source: RestoreSource, answers: Record<string, string>) =>
     request<RestoreResult>('POST', `/devices/${encodeURIComponent(id)}/restore`, { source, answers, confirm: true }),
 };
+
+// ---- firmware (Phase 7) ----
+
+export interface FirmwareRow {
+  id: string; name: string; status: DeviceStatus; gen: string; known: boolean; valid: boolean;
+  current?: string; currentBuild?: string; stable?: string; stableBuild?: string; beta?: string; betaBuild?: string;
+  preselect?: boolean; updating?: boolean; progress: number; rebooting?: boolean; queued?: boolean;
+}
+
+export const firmwareApi = {
+  rows: (ids: string[]) => request<FirmwareRow[]>('GET', '/firmware' + (ids.length ? '?' + idsQuery(ids) : '')),
+  update: (items: { id: string; stage: string }[]) => request<{ results: ResultLine[] }>('POST', '/firmware/update', { items, confirm: true }),
+};

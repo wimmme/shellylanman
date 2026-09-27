@@ -269,3 +269,4 @@ table.checklist td.chk{text-align:center;font-family:var(--font-mono);font-size:
 td.mono{font-family:var(--font-mono);font-size:.82rem}
 .def-fail{color:var(--accent-err)}.def-success{color:var(--accent-ok)}.def-waiting,.def-running{color:var(--accent-warn)}
 .spinner.small{display:inline-block;width:12px;height:12px;border-width:2px;margin-left:6px;vertical-align:middle}
+.fw-panel .toolbar{margin-top:8px}.fw-check{gap:6px;white-space:nowrap}table.data.fw td{white-space:nowrap}

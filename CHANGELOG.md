@@ -12,6 +12,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   download progress and restart followed over the device's WebSocket, the row checked
   again when the device is back; archived and off-line devices get a deferred update.
 - API: `GET /api/v1/firmware`, `POST /api/v1/firmware/update` (needs `confirm: true`).
+- FW Update panel as the first tab of Devices settings (as in ShellyScanner) and on the
+  Firmware page (all devices or `#/firmware?ids=`): current / new stable / new beta,
+  select buttons, counters, filter, Check, confirmation, live progress.
 
 ### Added — Phase 6: backup and restore
 - Backup engine for every generation (`.sbk`, compatible with ShellyScanner): Gen1

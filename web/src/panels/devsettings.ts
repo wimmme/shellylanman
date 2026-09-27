@@ -10,9 +10,11 @@ import { allDevices } from '../devices';
 import { h } from '../dom';
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
+import { firmwarePanel, type FirmwarePanel } from './firmware';
 
-export type SettingsTab = 'wifi1' | 'wifi2' | 'login' | 'mqtt' | 'others';
+export type SettingsTab = 'fw' | 'wifi1' | 'wifi2' | 'login' | 'mqtt' | 'others';
 const TABS: { id: SettingsTab; label: Key }[] = [
+  { id: 'fw', label: 'fw.title' },
   { id: 'wifi1', label: 'cfg.tab.wifi1' }, { id: 'wifi2', label: 'cfg.tab.wifi2' }, { id: 'login', label: 'cfg.tab.login' },
   { id: 'mqtt', label: 'cfg.tab.mqtt' }, { id: 'others', label: 'cfg.tab.others' },
 ];
@@ -259,7 +261,7 @@ function othersTab(f: ConfigForm): TabView {
 // ---- the dialog ------------------------------------------------------------------------
 
 /** Open "Devices settings" for the given devices on one tab. onApplied runs after each apply. */
-export function openDeviceSettings(ids: string[], tab: SettingsTab = 'wifi1', onApplied?: () => void): void {
+export function openDeviceSettings(ids: string[], tab: SettingsTab = 'fw', onApplied?: () => void): void {
   const devs = allDevices().filter((d) => ids.includes(d.id) && d.gen !== 'bth');
   if (devs.length === 0) { openModal(t('cfg.title'), h('p', {}, t('cfg.allExcluded')), [{ label: t('common.close') }]); return; }
   const title = devs.length === 1 ? t('cfg.title1', { device: devs[0]!.name || devs[0]!.hostname }) : t('cfg.titleMany', { n: devs.length });
@@ -269,6 +271,7 @@ export function openDeviceSettings(ids: string[], tab: SettingsTab = 'wifi1', on
   const content = h('div', { class: 'cfg-body' });
   let current: SettingsTab = tab;
   let view: TabView | null = null;
+  let fw: FirmwarePanel | null = null;
   let token = 0;
 
   const load = async (): Promise<void> => {
@@ -277,6 +280,13 @@ export function openDeviceSettings(ids: string[], tab: SettingsTab = 'wifi1', on
     tabsBar.replaceChildren(...TABS.map((x) => h('button', { class: 'tab' + (x.id === current ? ' active' : ''), role: 'tab', 'aria-selected': String(x.id === current),
       onclick: () => { if (x.id !== current) { current = x.id; void load(); } } }, t(x.label))));
     note.replaceChildren();
+    fw?.dispose();
+    fw = null;
+    if (current === 'fw') { // PanelFWUpdate: reads the devices itself
+      fw = firmwarePanel(devIds);
+      content.replaceChildren(fw.el);
+      return;
+    }
     content.replaceChildren(h('div', { class: 'spinner' }));
     try {
       const f = await configApi.form(current, devIds);
@@ -289,6 +299,9 @@ export function openDeviceSettings(ids: string[], tab: SettingsTab = 'wifi1', on
     }
   };
   const doApply = async (): Promise<boolean> => {
+    if (fw) {
+      try { return await fw.apply(); } catch (e) { note.replaceChildren(h('div', { class: 'banner warn', role: 'alert' }, errorText(e))); return false; }
+    }
     if (!view) return false;
     let body: Record<string, unknown> | null;
     try { body = await view.collect(); } catch (e) { note.replaceChildren(h('div', { class: 'banner warn' }, errorText(e))); return false; }
@@ -308,6 +321,6 @@ export function openDeviceSettings(ids: string[], tab: SettingsTab = 'wifi1', on
     { label: t('cfg.apply'), kind: 'primary', onClick: async () => { await doApply(); return false; } },
     { label: t('cfg.applyClose'), onClick: () => doApply() },
     { label: t('common.close') },
-  ], undefined, 'wide');
+  ], () => { fw?.dispose(); }, 'wide');
   void load();
 }

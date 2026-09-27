@@ -8,6 +8,8 @@ import { errorState, loadingState, placeholder, type Page } from './pages/common
 import { checklistPage } from './pages/checklist';
 import { deferredPage, sidebarBadge, wireDeferredEvents } from './pages/deferred';
 import { devicesPage } from './pages/devices';
+import { firmwarePage } from './pages/firmware';
+import { wireFirmwareEvents } from './panels/firmware';
 import { settingsPage } from './pages/settings';
 import { EventSocket, type ConnState } from './socket';
 import { loadDevices, wireDeviceEvents } from './devices';
@@ -16,7 +18,7 @@ const pages: Page[] = [
   devicesPage,
   checklistPage,
   placeholder('charts', 'nav.charts', ICONS.charts, 'page.charts.text'),
-  placeholder('firmware', 'nav.firmware', ICONS.firmware, 'page.firmware.text'),
+  firmwarePage,
   deferredPage,
   settingsPage(() => renderShell()),
   aboutPage,
@@ -118,6 +120,7 @@ async function boot(): Promise<void> {
   });
   wireDeviceEvents(socket);
   wireDeferredEvents(socket);
+  wireFirmwareEvents(socket);
   socket.connect();
   void loadDevices().catch(() => { /* retried on the socket's hello */ });
 
