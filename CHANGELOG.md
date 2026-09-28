@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-28
+
+First release: the features of ShellyScanner as a web application, plus the local
+firmware download via QR code.
+
 ### Added — Phase 10: release
 - Opt-in check for new ShellyLanMan releases (GitHub; never / stable / all, off by
   default) with a banner and "skip this version".

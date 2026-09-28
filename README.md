@@ -68,7 +68,7 @@ docker compose pull && docker compose up -d
 ```
 
 Use `docker compose up -d`, not `docker restart` — a restart keeps the old image.
-To stay on one release line, use a tag such as `ghcr.io/wimmme/shellylanman:1.0`
+To stay on one release line, use a tag such as `ghcr.io/wimmme/shellylanman:0.1`
 instead of `latest`. The changes of each release are in [`CHANGELOG.md`](CHANGELOG.md).
 
 Before a major version, save the data volume (it holds settings, archive, backups):
