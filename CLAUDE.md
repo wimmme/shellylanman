@@ -78,8 +78,8 @@ internal/fixture   fixture naming + scrubbing (public repo!)
   header and a `docs/PROVENANCE.md` row, in the same commit.
 - **Frontend:** plain TypeScript, no framework. Text via `textContent` only
   (`h()` in `web/src/dom.ts`), never `innerHTML` with device data. No inline
-  styles/scripts (CSP). Every UI string in both `web/src/i18n/en.json` and
-  `nl.json` (a test enforces equal keys).
+  styles/scripts (CSP). Every UI string in every catalogue in `web/src/i18n/`
+  (en, nl, de, fr, es, it, bg, zh; a test enforces equal keys and placeholders).
 
 ## Workflow
 
