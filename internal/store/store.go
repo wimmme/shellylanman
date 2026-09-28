@@ -56,6 +56,11 @@ type Settings struct {
 	// PhoneBaseURL is the address phones use for local firmware downloads
 	// ("http://host:port"); empty = the address the browser used. DECISIONS §4.4.
 	PhoneBaseURL string `json:"phoneBaseURL"`
+	// UpdateCheck: never (default) / stable / all — check GitHub for new
+	// ShellyLanMan releases (ShellyScanner: update check; DECISIONS Q18).
+	UpdateCheck string `json:"updateCheck"`
+	// SkipVersion: a release the user chose to skip.
+	SkipVersion string `json:"skipVersion,omitempty"`
 }
 
 // Scan modes (ShellyScanner: setting SCAN_MODE, dialog "Network scan mode").
@@ -122,6 +127,9 @@ func (s Settings) Validate() error {
 	}
 	if s.Scan.RefreshSeconds < 1 || s.Scan.RefreshSeconds > 3600 {
 		return errors.New("status refresh must be 1–3600 seconds")
+	}
+	if s.UpdateCheck != "" && s.UpdateCheck != "never" && s.UpdateCheck != "stable" && s.UpdateCheck != "all" {
+		return errors.New("update check must be never, stable or all")
 	}
 	if s.PhoneBaseURL != "" {
 		u, err := url.Parse(s.PhoneBaseURL)

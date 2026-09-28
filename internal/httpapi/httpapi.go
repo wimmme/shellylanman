@@ -21,6 +21,7 @@ import (
 	"github.com/wimmme/shellylanman/internal/hub"
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/store"
+	"github.com/wimmme/shellylanman/internal/update"
 	"github.com/wimmme/shellylanman/internal/version"
 )
 
@@ -31,6 +32,7 @@ type Config struct {
 	Store   *store.Store
 	Hub     *hub.Hub
 	Devices *service.Devices
+	Updates *update.Checker // release check (nil in tests)
 	// Static is the built frontend (index.html at its root).
 	Static fs.FS
 	// Origins are extra allowed Origin hosts for state-changing requests and
@@ -55,6 +57,7 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/status", s.status)
 	mux.HandleFunc("GET /api/v1/settings", s.getSettings)
 	mux.HandleFunc("PUT /api/v1/settings", s.putSettings)
+	mux.HandleFunc("GET /api/v1/update", s.getUpdate)
 	s.deviceRoutes(mux)
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)
@@ -143,6 +146,8 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		MQTTSlow     *int                   `json:"mqttSlow"`
 		BackupKeep   *int                   `json:"backupKeep"`
 		PhoneBaseURL *string                `json:"phoneBaseURL"`
+		UpdateCheck  *string                `json:"updateCheck"`
+		SkipVersion  *string                `json:"skipVersion"`
 	}
 	if !readJSON(w, r, &patch) {
 		return
@@ -166,6 +171,12 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		if patch.BackupKeep != nil {
 			st.BackupKeep = *patch.BackupKeep
 		}
+		if patch.UpdateCheck != nil {
+			st.UpdateCheck = *patch.UpdateCheck
+		}
+		if patch.SkipVersion != nil {
+			st.SkipVersion = *patch.SkipVersion
+		}
 		if patch.PhoneBaseURL != nil {
 			st.PhoneBaseURL = strings.TrimRight(strings.TrimSpace(*patch.PhoneBaseURL), "/")
 		}
@@ -175,6 +186,9 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.Hub.Broadcast(hub.Event{Type: "settings.changed", Data: next})
+	if s.Updates != nil {
+		s.Updates.Wake() // the release check follows its setting at once
+	}
 	// ShellyScanner applies a new scan mode at the next start; a server applies
 	// it at once with a rescan.
 	if (patch.Scan != nil || patch.Archive != nil) && s.Devices != nil {
@@ -283,4 +297,13 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 
 func writeError(w http.ResponseWriter, code int, msg string) {
 	writeJSON(w, code, map[string]string{"error": msg})
+}
+
+// getUpdate: the last release check (never checked when the setting is off).
+func (s *server) getUpdate(w http.ResponseWriter, r *http.Request) {
+	if s.Updates == nil {
+		writeJSON(w, http.StatusOK, update.Status{Mode: update.Never})
+		return
+	}
+	writeJSON(w, http.StatusOK, s.Updates.Status())
 }

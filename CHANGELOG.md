@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added — Phase 10: release
+- Opt-in check for new ShellyLanMan releases (GitHub; never / stable / all, off by
+  default) with a banner and "skip this version".
+- README: feature overview, what leaves the LAN, image platforms and tags, update and
+  data-volume backup instructions.
+
 ### Changed — Phase 9: parity review
 - Right-click menu on the devices table (device: info, web UI, settings, backup,
   restore, notes, reload; archived device: reload, notes, remove) — it was missing.

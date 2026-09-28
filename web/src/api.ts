@@ -1,7 +1,8 @@
 // REST client for /api/v1. Types mirror internal/httpapi.
 
 export interface Status { firstRunDone: boolean; authEnabled: boolean; clients: number }
-export interface Settings { firstRunDone: boolean; language: string }
+export interface Settings { firstRunDone: boolean; language: string; updateCheck?: string; skipVersion?: string }
+export interface UpdateStatus { mode: string; current: string; latest?: string; url?: string; newer: boolean; skipped?: boolean; checked?: number; error?: string }
 export interface Credit { name: string; author: string; url: string; license: string; what: string }
 export interface About {
   name: string; version: string; commit?: string; license: string; source: string;
@@ -31,6 +32,7 @@ export const api = {
   about: () => request<About>('GET', '/about'),
   settings: () => request<Settings>('GET', '/settings'),
   updateSettings: (patch: Partial<Settings>) => request<Settings>('PUT', '/settings', patch),
+  update: () => request<UpdateStatus>('GET', '/update'),
 };
 
 // ---- devices (Phase 2) ----

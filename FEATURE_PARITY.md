@@ -166,7 +166,7 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 | A5 | Archive written on exit: identity, address, type, SSID, last connection, battery flag, notes, keyword; devices with errors/not logged keep stored data | `DevicesStore.store/read/toGhosts/getGhost` | — | all | Archive service; written on change + periodically (server has no "exit") ⚠️ | 2 | ✅ |
 | A6 | Remove ghost devices from archive (warning if notes) | `MainView.eraseGhostAction` | — | — | Row action + confirm | 2 | ✅ |
 | A7 | About dialog (author, licence, links) | `view/DialogAbout`, `aboutApp` label | — | — | About page: credits usnasoft + link, GPL-3.0, independent-project and trademark notice (EN/NL) | 1 | ✅ |
-| A8 | Application update check against usna.it; skip release | `view/util/ApplicationUpdateCHK` | `https://www.usna.it/shellyscanner/last_version.txt` | — | **GitHub releases of ShellyLanMan, opt-in, off by default** (Q18) | 10 | ⚠️ |
+| A8 | Application update check against usna.it; skip release | `view/util/ApplicationUpdateCHK` | `https://www.usna.it/shellyscanner/last_version.txt` | — | **GitHub releases of ShellyLanMan, opt-in, off by default** (Q18) | 10 | ✅ ⚠️ |
 | A9 | Localisation: English and Italian label bundles | `resources/LabelsBundle*.properties` | — | — | **English + Dutch** string catalogues (Q21); Italian not planned | 3 | ⚠️ |
 | A10 | Online help links (manual, checklist, charts) | `UsnaOpenUrlAction`, `*ManualUrl` labels | — | — | **Own short in-app help** (Q22); usna.it linked from About | 8 | ✅ |
 | A11 | Keyboard shortcuts (filter, tabs, pause, macOS cmd-C/V/X) | various | — | — | Web equivalents where sensible | 8 | ✅ |

@@ -1,5 +1,5 @@
 // Application shell: sidebar, top bar, hash router, connection state, first run.
-import { api, type FullSettings, type Status } from './api';
+import { api, type FullSettings, type Status, type UpdateStatus } from './api';
 import { initAppearance } from './appearance';
 import { h, icon, ICONS } from './dom';
 import { isLang, setLang, storedLang, t } from './i18n';
@@ -25,6 +25,7 @@ const pages: Page[] = [
   aboutPage,
 ];
 
+let updateStatus: UpdateStatus | null = null;
 let status: Status = { firstRunDone: true, authEnabled: false, clients: 0 };
 let conn: ConnState = 'connecting';
 let version = '';
@@ -63,6 +64,13 @@ function renderShell(): void {
   if (!status.authEnabled && !sessionDismissed()) {
     const banner = h('div', { class: 'banner warn', role: 'note' }, t('banner.noAuth'),
       h('button', { class: 'btn close', onclick: () => { dismiss(); banner.remove(); } }, t('banner.dismiss')));
+    main.append(banner);
+  }
+  if (updateStatus?.newer && updateStatus.latest) { // ApplicationUpdateCHK: a newer release, with "skip this version"
+    const latest = updateStatus.latest;
+    const banner = h('div', { class: 'banner', role: 'note' }, t('update.available', { version: latest }),
+      updateStatus.url ? h('a', { href: updateStatus.url, target: '_blank', rel: 'noopener' }, t('update.notes')) : null,
+      h('button', { class: 'btn close', onclick: async () => { await api.updateSettings({ skipVersion: latest }).catch(() => {}); banner.remove(); } }, t('update.skip')));
     main.append(banner);
   }
   const content = h('div', { style: 'display:contents' }, loadingState());
@@ -124,6 +132,8 @@ async function boot(): Promise<void> {
   wireDeviceEvents(socket);
   wireDeferredEvents(socket);
   wireFirmwareEvents(socket);
+  socket.on('update.status', (ev) => { updateStatus = ev.data as UpdateStatus; renderShell(); });
+  void api.update().then((u) => { updateStatus = u; if (u.newer) renderShell(); }).catch(() => {});
   socket.connect();
   void loadDevices().catch(() => { /* retried on the socket's hello */ });
 

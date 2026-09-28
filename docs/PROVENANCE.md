@@ -41,6 +41,7 @@ header. Update this table in the same commit as the code.
 | `internal/service/scripts.go` | 2 | `g2/modules/Script`, `g2/modules/KVS`, `view/scripts/DialogDeviceScripts`, `ScriptsPanel.loadCodeFromFile`, `ScriptFrame.activateLogConnection` |
 | `internal/service/schedule.go` | 2 | `view/scheduler/gen2plus/MethodHints`, `G2JobPanel` (test), `blu/BluTRV.getTRVJSON/postTRVCommand` |
 | `internal/service/samples.go` | 2 (EM) / 4 (ring buffer) | `g2/modules/EMManager.getEnergyData`, `EM1Manager.getEnergyData`; ring buffer new (Q7) |
+| `internal/update` | 4 | (replaces `view/util/ApplicationUpdateCHK`, Q18) |
 | `internal/service/control.go` | 2 | commands of `g1/modules/*`, `g2/modules/*`, `g3/modules/*`, `blu/BluTRV`; `MainView.rebootAction`, `Devices.reboot`, `Webhooks.execute`, `Actions.execute` |
 | `internal/service/config.go` | 2 | `view/devsettings/*` panels; `WIFIManager*`, `LoginManager*`, `MQTTManager*`, `TimeAndLocationManager*`, `InputResetManager*`, `setCloudEnabled` |
 | `internal/service/deferred.go` | 2 | `controller/DeferrableTask`, `DeferrablesContainer` |

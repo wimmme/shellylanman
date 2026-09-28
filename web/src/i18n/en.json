@@ -711,5 +711,13 @@
   "help.scripts.title": "Scripts and KVS",
   "help.scripts": "Scripts of Gen2+ devices: run, stop, enable, upload from a file or a backup, download and edit (the ? button in the editor lists the shortcuts). The KVS tab edits the key-value store.",
   "help.charts.title": "Charts",
-  "help.charts": "Select devices and press Charts. ShellyLanMan keeps 24 hours of readings; see Help under the chart for zoom, pause and export."
+  "help.charts": "Select devices and press Charts. ShellyLanMan keeps 24 hours of readings; see Help under the chart for zoom, pause and export.",
+  "update.available": "ShellyLanMan {version} is available.",
+  "update.notes": "Release notes",
+  "update.skip": "Skip this version",
+  "update.setting": "Check for new ShellyLanMan versions",
+  "update.never": "Never",
+  "update.stable": "Stable releases",
+  "update.all": "All releases (including test versions)",
+  "update.help": "Off by default. When on, the server asks GitHub once a day for the releases of ShellyLanMan; nothing else is sent."
 }

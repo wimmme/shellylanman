@@ -711,5 +711,13 @@
   "help.scripts.title": "Scripts en KVS",
   "help.scripts": "Scripts van Gen2+-apparaten: starten, stoppen, inschakelen, uploaden vanuit een bestand of back-up, downloaden en bewerken (de knop ? in de editor toont de sneltoetsen). Het tabblad KVS bewerkt de sleutel-waardeopslag.",
   "help.charts.title": "Grafieken",
-  "help.charts": "Selecteer apparaten en druk op Grafieken. ShellyLanMan bewaart 24 uur metingen; zie Hulp onder de grafiek voor zoomen, pauzeren en exporteren."
+  "help.charts": "Selecteer apparaten en druk op Grafieken. ShellyLanMan bewaart 24 uur metingen; zie Hulp onder de grafiek voor zoomen, pauzeren en exporteren.",
+  "update.available": "ShellyLanMan {version} is beschikbaar.",
+  "update.notes": "Release notes",
+  "update.skip": "Deze versie overslaan",
+  "update.setting": "Controleren op nieuwe versies van ShellyLanMan",
+  "update.never": "Nooit",
+  "update.stable": "Stabiele versies",
+  "update.all": "Alle versies (ook testversies)",
+  "update.help": "Standaard uit. Aan: de server vraagt één keer per dag de releases van ShellyLanMan op bij GitHub; er wordt niets anders verstuurd."
 }

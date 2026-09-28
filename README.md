@@ -7,9 +7,24 @@ ShellyLanMan is a web application based on
 features and terminology, as a native web UI in a single lightweight Docker
 image. No desktop, no VNC, no Java, no cloud.
 
-> **Status: early development.** The skeleton (server, themed UI, data store,
-> Docker image, tests) is in place; device discovery and management follow
-> phase by phase. See [`FEATURE_PARITY.md`](FEATURE_PARITY.md) for progress.
+What it does — everything ShellyScanner does, in the browser:
+
+- **Discovery** by mDNS (all interfaces or one), IP-range scan or offline, Gen1 to
+  Gen4, Pro, BLU devices through their gateways, range-extender clients, protected
+  devices, an archive of known devices with notes and keywords.
+- **Devices table** with all columns, filters, views, device information, live logs,
+  controls (relays, rollers, lights, thermostats, …), reboot, CSV export and print.
+- **Configuration** of one or many devices (Wi-Fi, login, MQTT, NTP, cloud, …), the
+  configuration checklist and deferred tasks for devices that are off line.
+- **Backup and restore** (`.sbk`, compatible with ShellyScanner), kept on the server.
+- **Firmware** check and update with live progress, plus one new feature: a **QR code
+  for a local firmware download**, to update a device through its own access point.
+- **Scripts** (with a code editor) and KVS, **schedulers** (Gen2+, Wall Display
+  thermostat, BLU TRV) and **charts** with 24 hours of history.
+
+What leaves your LAN: the devices' own firmware checks (as with ShellyScanner); Shelly's
+firmware index when you open the Firmware page; the ShellyLanMan release check only
+if you switch it on (off by default). No telemetry.
 
 ## Quick start
 
@@ -43,14 +58,28 @@ docker run -d --name shellylanman --network host -v shellylanman-data:/data \
   --restart unless-stopped ghcr.io/wimmme/shellylanman:latest
 ```
 
-Until the first release is published, build it yourself: `docker compose up -d --build`
-in a clone of this repository.
+Images are published for `linux/amd64` and `linux/arm64` (Raspberry Pi 4/5 with
+a 64-bit OS). Tags: `latest`, `X.Y` and `X.Y.Z`.
 
 ### Update
 
 ```sh
 docker compose pull && docker compose up -d
 ```
+
+Use `docker compose up -d`, not `docker restart` — a restart keeps the old image.
+To stay on one release line, use a tag such as `ghcr.io/wimmme/shellylanman:1.0`
+instead of `latest`. The changes of each release are in [`CHANGELOG.md`](CHANGELOG.md).
+
+Before a major version, save the data volume (it holds settings, archive, backups):
+
+```sh
+docker run --rm -v shellylanman_data:/data -v "$PWD":/backup alpine   tar czf /backup/shellylanman-data.tgz -C /data .
+```
+
+(`docker volume ls` shows the volume's name: compose prefixes it with the project
+directory, e.g. `shellylanman_data`; the `docker run` example uses `shellylanman-data`). To go back, start the previous tag with the saved
+volume content.
 
 ### Why host networking
 
@@ -79,8 +108,11 @@ needed before the UI is up:
 | `secret.key` | Random key created on first start; encrypts secrets in `settings.json` |
 | `settings.json` | Application settings; device credentials encrypted |
 | `archive.json` | Device archive: known devices, last address, notes and keywords |
+| `deferred.json` | Deferred tasks for off-line devices (passwords encrypted) |
+| `backups/<device>/*.sbk` | Device backups (newest N per device, setting) |
+| `firmware/` | Verified firmware files of the local download (cache) |
 
-Later phases add backups, deferred actions and a firmware cache — the full list is in
+Chart readings are kept in memory only (24 hours). Details:
 [`ARCHITECTURE.md` §2.6](ARCHITECTURE.md).
 
 ### Behind a reverse proxy
@@ -108,7 +140,8 @@ starts simulated devices on ports 8081 and 8082. See [`CONTRIBUTING.md`](CONTRIB
   ShellyLanMan does. More at https://www.usna.it/shellyscanner/.
 - **[MikroDash](https://github.com/SecOps-7/MikroDash)** — the look and feel:
   design tokens, palettes and appearance settings (MIT).
-- Fonts under the SIL Open Font License. Full list in
+- CodeMirror 6 (script editor), Chart.js (charts), go-qrcode (QR codes) — MIT;
+  fonts under the SIL Open Font License. Full list in
   [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ## Disclaimer
