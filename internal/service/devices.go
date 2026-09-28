@@ -44,6 +44,9 @@ var (
 	ProbeTimeout     = 5 * time.Second
 	PresenceInterval = 60 * time.Second // refresh rate while no browser is connected (DECISIONS Q8)
 	errorsRetryAfter = 30 * time.Second
+	// errorsRetryEvery: devices that could not be read keep being retried
+	// (the original retries once, 30 s after the scan starts — O33, extension agreed 2026-09-28).
+	errorsRetryEvery = 2 * time.Minute
 	ghostsRetryAfter = 45 * time.Second
 	archiveSaveEvery = 5 * time.Second
 )
@@ -236,7 +239,7 @@ func (m *Devices) Rescan() {
 		// archive only
 	}
 
-	go m.after(run, errorsRetryAfter, m.retryErrors)
+	go m.after(run, errorsRetryAfter, m.retryErrorsLoop)
 	// Auto reload applies to the mDNS modes only (PanelStore tooltip; Devices.scannerInit).
 	if st.Archive.Use && st.Archive.AutoReload && (st.Scan.Mode == store.ScanFull || st.Scan.Mode == store.ScanLocal) {
 		go m.after(run, ghostsRetryAfter, m.retryGhosts)
@@ -432,6 +435,21 @@ func (m *Devices) upsert(e *entry) bool {
 		go m.poll(ctx, e)
 	}
 	return true
+}
+
+// retryErrorsLoop retries failed devices now and then every errorsRetryEvery.
+func (m *Devices) retryErrorsLoop(ctx context.Context) {
+	m.retryErrors(ctx)
+	t := time.NewTicker(errorsRetryEvery)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			m.retryErrors(ctx)
+		}
+	}
 }
 
 // retryErrors re-creates unmanaged devices that failed (Devices.errorsReconnect).

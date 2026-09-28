@@ -9,6 +9,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Right-click menu on the devices table (device: info, web UI, settings, backup,
   restore, notes, reload; archived device: reload, notes, remove) — it was missing.
 - API: `GET /api/v1/devices?gen=` (ShellyScanner's `-gen`).
+- A device that could not be read when discovered is retried every 2 minutes
+  (ShellyScanner retries once, 30 s after the scan starts — O33, agreed extension).
 
 ### Added — Phase 8: advanced functions
 - Notes and keyword per device (Notes action, kept in the archive; keyword up to 32

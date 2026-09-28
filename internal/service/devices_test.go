@@ -317,3 +317,18 @@ func TestPollingIntervalFollowsViewers(t *testing.T) {
 		t.Fatalf("with viewers: %v", iv)
 	}
 }
+
+func TestFailedDeviceIsRetried(t *testing.T) {
+	m, _, ctx := newService(t, nil)
+	old := errorsRetryEvery
+	errorsRetryEvery = 200 * time.Millisecond
+	defer func() { errorsRetryEvery = old }()
+	d, addr := startSimDev(t, fixtureDir(t, "gen2/Plus1", nil), nil)
+	d.SetDown(true) // still starting when discovered
+	m.handle(ctx, addr, "shellyplus1-aabbcc000001", true)
+	waitDevice(t, m, "AABBCC000001", func(x model.Device) bool { return x.Error != "" })
+	go m.retryErrorsLoop(ctx)
+	time.Sleep(400 * time.Millisecond) // the first retries still fail
+	d.SetDown(false)
+	waitDevice(t, m, "AABBCC000001", online)
+}
