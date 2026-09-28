@@ -11,6 +11,7 @@ export interface About {
   basedOn: Credit[]; credits: Credit[]; deps: Dep[]; notice: string; languages: string[]; donate: { name: string; url: string }[];
 }
 export interface ServerInfo { port: number; fixed: boolean }
+export interface MCPInfo { enabled: boolean; access: 'read' | 'control'; hasToken: boolean; token?: string }
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -38,6 +39,9 @@ export const api = {
   update: () => request<UpdateStatus>('GET', '/update'),
   server: () => request<ServerInfo>('GET', '/server'),
   moveServer: (port: number) => request<ServerInfo>('PUT', '/server', { port, confirm: true }),
+  mcp: () => request<MCPInfo>('GET', '/mcp'),
+  setMCP: (patch: { enabled?: boolean; access?: MCPInfo['access'] }) => request<MCPInfo>('PUT', '/mcp', patch),
+  newMCPToken: () => request<MCPInfo>('POST', '/mcp/token', {}),
 };
 
 // ---- devices (Phase 2) ----

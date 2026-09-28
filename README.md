@@ -28,7 +28,7 @@ by usnasoft — the same features and terminology, as a native web UI in a singl
 lightweight Docker image. No desktop, no VNC, no Java, no cloud.
 
 [Why](#why-shellylanman) · [Quick start](#quick-start) · [Features](#features) ·
-[Pages](#pages) · [Screenshots](#screenshots) · [Security](#security) ·
+[Pages](#pages) · [Screenshots](#screenshots) · [AI assistants (MCP)](#ai-assistants-mcp) · [Security](#security) ·
 [Configuration](#configuration) · [Development](#development) · [Support](#support) · [Credits](#credits)
 
 ## Why ShellyLanMan
@@ -185,6 +185,33 @@ if you switch it on (off by default). No telemetry.
 
 The screenshots show simulated devices (`cmd/shellysim`).
 
+## AI assistants (MCP)
+
+ShellyLanMan has a built-in [Model Context Protocol](https://modelcontextprotocol.io)
+server, so an AI assistant — Claude Code, Claude Desktop, or a local model — can ask
+about your devices and, if you allow it, switch them. It is **local only**: the
+assistant talks to ShellyLanMan, ShellyLanMan talks to the devices on your LAN. No
+Shelly cloud account, nothing leaves your network except what your AI client itself
+sends to its model.
+
+Switch it on in **Settings → MCP**. That makes a token (shown once) and gives you the
+command to paste, for example:
+
+```sh
+claude mcp add --transport http shellylanman http://<your-host>:3082/mcp \
+  --header "Authorization: Bearer <token>"
+```
+
+| Tools | |
+|---|---|
+| Read (always) | `shelly_list_devices`, `shelly_get_device`, `shelly_get_readings` (24 h of history), `shelly_firmware_check`, `shelly_checklist`, `shelly_list_backups`, `shelly_rpc_read` (Gen2+ `Get*`/`List*` methods only) |
+| Control (when set to *read and control*) | `shelly_switch`, `shelly_light`, `shelly_cover`, `shelly_thermostat`, `shelly_backup` |
+| Destructive (control, and `confirm: true`) | `shelly_reboot`, `shelly_firmware_update` |
+
+Off by default, read-only unless you choose otherwise, a bearer token on every
+request, browser requests from other sites refused, and every control action written
+to the log. Devices are named by name, host name, IP or MAC.
+
 ## Security
 
 - **Keep it on your LAN.** ShellyLanMan can change the configuration of your devices;
@@ -198,6 +225,7 @@ The screenshots show simulated devices (`cmd/shellysim`).
   WebSocket, a strict Content Security Policy, no third-party scripts or fonts.
 - **Destructive actions** (reboot, restore, firmware update, port change) always ask
   for confirmation, and the API requires `confirm: true`.
+- **MCP** is off by default, needs a token, and is read-only unless you allow control.
 - Report vulnerabilities privately: see [`SECURITY.md`](SECURITY.md).
 
 ## Development

@@ -42,6 +42,7 @@ web/src (TS SPA) ──REST /api/v1──┐  ┌──WS /ws (server→browser 
 internal/httpapi   thin adapter: routes, JSON, origin check, security headers
 internal/hub       WebSocket fan-out; client count drives polling rate (Q8)
 internal/service   (from Phase 2) all behaviour lives here — UI, MCP, HA are clients
+internal/mcp       MCP server at /mcp (AI assistants): thin layer over the service
 internal/store     /data: secret.key, settings.json (AES-256-GCM secrets)
 internal/sim       simulated Shelly device from testdata fixtures
 internal/fixture   fixture naming + scrubbing (public repo!)

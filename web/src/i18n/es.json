@@ -757,5 +757,22 @@
   "server.confirm": "ShellyLanMan pasará ahora al puerto {port}; después esta página se abrirá en el nuevo puerto. También hay que cambiar marcadores, un proxy inverso o una asignación de puertos de Docker (modo bridge).",
   "server.proxy": "ShellyLanMan escucha ahora en el puerto {port}. Cambie su proxy inverso a ese puerto.",
   "server.help": "Con la red del host el puerto se abre directamente en el host. En modo bridge mantenga el puerto y cambie la asignación (-p).",
-  "server.fixed": "Definido por SHELLYLANMAN_LISTEN: cámbielo allí."
+  "server.fixed": "Definido por SHELLYLANMAN_LISTEN: cámbielo allí.",
+  "settings.tab.mcp": "MCP",
+  "mcp.intro": "ShellyLanMan puede atender a asistentes de IA (Claude, modelos locales) mediante el Model Context Protocol en /mcp: pueden listar y leer sus dispositivos y, si lo permite, accionarlos. Todo se queda en su red local: los dispositivos se contactan directamente, nunca a través de la nube de Shelly.",
+  "mcp.enable": "Activar el servidor MCP",
+  "mcp.access": "Qué pueden hacer los asistentes",
+  "mcp.access.read": "Solo lectura",
+  "mcp.access.control": "Lectura y control (interruptores, luces, persianas, termostatos, copia de seguridad, reinicio, firmware)",
+  "mcp.accessHelp": "El reinicio y las actualizaciones de firmware requieren además una confirmación explícita del asistente. Cada acción queda registrada.",
+  "mcp.url": "Dirección",
+  "mcp.token": "Token",
+  "mcp.tokenSet": "Hay un token definido. Solo se muestra una vez; cree uno nuevo si lo ha perdido (el anterior deja de funcionar).",
+  "mcp.tokenNew": "Nuevo token",
+  "mcp.tokenShown": "Copie el token ahora: no se volverá a mostrar.",
+  "mcp.tokenConfirm": "¿Crear un nuevo token? Los asistentes que usan el actual perderán el acceso.",
+  "mcp.claude": "Claude Code",
+  "mcp.json": "Otros clientes (configuración JSON)",
+  "mcp.warn": "El token da acceso a sus dispositivos: manténgalo en secreto. No exponga ShellyLanMan a Internet.",
+  "mcp.copied": "Copiado"
 }

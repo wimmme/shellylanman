@@ -757,5 +757,22 @@
   "server.confirm": "ShellyLanMan will move to port {port} now; this page then opens on the new port. Bookmarks, a reverse proxy or a Docker port mapping (bridge mode) must be changed as well.",
   "server.proxy": "ShellyLanMan now listens on port {port}. Change your reverse proxy to that port.",
   "server.help": "With host networking the port is opened directly on the host. In bridge mode keep the port and change the mapping (-p) instead.",
-  "server.fixed": "Set by SHELLYLANMAN_LISTEN: change it there."
+  "server.fixed": "Set by SHELLYLANMAN_LISTEN: change it there.",
+  "settings.tab.mcp": "MCP",
+  "mcp.intro": "ShellyLanMan can serve AI assistants (Claude, local models) through the Model Context Protocol at /mcp: they can list and read your devices and, if you allow it, switch them. Everything stays on your LAN: devices are reached directly, never through the Shelly cloud.",
+  "mcp.enable": "Enable the MCP server",
+  "mcp.access": "What assistants may do",
+  "mcp.access.read": "Read only",
+  "mcp.access.control": "Read and control (switches, lights, covers, thermostats, backup, reboot, firmware)",
+  "mcp.accessHelp": "Reboot and firmware updates also need the assistant to confirm explicitly. Every action is written to the log.",
+  "mcp.url": "Address",
+  "mcp.token": "Token",
+  "mcp.tokenSet": "A token is set. It is shown only once; make a new one if you lost it (the old one then stops working).",
+  "mcp.tokenNew": "New token",
+  "mcp.tokenShown": "Copy the token now: it is not shown again.",
+  "mcp.tokenConfirm": "Make a new token? Assistants that use the current one lose access.",
+  "mcp.claude": "Claude Code",
+  "mcp.json": "Other clients (JSON configuration)",
+  "mcp.warn": "The token gives access to your devices: keep it secret. Do not expose ShellyLanMan to the internet.",
+  "mcp.copied": "Copied"
 }

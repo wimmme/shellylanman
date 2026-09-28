@@ -61,6 +61,7 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/update", s.getUpdate)
 	s.deviceRoutes(mux)
 	s.serverRoutes(mux)
+	s.mcpRoutes(mux)
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)
 	return securityHeaders(s.sameOrigin(mux))

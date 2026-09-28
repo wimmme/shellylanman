@@ -757,5 +757,22 @@
   "server.confirm": "ShellyLanMan wechselt jetzt auf Port {port}; diese Seite öffnet sich danach auf dem neuen Port. Lesezeichen, ein Reverse Proxy oder eine Docker-Portzuordnung (Bridge-Modus) müssen ebenfalls angepasst werden.",
   "server.proxy": "ShellyLanMan lauscht jetzt auf Port {port}. Stelle deinen Reverse Proxy auf diesen Port um.",
   "server.help": "Mit Host-Netzwerk wird der Port direkt auf dem Host geöffnet. Im Bridge-Modus den Port beibehalten und stattdessen die Zuordnung (-p) ändern.",
-  "server.fixed": "Durch SHELLYLANMAN_LISTEN festgelegt: dort ändern."
+  "server.fixed": "Durch SHELLYLANMAN_LISTEN festgelegt: dort ändern.",
+  "settings.tab.mcp": "MCP",
+  "mcp.intro": "ShellyLanMan kann KI-Assistenten (Claude, lokale Modelle) über das Model Context Protocol unter /mcp bedienen: Sie können deine Geräte auflisten und auslesen und, wenn du es erlaubst, schalten. Alles bleibt in deinem LAN: Die Geräte werden direkt angesprochen, nie über die Shelly-Cloud.",
+  "mcp.enable": "MCP-Server aktivieren",
+  "mcp.access": "Was Assistenten tun dürfen",
+  "mcp.access.read": "Nur lesen",
+  "mcp.access.control": "Lesen und steuern (Schalter, Lichter, Rollläden, Thermostate, Backup, Neustart, Firmware)",
+  "mcp.accessHelp": "Neustart und Firmware-Updates erfordern zusätzlich eine ausdrückliche Bestätigung des Assistenten. Jede Aktion wird protokolliert.",
+  "mcp.url": "Adresse",
+  "mcp.token": "Token",
+  "mcp.tokenSet": "Ein Token ist gesetzt. Es wird nur einmal angezeigt; erstelle ein neues, wenn du es verloren hast (das alte funktioniert dann nicht mehr).",
+  "mcp.tokenNew": "Neues Token",
+  "mcp.tokenShown": "Kopiere das Token jetzt: Es wird nicht wieder angezeigt.",
+  "mcp.tokenConfirm": "Ein neues Token erstellen? Assistenten, die das aktuelle verwenden, verlieren den Zugriff.",
+  "mcp.claude": "Claude Code",
+  "mcp.json": "Andere Clients (JSON-Konfiguration)",
+  "mcp.warn": "Das Token gewährt Zugriff auf deine Geräte: Halte es geheim. Mache ShellyLanMan nicht aus dem Internet erreichbar.",
+  "mcp.copied": "Kopiert"
 }

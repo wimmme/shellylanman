@@ -757,5 +757,22 @@
   "server.confirm": "ShellyLanMan passerà ora alla porta {port}; questa pagina si riaprirà poi sulla nuova porta. Vanno modificati anche segnalibri, un reverse proxy o una mappatura delle porte Docker (modalità bridge).",
   "server.proxy": "ShellyLanMan ora è in ascolto sulla porta {port}. Aggiorna il tuo reverse proxy su quella porta.",
   "server.help": "Con la rete dell'host la porta viene aperta direttamente sull'host. In modalità bridge mantieni la porta e cambia invece la mappatura (-p).",
-  "server.fixed": "Impostata da SHELLYLANMAN_LISTEN: modificala lì."
+  "server.fixed": "Impostata da SHELLYLANMAN_LISTEN: modificala lì.",
+  "settings.tab.mcp": "MCP",
+  "mcp.intro": "ShellyLanMan può servire assistenti IA (Claude, modelli locali) tramite il Model Context Protocol su /mcp: possono elencare e leggere i tuoi dispositivi e, se lo consenti, comandarli. Tutto resta sulla tua rete locale: i dispositivi vengono contattati direttamente, mai tramite il cloud Shelly.",
+  "mcp.enable": "Abilita il server MCP",
+  "mcp.access": "Cosa possono fare gli assistenti",
+  "mcp.access.read": "Solo lettura",
+  "mcp.access.control": "Lettura e comando (interruttori, luci, tapparelle, termostati, backup, riavvio, firmware)",
+  "mcp.accessHelp": "Riavvio e aggiornamenti del firmware richiedono inoltre una conferma esplicita dell'assistente. Ogni azione viene registrata nel log.",
+  "mcp.url": "Indirizzo",
+  "mcp.token": "Token",
+  "mcp.tokenSet": "È impostato un token. Viene mostrato una sola volta; creane uno nuovo se l'hai perso (il vecchio smette di funzionare).",
+  "mcp.tokenNew": "Nuovo token",
+  "mcp.tokenShown": "Copia il token ora: non verrà più mostrato.",
+  "mcp.tokenConfirm": "Creare un nuovo token? Gli assistenti che usano quello attuale perderanno l'accesso.",
+  "mcp.claude": "Claude Code",
+  "mcp.json": "Altri client (configurazione JSON)",
+  "mcp.warn": "Il token dà accesso ai tuoi dispositivi: tienilo segreto. Non esporre ShellyLanMan a Internet.",
+  "mcp.copied": "Copiato"
 }

@@ -64,7 +64,19 @@ type Settings struct {
 	// Port is the web server's port (0 = default 3082). SHELLYLANMAN_LISTEN
 	// overrides it. Changed only through PUT /api/v1/server (package listen).
 	Port int `json:"port,omitempty"`
+	// MCP is the Model Context Protocol server at /mcp (package mcp); its
+	// bearer token is the secret MCPTokenSecret.
+	MCP MCPSettings `json:"mcp"`
 }
+
+// MCPSettings switch the MCP server on and set what it may do.
+type MCPSettings struct {
+	Enabled bool   `json:"enabled"`
+	Access  string `json:"access"` // "read" (default) or "control"
+}
+
+// MCPTokenSecret names the MCP bearer token among the secrets.
+const MCPTokenSecret = "mcp.token"
 
 // Scan modes (ShellyScanner: setting SCAN_MODE, dialog "Network scan mode").
 const (
@@ -145,6 +157,9 @@ func (s Settings) Validate() error {
 	}
 	if s.MQTTSlow < 0 || s.MQTTSlow > 600 {
 		return errors.New("MQTT delay must be 0–600 tenths of a second")
+	}
+	if s.MCP.Access != "" && s.MCP.Access != "read" && s.MCP.Access != "control" {
+		return errors.New("MCP access must be read or control")
 	}
 	if s.Port < 0 || s.Port > 65535 {
 		return errors.New("port must be 1–65535")

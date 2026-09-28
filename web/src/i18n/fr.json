@@ -757,5 +757,22 @@
   "server.confirm": "ShellyLanMan va passer au port {port} maintenant ; cette page s'ouvrira ensuite sur le nouveau port. Les favoris, un reverse proxy ou un mappage de port Docker (mode bridge) doivent aussi être modifiés.",
   "server.proxy": "ShellyLanMan écoute maintenant sur le port {port}. Changez votre reverse proxy vers ce port.",
   "server.help": "Avec le réseau de l'hôte, le port est ouvert directement sur l'hôte. En mode bridge, gardez le port et modifiez plutôt le mappage (-p).",
-  "server.fixed": "Défini par SHELLYLANMAN_LISTEN : modifiez-le là."
+  "server.fixed": "Défini par SHELLYLANMAN_LISTEN : modifiez-le là.",
+  "settings.tab.mcp": "MCP",
+  "mcp.intro": "ShellyLanMan peut servir des assistants IA (Claude, modèles locaux) via le Model Context Protocol sur /mcp : ils peuvent lister et lire vos appareils et, si vous l'autorisez, les commander. Tout reste sur votre réseau local : les appareils sont joints directement, jamais via le cloud Shelly.",
+  "mcp.enable": "Activer le serveur MCP",
+  "mcp.access": "Ce que les assistants peuvent faire",
+  "mcp.access.read": "Lecture seule",
+  "mcp.access.control": "Lecture et commande (interrupteurs, lumières, volets, thermostats, sauvegarde, redémarrage, firmware)",
+  "mcp.accessHelp": "Le redémarrage et les mises à jour du firmware demandent en plus une confirmation explicite de l'assistant. Chaque action est journalisée.",
+  "mcp.url": "Adresse",
+  "mcp.token": "Jeton",
+  "mcp.tokenSet": "Un jeton est défini. Il n'est affiché qu'une fois ; créez-en un nouveau si vous l'avez perdu (l'ancien cesse alors de fonctionner).",
+  "mcp.tokenNew": "Nouveau jeton",
+  "mcp.tokenShown": "Copiez le jeton maintenant : il ne sera plus affiché.",
+  "mcp.tokenConfirm": "Créer un nouveau jeton ? Les assistants qui utilisent le jeton actuel perdent l'accès.",
+  "mcp.claude": "Claude Code",
+  "mcp.json": "Autres clients (configuration JSON)",
+  "mcp.warn": "Le jeton donne accès à vos appareils : gardez-le secret. N'exposez pas ShellyLanMan à Internet.",
+  "mcp.copied": "Copié"
 }

@@ -757,5 +757,22 @@
   "server.confirm": "ShellyLanMan verhuist nu naar poort {port}; deze pagina opent daarna op de nieuwe poort. Bladwijzers, een reverse proxy of een Docker-poortkoppeling (bridge-modus) moeten ook aangepast worden.",
   "server.proxy": "ShellyLanMan luistert nu op poort {port}. Pas je reverse proxy aan naar die poort.",
   "server.help": "Met host-netwerk wordt de poort rechtstreeks op de host geopend. In bridge-modus laat je de poort staan en pas je de koppeling (-p) aan.",
-  "server.fixed": "Ingesteld met SHELLYLANMAN_LISTEN: pas het daar aan."
+  "server.fixed": "Ingesteld met SHELLYLANMAN_LISTEN: pas het daar aan.",
+  "settings.tab.mcp": "MCP",
+  "mcp.intro": "ShellyLanMan kan AI-assistenten (Claude, lokale modellen) bedienen via het Model Context Protocol op /mcp: ze kunnen je apparaten oplijsten en uitlezen en, als je dat toelaat, schakelen. Alles blijft op je LAN: apparaten worden rechtstreeks aangesproken, nooit via de Shelly-cloud.",
+  "mcp.enable": "MCP-server inschakelen",
+  "mcp.access": "Wat assistenten mogen doen",
+  "mcp.access.read": "Alleen lezen",
+  "mcp.access.control": "Lezen en bedienen (schakelaars, lampen, rolluiken, thermostaten, back-up, herstart, firmware)",
+  "mcp.accessHelp": "Herstarten en firmware-updates vragen daarnaast een expliciete bevestiging van de assistent. Elke actie komt in het log.",
+  "mcp.url": "Adres",
+  "mcp.token": "Token",
+  "mcp.tokenSet": "Er is een token ingesteld. Het wordt maar één keer getoond; maak een nieuw als je het kwijt bent (het oude werkt dan niet meer).",
+  "mcp.tokenNew": "Nieuw token",
+  "mcp.tokenShown": "Kopieer het token nu: het wordt niet meer getoond.",
+  "mcp.tokenConfirm": "Een nieuw token maken? Assistenten die het huidige gebruiken, verliezen hun toegang.",
+  "mcp.claude": "Claude Code",
+  "mcp.json": "Andere clients (JSON-configuratie)",
+  "mcp.warn": "Het token geeft toegang tot je apparaten: houd het geheim. Stel ShellyLanMan niet open voor het internet.",
+  "mcp.copied": "Gekopieerd"
 }

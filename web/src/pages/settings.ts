@@ -11,10 +11,11 @@ import { LANGUAGES, isLang, lang, setLang, t, type Key } from '../i18n';
 import { confirmDialog } from '../modal';
 import { toast } from '../toast';
 import { card, type Page } from './common';
+import { mcpSettings } from './settings-mcp';
 import { archive, network } from './settings-network';
 
 export function settingsPage(onLanguageChange: () => void): Page {
-  let tab: 'general' | 'network' | 'archive' | 'ide' | 'appearance' = 'general';
+  let tab: 'general' | 'network' | 'archive' | 'ide' | 'appearance' | 'mcp' = 'general';
   return {
     id: 'settings',
     title: 'nav.settings',
@@ -30,9 +31,10 @@ export function settingsPage(onLanguageChange: () => void): Page {
         else if (which === 'network') void network(body);
         else if (which === 'archive') void archive(body);
         else if (which === 'ide') ide(body);
+        else if (which === 'mcp') void mcpSettings(body);
         else appearance(body);
       };
-      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['ide', 'settings.tab.ide'], ['appearance', 'settings.tab.appearance']] as const) {
+      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['ide', 'settings.tab.ide'], ['appearance', 'settings.tab.appearance'], ['mcp', 'settings.tab.mcp']] as const) {
         const b = h('button', { role: 'tab', 'data-tab': id, onclick: () => show(id) }, t(key));
         tabs.append(b);
       }

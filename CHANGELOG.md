@@ -5,6 +5,15 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- MCP server for AI assistants at `/mcp` (Model Context Protocol, Streamable HTTP):
+  read tools (devices, readings, firmware, checklist, backups, read-only Gen2+ RPC),
+  control tools (relays, lights, covers, thermostats, backup) and destructive tools
+  (reboot, firmware update, with `confirm`). Local only, off by default, bearer token,
+  read-only unless set to control, control actions logged. Settings → MCP shows the
+  token once and the command for Claude Code. API: `GET/PUT /api/v1/mcp`,
+  `POST /api/v1/mcp/token`.
+
 ## [0.2.0] - 2026-09-28
 
 Feedback on the first release: a steady devices table, eight languages, the port as a

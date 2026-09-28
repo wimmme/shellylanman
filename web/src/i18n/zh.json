@@ -757,5 +757,22 @@
   "server.confirm": "ShellyLanMan 将立即切换到端口 {port}；之后此页面会在新端口上打开。书签、反向代理或 Docker 端口映射（bridge 模式）也需要相应修改。",
   "server.proxy": "ShellyLanMan 现在监听端口 {port}。请将您的反向代理改为该端口。",
   "server.help": "使用主机网络时，端口直接在主机上打开。在 bridge 模式下请保留端口，改为修改映射（-p）。",
-  "server.fixed": "由 SHELLYLANMAN_LISTEN 设置：请在那里修改。"
+  "server.fixed": "由 SHELLYLANMAN_LISTEN 设置：请在那里修改。",
+  "settings.tab.mcp": "MCP",
+  "mcp.intro": "ShellyLanMan 可通过 /mcp 上的模型上下文协议（MCP）为 AI 助手（Claude、本地模型）提供服务：它们可以列出和读取您的设备，并在您允许时进行控制。一切都留在您的局域网内：直接访问设备，从不经过 Shelly 云。",
+  "mcp.enable": "启用 MCP 服务器",
+  "mcp.access": "助手可以做什么",
+  "mcp.access.read": "只读",
+  "mcp.access.control": "读取和控制（开关、灯光、窗帘、温控器、备份、重启、固件）",
+  "mcp.accessHelp": "重启和固件更新还需要助手明确确认。每个操作都会写入日志。",
+  "mcp.url": "地址",
+  "mcp.token": "令牌",
+  "mcp.tokenSet": "已设置令牌。令牌只显示一次；如果丢失请新建一个（旧令牌随即失效）。",
+  "mcp.tokenNew": "新建令牌",
+  "mcp.tokenShown": "请立即复制令牌：它不会再次显示。",
+  "mcp.tokenConfirm": "新建令牌？使用当前令牌的助手将失去访问权限。",
+  "mcp.claude": "Claude Code",
+  "mcp.json": "其他客户端（JSON 配置）",
+  "mcp.warn": "令牌可访问您的设备：请妥善保密。不要将 ShellyLanMan 暴露到互联网。",
+  "mcp.copied": "已复制"
 }

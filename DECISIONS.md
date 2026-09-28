@@ -20,3 +20,14 @@
 | F4 | About page: description, version and release-check state, uptime, system information, support links (Buy me a coffee, PayPal — plain links, no external scripts or images, CSP), release notes from the embedded CHANGELOG, dependencies (Go build info + `deps.json` from package-lock), licence and notices from the binary. ShellyScanner and MikroDash under Based on and Credits, both "deserve a coffee", no donation link for them | Wim asked, MikroDash as example without copying it |
 | F5 | The no-auth banner is dismissed per browser (localStorage) | Wim asked |
 | F6 | New logo (Wim's): transparent icon for sidebar/favicon/About, the full logo in the README | Wim asked |
+
+## 18. MCP server (2026-09-28, Wim's go)
+
+| # | Decision | Why |
+|---|---|---|
+| M1 | MCP server in the same binary (`internal/mcp`) at `/mcp`, Streamable HTTP, stateless, JSON responses only (no SSE, no sessions); protocol versions 2025-06-18, 2025-03-26, 2024-11-05. Written on the standard library, no SDK dependency | ARCHITECTURE §2.8; dependencies: stdlib first |
+| M2 | Local only: tools call the service layer, which reaches devices on the LAN like the UI does; no Shelly cloud | Wim: "local, not with the Shelly cloud account" |
+| M3 | Off by default; a bearer token is always required (32 random bytes, stored encrypted as a secret, shown once, replaceable); requests with a foreign browser `Origin` are refused (DNS rebinding) | The UI has no login; an MCP client is a program that can hold a token |
+| M4 | Access "read" (default) or "control"; control tools are not even listed in read mode. Reboot and firmware update also need `confirm: true`; every control call is logged at Info | Safety pattern of Buggy1111/shelly-mcp (reference, MIT; no code taken) |
+| M5 | Tool set: list/get device, readings (samples, ≤120 points), firmware check, checklist, backups, `shelly_rpc_read` limited to `Get*`/`List*`/`CheckForUpdate`; switch, light, cover, thermostat, backup; reboot, firmware update. No restore, settings, scripts or generic RPC writes for now | Start with what is safe and useful; more on request |
+| M6 | Devices are named by id/MAC, IP, host name, exact name or a unique part of the name; ambiguous names are refused with the candidates | An assistant says "the kitchen", not a MAC |

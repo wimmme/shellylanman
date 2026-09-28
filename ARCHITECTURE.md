@@ -220,7 +220,7 @@ language, with different package names.
                                           │ REST /api/v1/*              │ WebSocket /ws (events)
 ┌─────────────────────────────────────────┴──────────────────────────────┴─────────────────────────────┐
 │ internal/httpapi   routes, JSON, auth (optional), origin check, /healthz, static files, WS hub       │
-│ (later) internal/mcp   MCP tools → same service calls         (later) HA: see §2.8                    │
+│ internal/mcp           MCP tools → same service calls         (later) HA: see §2.8                    │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ internal/service   Devices · Control · Config (Wi-Fi/MQTT/Login/Others) · Backup · Restore · Firmware │
 │                    Checklist · Scripts · KVS · Schedules · Logs · Charts sampler · Deferred · Archive │
@@ -339,7 +339,7 @@ whole volume.
   always need a confirmation dialog in the UI; the API requires an explicit `confirm: true` on these so
   a script cannot trigger them by accident either.
 
-### 2.8 Room for MCP and Home Assistant (not built now)
+### 2.8 MCP (built, DECISIONS §18) and room for Home Assistant
 
 **MCP server.** An `internal/mcp` package in the same binary exposes tools such as `list_devices`,
 `get_device`, `set_relay`, `backup_device`, `check_firmware` over MCP's Streamable HTTP transport at
