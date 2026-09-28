@@ -4,10 +4,13 @@ export interface Status { firstRunDone: boolean; authEnabled: boolean; clients: 
 export interface Settings { firstRunDone: boolean; language: string; updateCheck?: string; skipVersion?: string }
 export interface UpdateStatus { mode: string; current: string; latest?: string; url?: string; newer: boolean; skipped?: boolean; checked?: number; error?: string }
 export interface Credit { name: string; author: string; url: string; license: string; what: string }
+export interface Dep { name: string; version: string; license: string }
 export interface About {
-  name: string; version: string; commit?: string; license: string; source: string;
-  basedOn: Credit; credits: Credit[]; notice: string; languages: string[];
+  name: string; version: string; commit?: string; license: string; source: string; issues: string; started: number;
+  runtime: { go: string; os: string; arch: string; kernel?: string; memMB: number; data: string };
+  basedOn: Credit[]; credits: Credit[]; deps: Dep[]; notice: string; languages: string[]; donate: { name: string; url: string }[];
 }
+export interface ServerInfo { port: number; fixed: boolean }
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -33,6 +36,8 @@ export const api = {
   settings: () => request<Settings>('GET', '/settings'),
   updateSettings: (patch: Partial<Settings>) => request<Settings>('PUT', '/settings', patch),
   update: () => request<UpdateStatus>('GET', '/update'),
+  server: () => request<ServerInfo>('GET', '/server'),
+  moveServer: (port: number) => request<ServerInfo>('PUT', '/server', { port, confirm: true }),
 };
 
 // ---- devices (Phase 2) ----

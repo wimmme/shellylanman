@@ -5,6 +5,31 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- The UI in German, French, Spanish, Italian, Bulgarian and Chinese (next to English
+  and Dutch).
+- Web server port in Settings → General: ShellyLanMan moves to the new port at once
+  and the page follows. `SHELLYLANMAN_LISTEN`, when set, still wins and locks the
+  setting. The Docker health check follows the saved port.
+- New logo: in the sidebar, as favicon and on the About page and README.
+- About page rebuilt: what ShellyLanMan is, version with up-to-date state, uptime,
+  system information (runtime, platform, memory, data, languages, licence and
+  third-party notices), support links, release notes and dependencies with their
+  licences. API: `GET /api/v1/about/changelog`, `/license`, `/notices`,
+  `GET/PUT /api/v1/server`.
+- README: badges, why, features, pages, screenshots, security and support.
+
+### Changed
+- ShellyScanner and MikroDash are both credited under Based on and Credits; the
+  notice now says ShellyLanMan is heavily based on ShellyScanner but not affiliated.
+- The "UI authentication is off" banner is dismissed once per browser instead of once
+  per tab.
+
+### Fixed
+- Devices table: a refresh no longer rebuilds the whole table. Rows and cells that did
+  not change stay in place, so the row under the mouse no longer flickers and a click
+  on a row checkbox or toolbar button is no longer lost when an update arrives.
+
 ## [0.1.0] - 2026-09-28
 
 First release: the features of ShellyScanner as a web application, plus the local

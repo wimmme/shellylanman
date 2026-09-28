@@ -2,7 +2,7 @@
 import { api, type FullSettings, type Status, type UpdateStatus } from './api';
 import { initAppearance } from './appearance';
 import { h, icon, ICONS } from './dom';
-import { isLang, setLang, storedLang, t } from './i18n';
+import { LANGUAGES, isLang, setLang, storedLang, t } from './i18n';
 import { aboutPage } from './pages/about';
 import { errorState, loadingState, type Page } from './pages/common';
 import { chartsPage } from './pages/charts';
@@ -53,7 +53,7 @@ function renderShell(): void {
   const main = h('main', { class: 'main', id: 'main' });
   const shell = h('div', { class: 'shell' },
     h('aside', { class: 'sidebar' },
-      h('div', { class: 'brand' }, icon(ICONS.logo, 22), h('span', { class: 'label' }, t('app.name'))),
+      h('div', { class: 'brand' }, h('img', { src: '/logo.png', alt: '', width: 28, height: 28 }), h('span', { class: 'label' }, t('app.name'))),
       h('nav', { 'aria-label': 'Main' }, nav),
       h('div', { class: 'nav-foot' }, version && (version === 'dev' ? 'dev' : `v${version}`))),
     h('header', { class: 'topbar' }, h('h1', {}, t(page.title)), h('div', { class: 'spacer' }), connLabel()),
@@ -61,7 +61,7 @@ function renderShell(): void {
   app.replaceChildren(shell);
   document.title = `${t(page.title)} · ${t('app.name')}`;
 
-  if (!status.authEnabled && !sessionDismissed()) {
+  if (!status.authEnabled && !noAuthDismissed()) {
     const banner = h('div', { class: 'banner warn', role: 'note' }, t('banner.noAuth'),
       h('button', { class: 'btn close', onclick: () => { dismiss(); banner.remove(); } }, t('banner.dismiss')));
     main.append(banner);
@@ -81,15 +81,16 @@ function renderShell(): void {
     .catch((err) => content.replaceChildren(errorState(err)));
 }
 
-function sessionDismissed(): boolean {
-  try { return sessionStorage.getItem('sl_noauth_dismissed') === '1'; } catch { return false; }
+// Dismissed once per browser: the warning is also in the first-run dialog and the server log.
+function noAuthDismissed(): boolean {
+  try { return localStorage.getItem('sl_noauth_dismissed') === '1'; } catch { return false; }
 }
 function dismiss(): void {
-  try { sessionStorage.setItem('sl_noauth_dismissed', '1'); } catch { /* ignore */ }
+  try { localStorage.setItem('sl_noauth_dismissed', '1'); } catch { /* private mode */ }
 }
 
 function firstRun(defaultLang: string): void {
-  const langSel = h('select', { id: 'frLang' }, h('option', { value: 'en' }, 'English'), h('option', { value: 'nl' }, 'Nederlands'));
+  const langSel = h('select', { id: 'frLang' }, ...LANGUAGES.map((l) => h('option', { value: l.id }, l.label)));
   langSel.value = defaultLang;
   langSel.addEventListener('change', () => { if (isLang(langSel.value)) { setLang(langSel.value, false); back.remove(); firstRun(langSel.value); } });
   const start = h('button', { class: 'btn primary', onclick: async () => {

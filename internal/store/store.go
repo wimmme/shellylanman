@@ -37,7 +37,7 @@ const (
 )
 
 // Languages the UI ships with.
-var Languages = []string{"en", "nl"}
+var Languages = []string{"en", "nl", "de", "fr", "es", "it", "bg", "zh"}
 
 // Settings are the application settings visible to the UI. Secrets are kept
 // apart and never leave the store in clear text except through Secret.
@@ -61,6 +61,9 @@ type Settings struct {
 	UpdateCheck string `json:"updateCheck"`
 	// SkipVersion: a release the user chose to skip.
 	SkipVersion string `json:"skipVersion,omitempty"`
+	// Port is the web server's port (0 = default 3082). SHELLYLANMAN_LISTEN
+	// overrides it. Changed only through PUT /api/v1/server (package listen).
+	Port int `json:"port,omitempty"`
 }
 
 // Scan modes (ShellyScanner: setting SCAN_MODE, dialog "Network scan mode").
@@ -142,6 +145,9 @@ func (s Settings) Validate() error {
 	}
 	if s.MQTTSlow < 0 || s.MQTTSlow > 600 {
 		return errors.New("MQTT delay must be 0–600 tenths of a second")
+	}
+	if s.Port < 0 || s.Port > 65535 {
+		return errors.New("port must be 1–65535")
 	}
 	if s.Scan.ConfigTics < 1 || s.Scan.ConfigTics > 1000 {
 		return errors.New("configuration refresh must be 1–1000 status refreshes")

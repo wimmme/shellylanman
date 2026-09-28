@@ -70,8 +70,18 @@ func TestAboutCreditsShellyScanner(t *testing.T) {
 	srv, _ := newTestServer(t, nil)
 	var a About
 	decode(t, do(t, "GET", srv.URL+"/api/v1/about", "", nil), &a)
-	if a.BasedOn.Name != "ShellyScanner" || !strings.Contains(a.BasedOn.URL, "usnasoft/shellyscanner") {
-		t.Fatalf("about does not credit ShellyScanner: %+v", a.BasedOn)
+	if len(a.BasedOn) != 2 || a.BasedOn[0].Name != "ShellyScanner" || !strings.Contains(a.BasedOn[0].URL, "usnasoft/shellyscanner") || a.BasedOn[1].Name != "MikroDash" {
+		t.Fatalf("about does not credit ShellyScanner and MikroDash: %+v", a.BasedOn)
+	}
+	if a.Started == 0 || a.Runtime.Go == "" || len(a.Deps) == 0 {
+		t.Fatalf("runtime information missing: %+v", a)
+	}
+	for _, p := range []string{"changelog", "license", "notices"} {
+		resp := do(t, "GET", srv.URL+"/api/v1/about/"+p, "", nil)
+		b, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode != 200 || len(b) < 100 {
+			t.Fatalf("%s: %d, %d bytes", p, resp.StatusCode, len(b))
+		}
 	}
 	if a.License != "GPL-3.0-or-later" || !strings.Contains(a.Notice, "independent") {
 		t.Fatalf("licence/notice missing: %+v", a)

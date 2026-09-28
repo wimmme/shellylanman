@@ -99,6 +99,15 @@ export function metersText(ms: MeterSet[] | undefined, unit: TempUnit = prefs.te
 }
 
 /** Uptime in the chosen format (UptimeCellRenderer, col_uptime_as_*). */
+/** A duration as its two largest units: "2 d 14 h", "5 h 3 min", "12 min". */
+export function formatDuration(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds));
+  const d = Math.floor(s / 86400), hr = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+  if (d > 0) return `${d} d ${hr} h`;
+  if (hr > 0) return `${hr} h ${m} min`;
+  return `${m} min`;
+}
+
 export function formatUptime(s: number, mode: UptimeMode = prefs.uptime(), now = Date.now()): string {
   if (s < 0) return '';
   if (mode === 'DAY') {

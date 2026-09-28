@@ -22,7 +22,6 @@ import (
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/store"
 	"github.com/wimmme/shellylanman/internal/update"
-	"github.com/wimmme/shellylanman/internal/version"
 )
 
 const maxBody = 64 << 10
@@ -33,6 +32,8 @@ type Config struct {
 	Hub     *hub.Hub
 	Devices *service.Devices
 	Updates *update.Checker // release check (nil in tests)
+	// Listener changes the web server's port (nil in tests: fixed).
+	Listener Listener
 	// Static is the built frontend (index.html at its root).
 	Static fs.FS
 	// Origins are extra allowed Origin hosts for state-changing requests and
@@ -53,12 +54,13 @@ func New(cfg Config) http.Handler {
 	s := &server{Config: cfg}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
-	mux.HandleFunc("GET /api/v1/about", s.about)
+	s.aboutRoutes(mux)
 	mux.HandleFunc("GET /api/v1/status", s.status)
 	mux.HandleFunc("GET /api/v1/settings", s.getSettings)
 	mux.HandleFunc("PUT /api/v1/settings", s.putSettings)
 	mux.HandleFunc("GET /api/v1/update", s.getUpdate)
 	s.deviceRoutes(mux)
+	s.serverRoutes(mux)
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)
 	return securityHeaders(s.sameOrigin(mux))
@@ -67,54 +69,6 @@ func New(cfg Config) http.Handler {
 // health is unauthenticated by design and says nothing about the version.
 func (s *server) health(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
-}
-
-// About is what the About page shows.
-type About struct {
-	Name     string   `json:"name"`
-	Version  string   `json:"version"`
-	Commit   string   `json:"commit,omitempty"`
-	License  string   `json:"license"`
-	Source   string   `json:"source"`
-	BasedOn  Credit   `json:"basedOn"`
-	Credits  []Credit `json:"credits"`
-	Notice   string   `json:"notice"`
-	Language []string `json:"languages"`
-}
-
-// Credit names a project ShellyLanMan builds on.
-type Credit struct {
-	Name    string `json:"name"`
-	Author  string `json:"author"`
-	URL     string `json:"url"`
-	License string `json:"license"`
-	What    string `json:"what"`
-}
-
-func (s *server) about(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, About{
-		Name:    "ShellyLanMan",
-		Version: version.Version,
-		Commit:  version.Commit,
-		License: "GPL-3.0-or-later",
-		Source:  "https://github.com/wimmme/shellylanman",
-		BasedOn: Credit{
-			Name:    "ShellyScanner",
-			Author:  "Antonio Flaccomio (usnasoft)",
-			URL:     "https://github.com/usnasoft/shellyscanner",
-			License: "GPL-3.0",
-			What:    "functional and code reference",
-		},
-		Credits: []Credit{
-			{Name: "MikroDash", Author: "MikroDash contributors", URL: "https://github.com/SecOps-7/MikroDash", License: "MIT", What: "design tokens, palettes and appearance settings"},
-			{Name: "Bundled fonts", Author: "see OFL.txt", URL: "/fonts/OFL.txt", License: "OFL-1.1", What: "Inter, Oxanium, IBM Plex Sans, Nunito, Roboto, JetBrains Mono"},
-			{Name: "CodeMirror 6", Author: "Marijn Haverbeke and others", URL: "https://codemirror.net", License: "MIT", What: "script editor"},
-			{Name: "Chart.js", Author: "Chart.js contributors", URL: "https://www.chartjs.org", License: "MIT", What: "charts (with chartjs-plugin-zoom and Hammer.js, MIT)"},
-			{Name: "go-qrcode", Author: "Tom Harwood", URL: "https://github.com/skip2/go-qrcode", License: "MIT", What: "QR codes of the local firmware download"},
-		},
-		Notice:   "ShellyLanMan is an independent project. It is not ShellyScanner and is not affiliated with or endorsed by Shelly Group. Shelly is a trademark of its owner.",
-		Language: store.Languages,
-	})
 }
 
 // Status tells the UI what it needs before anything else.

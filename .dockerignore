@@ -6,3 +6,5 @@ web/test/.out
 data
 *.md
 !web/**/*.md
+!CHANGELOG.md
+!THIRD_PARTY_NOTICES.md

@@ -3,7 +3,8 @@
 // Configuration that must be known before the UI is up comes from flags or
 // environment variables; everything else is set in the browser.
 //
-//	-listen   SHELLYLANMAN_LISTEN   address to listen on (default ":3082")
+//	-listen   SHELLYLANMAN_LISTEN   address to listen on; when set, the port can no
+//	                                longer be changed in the settings (default ":3082")
 //	-data     SHELLYLANMAN_DATA     data directory (default "/data")
 //	-origins  SHELLYLANMAN_ORIGINS  extra allowed Origin hosts, comma separated
 //	-healthcheck                    probe /healthz of a running server and exit (used by Docker)
@@ -11,6 +12,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -19,12 +21,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/wimmme/shellylanman/internal/httpapi"
 	"github.com/wimmme/shellylanman/internal/hub"
+	"github.com/wimmme/shellylanman/internal/listen"
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/shelly"
 	"github.com/wimmme/shellylanman/internal/store"
@@ -34,25 +38,25 @@ import (
 )
 
 func main() {
-	listen := flag.String("listen", env("SHELLYLANMAN_LISTEN", ":3082"), "address to listen on")
+	fixed := flag.String("listen", env("SHELLYLANMAN_LISTEN", ""), "address to listen on (default: the port in the settings, else :3082)")
 	dataDir := flag.String("data", env("SHELLYLANMAN_DATA", "/data"), "data directory")
 	origins := flag.String("origins", env("SHELLYLANMAN_ORIGINS", ""), "extra allowed Origin hosts, comma separated")
 	healthcheck := flag.Bool("healthcheck", false, "probe /healthz of a running server and exit")
 	flag.Parse()
 
 	if *healthcheck {
-		os.Exit(probe(*listen))
+		os.Exit(probe(listen.Addr(*fixed, savedPort(*dataDir))))
 	}
 
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(log)
-	if err := run(log, *listen, *dataDir, splitList(*origins)); err != nil {
+	if err := run(log, *fixed, *dataDir, splitList(*origins)); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(log *slog.Logger, listen, dataDir string, origins []string) error {
+func run(log *slog.Logger, fixed, dataDir string, origins []string) error {
 	log.Info("starting ShellyLanMan", "version", version.Version, "commit", version.Commit, "data", dataDir)
 
 	st, err := store.Open(dataDir)
@@ -74,10 +78,20 @@ func run(log *slog.Logger, listen, dataDir string, origins []string) error {
 	log.Warn("UI authentication is off: anyone who can reach this port can use ShellyLanMan. Keep it on a trusted LAN or behind a reverse proxy with authentication.")
 
 	srv := &http.Server{
-		Addr:              listen,
-		Handler:           httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Static: web.Files(), Origins: origins, Log: log}),
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       120 * time.Second,
+	}
+	savePort := func(port int) error {
+		_, err := st.Update(func(s *store.Settings) { s.Port = port })
+		return err
+	}
+	ln, err := listen.New(srv, listen.Addr(fixed, st.Settings().Port), fixed != "", savePort, log)
+	if err != nil {
+		return err
+	}
+	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Listener: ln, Static: web.Files(), Origins: origins, Log: log})
+	if err := ln.Start(); err != nil {
+		return err
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -88,14 +102,8 @@ func run(log *slog.Logger, listen, dataDir string, origins []string) error {
 		devices.Wait() // last archive save
 	}()
 
-	errc := make(chan error, 1)
-	go func() {
-		log.Info("listening", "addr", listen)
-		errc <- srv.ListenAndServe()
-	}()
-
 	select {
-	case err := <-errc:
+	case err := <-ln.Err():
 		return err
 	case <-ctx.Done():
 	}
@@ -130,6 +138,20 @@ func probe(listen string) int {
 		return 1
 	}
 	return 0
+}
+
+// savedPort reads the port from settings.json without opening the store
+// (the health check has no business with the secret key). 0 if unknown.
+func savedPort(dataDir string) int {
+	b, err := os.ReadFile(filepath.Join(dataDir, "settings.json"))
+	if err != nil {
+		return 0
+	}
+	var s struct {
+		Port int `json:"port"`
+	}
+	_ = json.Unmarshal(b, &s)
+	return s.Port
 }
 
 func env(key, def string) string {

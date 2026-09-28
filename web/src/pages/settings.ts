@@ -8,6 +8,8 @@ import {
 import { h, ICONS } from '../dom';
 import { prefs, type DblClick, type TempUnit, type UptimeMode } from '../format';
 import { LANGUAGES, isLang, lang, setLang, t, type Key } from '../i18n';
+import { confirmDialog } from '../modal';
+import { toast } from '../toast';
 import { card, type Page } from './common';
 import { archive, network } from './settings-network';
 
@@ -79,6 +81,7 @@ async function general(body: HTMLElement, onLanguageChange: () => void): Promise
   const upd = await api.settings();
   body.append(field(t('update.setting'), select('updCheck', [{ value: 'never', label: t('update.never') }, { value: 'stable', label: t('update.stable') }, { value: 'all', label: t('update.all') }],
     upd.updateCheck || 'never', (v) => void api.updateSettings({ updateCheck: v }).catch(() => {}))), h('p', { class: 'muted' }, t('update.help')));
+  body.append(await serverPort());
   const langs = LANGUAGES.map((l) => ({ value: l.id, label: l.label }));
   body.append(field(t('settings.language.browser'), select('langBrowser', langs, lang(), (v) => {
     if (isLang(v)) {
@@ -92,6 +95,39 @@ async function general(body: HTMLElement, onLanguageChange: () => void): Promise
     await api.updateSettings({ language: v });
     saved.textContent = t('settings.saved');
   })), saved);
+}
+
+/** The web server's port (not in ShellyScanner, a desktop program: a server needs it). */
+async function serverPort(): Promise<HTMLElement> {
+  const info = await api.server();
+  const input = h('input', { id: 'srvPort', type: 'number', min: 1, max: 65535, value: info.port, disabled: info.fixed });
+  const apply = h('button', { class: 'btn', disabled: info.fixed }, t('server.apply'));
+  apply.addEventListener('click', async () => {
+    const port = Number(input.value);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) { toast(t('server.invalid')); return; }
+    if (port === info.port) return;
+    if (!(await confirmDialog(t('server.port'), t('server.confirm', { port }), t('server.apply')))) return;
+    try {
+      await api.moveServer(port);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : String(e));
+      return;
+    }
+    // Reached directly on the old port: follow to the new one. Through a reverse
+    // proxy (another port in the address bar) the proxy must be changed first.
+    const here = Number(location.port || (location.protocol === 'https:' ? 443 : 80));
+    if (here === info.port) {
+      const u = new URL(location.href);
+      u.port = String(port);
+      location.href = u.toString();
+    } else {
+      toast(t('server.proxy', { port }));
+      info.port = port;
+    }
+  });
+  return h('div', {},
+    h('div', { class: 'field' }, h('label', { for: 'srvPort' }, t('server.port')), h('div', { class: 'row' }, input, apply)),
+    h('p', { class: 'muted' }, t(info.fixed ? 'server.fixed' : 'server.help')));
 }
 
 /** PanelIDE: script editor settings, per browser. */

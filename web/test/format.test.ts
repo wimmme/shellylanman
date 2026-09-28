@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatMeter, formatUptime, meterSetText, metersText, moduleText } from '../src/format';
+import { formatDuration, formatMeter, formatUptime, meterSetText, metersText, moduleText } from '../src/format';
 
 test('meter values follow METER_VAL_* formats', () => {
   assert.equal(formatMeter('W', 12.345, 'C'), '12.35W');
@@ -35,4 +35,10 @@ test('module text for the Command column', () => {
   assert.equal(moduleText({ kind: 'light', index: 0, label: 'Hall', on: true, brightness: 40 }, 'C'), 'Hall: ON 40%');
   assert.equal(moduleText({ kind: 'cover', index: 0, label: 'Blind', calibrated: false }, 'C'), 'Blind: n.c.');
   assert.equal(moduleText({ kind: 'input', index: 1, label: '', inputOn: true }, 'C'), 'In 1 ●');
+});
+
+test('durations show their two largest units', () => {
+  assert.equal(formatDuration(59), '0 min');
+  assert.equal(formatDuration(3 * 3600 + 5 * 60), '3 h 5 min');
+  assert.equal(formatDuration(2 * 86400 + 14 * 3600 + 59), '2 d 14 h');
 });
