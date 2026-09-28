@@ -39,11 +39,11 @@ type Status struct {
 
 // Checker checks for releases.
 type Checker struct {
-	Store   *store.Store
-	Current string
-	URL     string
-	HTTP    *http.Client
-	Every   time.Duration
+	Store    *store.Store
+	Current  string
+	URL      string
+	HTTP     *http.Client
+	Every    time.Duration
 	OnChange func(Status)
 
 	mu   sync.Mutex
