@@ -31,6 +31,35 @@ export function append(parent: Node, ...children: Child[]): void {
   }
 }
 
+/**
+ * Bring `old` in line with `next` while keeping every node whose markup did not
+ * change. A redraw then leaves the row under the mouse (hover) and a checkbox
+ * being clicked in place. Table containers and rows are updated attribute by
+ * attribute and their children matched by data-id (rows) or position (cells);
+ * any other element is swapped whole when its markup differs. Kept nodes keep
+ * their old listeners, so those must not depend on data that is not in the
+ * markup. Returns the node now in the document.
+ */
+export function patch(old: Element, next: Element): Element {
+  if (old.tagName !== next.tagName) { old.replaceWith(next); return next; }
+  if (old.outerHTML === next.outerHTML) return old;
+  if (!/^(TABLE|THEAD|TBODY|TR)$/.test(old.tagName)) { old.replaceWith(next); return next; }
+  for (const a of [...old.attributes]) if (!next.hasAttribute(a.name)) old.removeAttribute(a.name);
+  for (const a of [...next.attributes]) if (old.getAttribute(a.name) !== a.value) old.setAttribute(a.name, a.value);
+  const key = (e: Element, i: number): string => e.getAttribute('data-id') ?? `#${i}`;
+  const byKey = new Map<string, Element>();
+  [...old.children].forEach((c, i) => byKey.set(key(c, i), c));
+  const wanted = [...next.children].map((c, i) => {
+    const o = byKey.get(key(c, i));
+    if (!o) return c;
+    byKey.delete(key(c, i));
+    return patch(o, c);
+  });
+  for (const o of byKey.values()) o.remove();
+  wanted.forEach((c, i) => { if (old.children[i] !== c) old.insertBefore(c, old.children[i] ?? null); });
+  return old;
+}
+
 /** An inline SVG icon from a 24×24 stroke path. */
 export function icon(path: string, size = 18): SVGSVGElement {
   const ns = 'http://www.w3.org/2000/svg';

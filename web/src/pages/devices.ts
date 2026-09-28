@@ -2,7 +2,7 @@
 import { devicesApi, type Device, type DeviceStatus } from '../api';
 import { commandCell, interacting, whenIdle } from '../command';
 import { addressText, allDevices, archiveInUse, compareAddress, onDevicesChanged, scanState } from '../devices';
-import { h, icon, ICONS } from '../dom';
+import { h, icon, ICONS, patch } from '../dom';
 import { dateTime, formatTemp, formatUptime, meterSetText, metersText, moduleText, prefs, uptimeTooltip } from '../format';
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
@@ -115,6 +115,11 @@ let filterText = '';
 let filterCol = prefs.defaultFilter();
 const selected = new Set<string>();
 let anchor: string | null = null;
+// The rows and columns as last drawn. Handlers read these rather than values
+// captured when they were made: a redraw keeps unchanged buttons, rows and
+// cells (dom.patch), so their listeners outlive the draw that made them.
+let shown: Device[] = [];
+let shownCols: Col[] = [];
 
 function hiddenCols(): Set<ColKey> {
   const raw = lsGet(`sl_cols_${view}`);
@@ -254,6 +259,12 @@ function exportCSV(rows: Device[], cols: Col[]): void {
   download('shellylanman-devices.csv', toCSV(header, body, prefs.csvSeparator()));
 }
 
+/** Replace box's children unless they would come out the same (keeps a button being clicked). */
+function keepOrReplace(box: HTMLElement, kids: HTMLElement[]): void {
+  const same = box.children.length === kids.length && kids.every((k, i) => box.children[i]!.outerHTML === k.outerHTML);
+  if (!same) box.replaceChildren(...kids);
+}
+
 // ---- page ------------------------------------------------------------------------
 
 export const devicesPage: Page = {
@@ -291,30 +302,33 @@ export const devicesPage: Page = {
       const cols = COLUMNS.filter((c) => !hidden.has(c.key));
       const sel = selectedDevices();
       const one = sel.length === 1 ? sel[0]! : null;
+      // For handlers: the selection when clicked (see `shown`).
+      const S = (): Device[] => selectedDevices();
+      const O = (): Device => S()[0]!;
       const noGhost = sel.length > 0 && sel.every((d) => d.status !== 'ghost');
       const openMenu = document.querySelector('.menu:not(.hidden)') !== null;
       if (openMenu && host.isConnected) return; // do not close a menu the user is using
 
       const act = (label: Key, enabled: boolean, onClick: () => void, tip?: Key): HTMLElement =>
         h('button', { class: 'btn', disabled: !enabled, onclick: onClick, title: tip ? t(tip) : undefined }, t(label));
-      actionsBox.replaceChildren(...[
-        dropdown(t('select.menu'), SELECTORS.map((s) => ({ label: t(s.label), onClick: () => { selected.clear(); for (const d of all) if (s.f(d)) selected.add(d.id); redraw(); } }))),
-        act('action.info', !!one, () => one && openInfo(one.id), 'action.infoTip'),
-        act('action.logs', !!one && one.status !== 'ghost' && one.gen !== '-', () => one && openLogs(one.id)),
-        act('action.webUI', noGhost && sel.some((d) => !isBLU(d)), () => void openWebUI(sel.filter((d) => !isBLU(d))), 'action.webUITip'),
-        act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(sel)),
-        act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(sel), 'action.rebootTip'),
-        act('action.checklist', sel.length > 0, () => { location.hash = '#/checklist?ids=' + encodeURIComponent(sel.map((d) => d.id).join(',')); }, 'action.checklistTip'),
-        act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(sel.map((d) => d.id)), 'action.settingsTip'),
-        act('action.charts', sel.length > 0 && sel.every((d) => d.status !== 'ghost'), () => { location.hash = '#/charts?ids=' + encodeURIComponent(sel.map((d) => d.id).join(',')); }, 'action.chartsTip'),
-        act('action.scheduler', !!one && schedulerKind(one) !== null, () => one && openScheduler(one), 'action.schedulerTip'),
-        act('action.scripts', !!one && one.status !== 'ghost' && ['2', '3', '4'].includes(one.gen), () => one && void openScripts(one), 'action.scriptsTip'),
-        act('action.notes', !!one && archiveInUse(), () => one && openNotes(one), 'action.notesTip'),
-        act('action.backup', sel.length > 0, () => void backupDevices(sel), 'action.backupTip'),
-        act('action.restore', sel.length > 0, () => void (one ? restoreDevice(one) : restoreDevices(sel)), 'action.restoreTip'),
-        sel.length > 0 && sel.every((d) => d.status === 'ghost') ? act('action.removeGhost', true, () => void removeGhosts(sel)) : null,
+      keepOrReplace(actionsBox, [
+        dropdown(t('select.menu'), SELECTORS.map((s) => ({ label: t(s.label), onClick: () => { selected.clear(); for (const d of allDevices()) if (s.f(d)) selected.add(d.id); redraw(); } }))),
+        act('action.info', !!one, () => openInfo(O().id), 'action.infoTip'),
+        act('action.logs', !!one && one.status !== 'ghost' && one.gen !== '-', () => openLogs(O().id)),
+        act('action.webUI', noGhost && sel.some((d) => !isBLU(d)), () => void openWebUI(S().filter((d) => !isBLU(d))), 'action.webUITip'),
+        act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(S())),
+        act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(S()), 'action.rebootTip'),
+        act('action.checklist', sel.length > 0, () => { location.hash = '#/checklist?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.checklistTip'),
+        act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(S().map((d) => d.id)), 'action.settingsTip'),
+        act('action.charts', sel.length > 0 && sel.every((d) => d.status !== 'ghost'), () => { location.hash = '#/charts?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.chartsTip'),
+        act('action.scheduler', !!one && schedulerKind(one) !== null, () => openScheduler(O()), 'action.schedulerTip'),
+        act('action.scripts', !!one && one.status !== 'ghost' && ['2', '3', '4'].includes(one.gen), () => void openScripts(O()), 'action.scriptsTip'),
+        act('action.notes', !!one && archiveInUse(), () => openNotes(O()), 'action.notesTip'),
+        act('action.backup', sel.length > 0, () => void backupDevices(S()), 'action.backupTip'),
+        act('action.restore', sel.length > 0, () => { const s = S(); void (s.length === 1 ? restoreDevice(s[0]!) : restoreDevices(s)); }, 'action.restoreTip'),
+        sel.length > 0 && sel.every((d) => d.status === 'ghost') ? act('action.removeGhost', true, () => void removeGhosts(S())) : null,
       ].filter((x): x is HTMLElement => x !== null));
-      controlsBox.replaceChildren(
+      keepOrReplace(controlsBox, [
         dropdown(t('columns.menu'), COLUMNS.filter((c) => c.key !== 'status').map((c) => ({
           label: t(c.label), checked: !hidden.has(c.key),
           onClick: () => { const s = hiddenCols(); if (s.has(c.key)) s.delete(c.key); else s.add(c.key); setHidden(s); redraw(); },
@@ -322,16 +336,18 @@ export const devicesPage: Page = {
         h('button', { class: 'btn', 'aria-pressed': String(view === 'detailed'), title: t('action.viewTip'),
           onclick: () => { view = view === 'detailed' ? 'default' : 'detailed'; lsSet('sl_view', view); redraw(); } },
         t(view === 'detailed' ? 'action.viewDetailed' : 'action.viewDefault')),
-        h('button', { class: 'btn', onclick: () => exportCSV(rows, cols), title: t('action.csvTip') }, t('action.csv')),
+        h('button', { class: 'btn', onclick: () => exportCSV(shown, shownCols), title: t('action.csvTip') }, t('action.csv')),
         h('button', { class: 'btn', onclick: () => { selected.clear(); redraw(); window.print(); }, title: t('action.printTip') }, t('action.print')),
         h('button', { class: 'btn', onclick: () => devicesApi.refresh(), title: t('action.refreshTip') }, icon(ICONS.refresh, 16), t('action.refresh')),
-        h('button', { class: 'btn', onclick: () => devicesApi.rescan(), title: t('action.rescanTip') }, icon(ICONS.radar, 16), t('action.rescan')));
+        h('button', { class: 'btn', onclick: () => devicesApi.rescan(), title: t('action.rescanTip') }, icon(ICONS.radar, 16), t('action.rescan'))]);
 
       badge.textContent = String(all.length);
       statusLine.textContent = filterText
         ? t('status.filtered', { shown: rows.length, total: all.length, selected: sel.length })
         : t('status.listed', { total: all.length, selected: sel.length });
 
+      shown = rows;
+      shownCols = cols;
       let body: Node;
       if (all.length === 0) {
         body = emptyState(t('devices.empty.title'), t('devices.empty.text'), ICONS.devices);
@@ -339,7 +355,10 @@ export const devicesPage: Page = {
         const allChecked = rows.length > 0 && rows.every((d) => selected.has(d.id));
         const head = h('tr', {},
           h('th', { class: 'sel' }, h('input', { type: 'checkbox', 'aria-label': t('select.all'), checked: allChecked,
-            onchange: () => { if (allChecked) rows.forEach((d) => selected.delete(d.id)); else rows.forEach((d) => selected.add(d.id)); redraw(); } })),
+            onchange: () => {
+              if (shown.every((d) => selected.has(d.id))) shown.forEach((d) => selected.delete(d.id)); else shown.forEach((d) => selected.add(d.id));
+              redraw();
+            } })),
           ...cols.map((c) => {
             const active = c.key === sortKey;
             const th = h('th', { scope: 'col', class: 'sortable' + (active ? (sortAsc ? ' sort-asc' : ' sort-desc') : ''), tabindex: 0,
@@ -364,53 +383,6 @@ export const devicesPage: Page = {
               if (tip) td.title = tip;
               return td;
             }));
-          tr.addEventListener('click', (e) => {
-            if (window.getSelection()?.toString()) return; // the user is selecting text to copy (T14)
-            if (e.shiftKey && anchor) { // range selection
-              const ids = rows.map((r) => r.id);
-              const [a, b] = [ids.indexOf(anchor), ids.indexOf(d.id)].sort((x, y) => x - y);
-              for (const id of ids.slice(a!, b! + 1)) selected.add(id);
-            } else if (e.ctrlKey || e.metaKey) {
-              if (selected.has(d.id)) selected.delete(d.id); else selected.add(d.id);
-              anchor = d.id;
-            } else {
-              selected.clear(); selected.add(d.id); anchor = d.id;
-            }
-            redraw();
-          });
-          tr.addEventListener('contextmenu', (e) => { // MainView tablePopup / ghostDevPopup
-            e.preventDefault();
-            if (!selected.has(d.id)) { selected.clear(); selected.add(d.id); anchor = d.id; redraw(); }
-            const sel = selectedDevices();
-            const one = sel.length === 1 ? sel[0]! : null;
-            const items: { label: Key; run: () => void; on: boolean }[] = d.status === 'ghost'
-              ? [
-                { label: 'action.reload', run: () => reload(sel), on: true },
-                { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
-                { label: 'action.removeGhost', run: () => void removeGhosts(sel), on: sel.every((x) => x.status === 'ghost') },
-              ]
-              : [
-                { label: 'action.info', run: () => one && openInfo(one.id), on: !!one },
-                { label: 'action.webUI', run: () => void openWebUI(sel.filter((x) => !isBLU(x))), on: sel.some((x) => !isBLU(x) && x.status !== 'ghost') },
-                { label: 'action.settings', run: () => openDeviceSettings(sel.map((x) => x.id)), on: sel.some((x) => x.gen !== 'bth') },
-                { label: 'action.backup', run: () => void backupDevices(sel), on: true },
-                { label: 'action.restore', run: () => void (one ? restoreDevice(one) : restoreDevices(sel)), on: true },
-                { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
-                { label: 'action.reload', run: () => reload(sel), on: true },
-              ];
-            document.querySelectorAll('.ctx-menu').forEach((m) => m.remove());
-            const m = h('div', { class: 'menu ctx-menu', role: 'menu' }, ...items.filter((x) => x.on).map((it) =>
-              h('button', { role: 'menuitem', onclick: () => { m.remove(); it.run(); } }, t(it.label))));
-            m.style.left = `${e.clientX}px`;
-            m.style.top = `${e.clientY}px`;
-            document.body.append(m);
-            const away = (): void => { m.remove(); document.removeEventListener('click', away); };
-            setTimeout(() => document.addEventListener('click', away), 0);
-          });
-          tr.addEventListener('dblclick', () => {
-            if (prefs.dblClick() === 'WEB' && d.status !== 'ghost' && !isBLU(d)) void openWebUI([d]);
-            else openInfo(d.id);
-          });
           tbody.append(tr);
         }
         body = h('div', { class: 'table-wrap' }, h('table', { class: 'data devices ' + view }, h('thead', {}, head), tbody));
@@ -418,14 +390,75 @@ export const devicesPage: Page = {
       const banner = scanBanner();
       bannerBox.replaceChildren(...(banner ? [banner] : []));
       summaryBox.replaceChildren(summary(all));
-      const old = bodyBox.querySelector('.table-wrap');
-      const [sx, sy] = old ? [old.scrollLeft, old.scrollTop] : [0, 0];
-      bodyBox.replaceChildren(body);
-      const wrap = bodyBox.querySelector('.table-wrap');
-      if (wrap) { wrap.scrollLeft = sx; wrap.scrollTop = sy; } // keep the user's scroll position across updates
+      // Update the table in place: the row under the mouse keeps its hover, a
+      // checkbox being clicked stays the same element, the scroll position stays.
+      const oldTable = bodyBox.querySelector('table.devices');
+      const newTable = body instanceof Element ? body.querySelector('table.devices') : null;
+      if (oldTable && newTable) patch(oldTable, newTable);
+      else bodyBox.replaceChildren(body);
     };
     // User actions redraw even with a menu open (the menu belongs to the old toolbar).
     const redraw = (): void => { document.querySelectorAll('.menu').forEach((m) => m.classList.add('hidden')); draw(); };
+
+    // Row mouse handling, delegated: rows are kept across redraws (see `shown`).
+    const rowOf = (e: Event): Device | undefined => {
+      const id = e.target instanceof Element ? e.target.closest('tbody tr[data-id]')?.getAttribute('data-id') : null;
+      return id ? shown.find((d) => d.id === id) : undefined;
+    };
+    bodyBox.addEventListener('click', (e) => {
+      const d = rowOf(e);
+      if (!d) return;
+      if (window.getSelection()?.toString()) return; // the user is selecting text to copy (T14)
+      if (e.shiftKey && anchor) { // range selection
+        const ids = shown.map((r) => r.id);
+        const [a, b] = [ids.indexOf(anchor), ids.indexOf(d.id)].sort((x, y) => x - y);
+        if (a! >= 0) for (const id of ids.slice(a!, b! + 1)) selected.add(id);
+      } else if (e.ctrlKey || e.metaKey) {
+        if (selected.has(d.id)) selected.delete(d.id); else selected.add(d.id);
+        anchor = d.id;
+      } else {
+        selected.clear(); selected.add(d.id); anchor = d.id;
+      }
+      redraw();
+    });
+    bodyBox.addEventListener('contextmenu', (e) => { // MainView tablePopup / ghostDevPopup
+      const d = rowOf(e);
+      if (!d) return;
+      e.preventDefault();
+      if (!selected.has(d.id)) { selected.clear(); selected.add(d.id); anchor = d.id; redraw(); }
+      const sel = selectedDevices();
+      const one = sel.length === 1 ? sel[0]! : null;
+      const items: { label: Key; run: () => void; on: boolean }[] = d.status === 'ghost'
+        ? [
+          { label: 'action.reload', run: () => reload(sel), on: true },
+          { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
+          { label: 'action.removeGhost', run: () => void removeGhosts(sel), on: sel.every((x) => x.status === 'ghost') },
+        ]
+        : [
+          { label: 'action.info', run: () => one && openInfo(one.id), on: !!one },
+          { label: 'action.webUI', run: () => void openWebUI(sel.filter((x) => !isBLU(x))), on: sel.some((x) => !isBLU(x) && x.status !== 'ghost') },
+          { label: 'action.settings', run: () => openDeviceSettings(sel.map((x) => x.id)), on: sel.some((x) => x.gen !== 'bth') },
+          { label: 'action.backup', run: () => void backupDevices(sel), on: true },
+          { label: 'action.restore', run: () => void (one ? restoreDevice(one) : restoreDevices(sel)), on: true },
+          { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
+          { label: 'action.reload', run: () => reload(sel), on: true },
+        ];
+      document.querySelectorAll('.ctx-menu').forEach((m) => m.remove());
+      const m = h('div', { class: 'menu ctx-menu', role: 'menu' }, ...items.filter((x) => x.on).map((it) =>
+        h('button', { role: 'menuitem', onclick: () => { m.remove(); it.run(); } }, t(it.label))));
+      m.style.left = `${e.clientX}px`;
+      m.style.top = `${e.clientY}px`;
+      document.body.append(m);
+      const away = (): void => { m.remove(); document.removeEventListener('click', away); };
+      setTimeout(() => document.addEventListener('click', away), 0);
+    });
+    bodyBox.addEventListener('dblclick', (e) => {
+      const d = rowOf(e);
+      if (!d) return;
+      if (prefs.dblClick() === 'WEB' && d.status !== 'ghost' && !isBLU(d)) void openWebUI([d]);
+      else openInfo(d.id);
+    });
+
 
     // Keyboard shortcuts (MainView): Ctrl+F filter, Ctrl+E clear filter, Ctrl+S next filter column.
     const onKey = (e: KeyboardEvent): void => {
