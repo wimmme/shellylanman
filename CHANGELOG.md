@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-28
+
+Feedback on the first release: a steady devices table, eight languages, the port as a
+setting, a new About page and logo.
+
 ### Added
 - The UI in German, French, Spanish, Italian, Bulgarian and Chinese (next to English
   and Dutch).
