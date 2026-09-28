@@ -1,14 +1,11 @@
 
 
-## 15. Decisions taken during Phase 8 (2026-09-27)
+## 16. Decisions taken during Phases 9 and 10 (2026-09-28)
 
 | # | Decision | Why |
 |---|---|---|
-| P8-1 | Notes and keyword: only with the archive in use (as the original's Notes action); saved with the archive (every minute and at shutdown, not only when the program exits) | NotesEditor, P2 archive rules |
-| P8-2 | CSV exports (table and charts) quote a value that contains the separator, a quote or a line break (O29); separator per browser | Device names can contain commas |
-| P8-3 | Scripts dialog: Scripts and KVS tabs as in the original; the script editor is CodeMirror 6 (planned in §1.4), in its own bundle loaded only when the editor opens; editor settings (tab size, font size, indent, auto-close, dark) per browser; "Open"/"Save" use the browser's file picker and download | The original's own Swing editor cannot be ported; the browser has no file system |
-| P8-4 | The scheduler runs the device calls from the browser through one server endpoint `POST /api/v1/devices/{id}/rpc` (Gen2+; for a BLU TRV through its gateway as `BluTrv.Call`) — it is also the original's "test method" button; the apply logic of G2SchedulerPanel / WDThermSchedulerPanel / TRVSchedulerDialog is ported in the browser | Same structure as the original (the dialogs call the schedule managers directly) |
-| P8-5 | Charts: Chart.js with the zoom plugin (MIT) in their own bundle; readings kept on the server per device for 24 h (at most 20 000 per device) in memory, not on disk; the EM chart reads EMData / EM1Data once a minute like the original | Q7, Q8 |
-| P8-6 | Keyboard shortcuts kept where the browser allows them: filter (Ctrl+F/E/S), editor, notes (Ctrl+S, Ctrl+K), charts (Ctrl+R/P/C); menu mnemonics and window focus shortcuts are not ported | A11 |
-| P8-7 | Help: a short help per function on the About page, plus the "?" help in the scheduler, the script editor and the charts; the online manuals of usna.it are linked from About | Q22 |
-| P8-8 | The `-graphs` stream (L6) is covered by `GET /api/v1/samples` and the `device.upsert` WebSocket events | Q14 |
+| P9-1 | A device that could not be read when discovered is retried every 2 minutes (after the first retry at 30 s) | O33, extension agreed by Wim |
+| P9-2 | `GET /api/v1/devices?gen=` replaces `-gen` | L5, Q14 |
+| P10-1 | Release check: GitHub releases of ShellyLanMan, setting never (default) / stable / all, once a day and after a settings change, banner with release notes link and "skip this version"; a `dev` build is never told to update | A8, Q18 |
+| P10-2 | Images for `linux/amd64` and `linux/arm64` on GHCR from `vX.Y.Z` tags (workflow of Phase 1): tags `X.Y.Z`, `X.Y`, `latest`; the arm64 binary is cross-compiled (checked), the final Alpine stage runs under QEMU on GitHub | Brief phase 10 |
+| P10-3 | Upgrade instructions in the README: `docker compose pull && up -d`, pinning a release line, saving the data volume before a major version | Brief phase 10 |
