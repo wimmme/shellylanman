@@ -28,6 +28,8 @@ New test device **ShellyTestPlug** (Plug S Gen3, 192.168.0.150, firmware 1.2.3 a
 | Reboot (Gen3) | offline ~70 s, back on line, `restart_required` cleared |
 | Firmware check | before the reboot the plug offered nothing; after it: stable 2.0.1 (preselected); Shelly index: 2.0.1, ⚡ offered |
 | Firmware update 1.2.3 → 2.0.1 from the Firmware page | `Shelly.Update` sent, first `ota_progress` (1 %) shown as "load 1%"; the plug then reported nothing more and a second request answered "Already in progress"; after 20 minutes still 1.2.3 — the download on the plug appears stuck (weak Wi-Fi, −73 dBm) |
+| Firmware update, second attempt the next day (13 h later, `Shelly.Update` sent directly to the plug) | accepted (`result: null`), but again no progress; still 1.2.3 after 9 minutes — the plug does not complete its own download |
+| Devices row menu (right-click) | Device info, Web UI, Settings, Backup, Restore, Notes, Reload; closes on click |
 | KVS set / list / delete | ok |
 | Schedule create (disabled) / list / delete through the RPC endpoint | ok |
 | Script create, put code (1609 characters, two segments), read back, delete | ok |
