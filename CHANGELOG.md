@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `docs/phase-11-ha-mcp.md`: analysis for Home Assistant (app, integration, Assist) and
+  MCP parity with the Shelly-MCP — for review, nothing built yet.
+
 ### Fixed
 - Releases: a version tag now also creates the GitHub release (notes from this
   changelog). The in-app release check reads GitHub releases, and there were none, so
