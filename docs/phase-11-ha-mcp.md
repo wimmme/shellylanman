@@ -160,7 +160,7 @@ Testing before a release: the app is installed as a **local app** on `ha-test`
 
 ---
 
-## 6. Phase 11c — design (2026-10-01, for review)
+## 6. Phase 11c — design (2026-10-01; Q7–Q9 agreed, Q10: B later — DECISIONS P11-14, P11-15)
 
 A HACS custom integration `shellylanman` in `shellylanman-ha`
 (`custom_components/shellylanman`, `hacs.json` at the root next to the app). Python,
