@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-02
+
+ShellyLanMan and Home Assistant work together: the app announces itself, a new
+integration puts ShellyLanMan's checks on your Shelly devices and its tools in Assist.
+
 ### Fixed
 - Checklist page: the row under the mouse flickered between light and dark: every
   device update (every few seconds) rebuilt the whole table and toolbar. It now redraws
