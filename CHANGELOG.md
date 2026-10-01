@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-01
+
+ShellyLanMan in Home Assistant, an MCP server that can do everything the Shelly-MCP
+does, and protected devices with firmware 2.x working again.
+
 ### Added
 - MCP: everything the Shelly-MCP offers, locally (DECISIONS §20). A third access level
   **configure** (Settings → MCP) for scripts (create, upload, start/stop, eval,
@@ -24,8 +29,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   the LAN address of the MCP there. The app itself lives in `shellylanman-ha`.
 - About page and README: Shelly-MCP by Buggy1111 under "Based on" and "Credits", as the
   model for the MCP server.
-- `docs/phase-11-ha-mcp.md`: analysis for Home Assistant (app, integration, Assist) and
-  MCP parity with the Shelly-MCP — for review, nothing built yet.
+- `docs/phase-11-ha-mcp.md`: the Home Assistant plan (app, integration, Assist) and MCP
+  parity with the Shelly-MCP.
 
 ### Fixed
 - Password-protected Gen2+ devices with firmware 2.0 or newer: every command and
