@@ -179,7 +179,7 @@ test devices left as found (ShellyTestPlug off, Grondwaterpomp on).
 | `shelly_backup` of both, `shelly_list_backups` | `.sbk` files written and listed |
 | `shelly_reboot` / `shelly_firmware_update` without `confirm` | refused, nothing sent (logged) |
 | `shelly_firmware_update` stable with `confirm` on ShellyTestPlug (already 2.0.1, 2.1.0-beta1 offered) | the device answers "FW stage stable not found", reported as a failed result line |
-| `shelly_reboot` with `confirm` on ShellyTestPlug | down ~30 s, back up; ShellyLanMan showed "error" for about 2 minutes before "online" (no browser open, so slow polling) |
+| `shelly_reboot` with `confirm` on ShellyTestPlug | down ~30 s, back up; ShellyLanMan showed "error" for about 2 minutes before "online" — the plug itself: after the reboot it answered ping only after minutes and slowly, its web UI stayed unreachable (1 m from the access point) |
 | Ambiguous name (`"Lampen"`) | refused with the 7 candidates |
 
 Seen on the way: after the container restart ShellyTestPlug stayed a ghost (archive)
