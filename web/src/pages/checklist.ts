@@ -84,6 +84,7 @@ export const checklistPage: Page = {
     let filter = '';
     const status = h('div', { class: 'muted status-line' });
     const toolbar = h('div', { class: 'row' });
+    const hint = h('p', { class: 'muted chk-hint' }, t('chk.actionsHint'));
     const body = h('div');
     const filterInput = h('input', { type: 'search', placeholder: t('filter.placeholder'), 'aria-label': t('filter.label') });
     filterInput.addEventListener('input', () => { filter = filterInput.value.toLowerCase(); draw(); });
@@ -178,15 +179,23 @@ export const checklistPage: Page = {
 
     const draw = (): void => {
       const acts = actions();
+      const button = (a: (typeof acts)[number]): HTMLElement => {
+        const b = h('button', { class: 'btn', disabled: !a.enabled }, t(a.label), a.menu ? ' ▾' : '');
+        b.addEventListener('click', (e) => {
+          if (a.menu) { const r = b.getBoundingClientRect(); menu(a.menu.map((m) => ({ label: t(m.label), run: m.run })), r.left, r.bottom); e.stopPropagation(); } else a.run?.();
+        });
+        // The tooltip sits on a wrapper: browsers show none on a disabled button.
+        return a.tip ? h('span', { class: 'tip-wrap', title: t(a.tip) }, b) : b;
+      };
+      const settings = acts.filter((a) => a.key !== 'web' && a.key !== 'reboot');
       toolbar.replaceChildren(
         h('button', { class: 'btn', onclick: () => void reload(), title: t('action.refreshTip') }, t('action.refresh')),
-        ...acts.map((a) => {
-          const b = h('button', { class: 'btn', disabled: !a.enabled, title: a.tip ? t(a.tip) : undefined }, t(a.label), a.menu ? ' ▾' : '');
-          b.addEventListener('click', (e) => {
-            if (a.menu) { const r = b.getBoundingClientRect(); menu(a.menu.map((m) => ({ label: t(m.label), run: m.run })), r.left, r.bottom); e.stopPropagation(); } else a.run?.();
-          });
-          return b;
-        }));
+        h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' }),
+        h('span', { class: 'toolbar-label muted' }, t('chk.actionsLabel')),
+        ...settings.map(button),
+        h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' }),
+        ...acts.filter((a) => a.key === 'web' || a.key === 'reboot').map(button));
+      hint.hidden = selected.size > 0;
       const shown = rows.filter((r) => !filter || `${r.host} ${r.address}`.toLowerCase().includes(filter));
       status.textContent = t('status.listed', { total: rows.length, selected: selected.size });
       if (!rows.length) { body.replaceChildren(emptyState(t('devices.empty.title'), t('devices.empty.text'), ICONS.checklist)); return; }
@@ -249,7 +258,7 @@ export const checklistPage: Page = {
       refetch = [];
     });
     disposeFn = off;
-    main.append(card(t('chk.title'), null, h('div', { class: 'toolbar' }, toolbar, h('div', { class: 'spacer' }), filterInput), status, body));
+    main.append(card(t('chk.title'), null, h('div', { class: 'toolbar' }, toolbar, h('div', { class: 'spacer' }), filterInput), hint, status, body));
     void reload();
   },
   dispose() { disposeFn(); document.querySelectorAll('.ctx-menu').forEach((m) => m.remove()); },

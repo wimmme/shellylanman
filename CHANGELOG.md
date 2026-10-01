@@ -12,6 +12,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 - `SHELLYLANMAN_MCP_LOCAL`: an MCP listener without token on a loopback address, for
   Home Assistant on the same host (the app sets it; MCP must be enabled, the access
   level applies).
+- Checklist page: the setting buttons are labelled "Change on the selected devices",
+  a hint explains them while nothing is selected, and their tooltips also show when
+  they are disabled.
+- About page: icons on the cards, a paragraph on MCP and Home Assistant, and "Built
+  with the help of Claude by Anthropic"; README: a new introduction (one go-to app,
+  standalone or as a Home Assistant app), more reasons why, Contributing.
 - `/api/v1/about` reports an `instanceId` (stable per data folder) for the integration.
 
 ## [0.4.0] - 2026-10-01

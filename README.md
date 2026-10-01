@@ -13,7 +13,10 @@
 
 # ShellyLanMan
 
-**Discover, monitor and manage Shelly devices on your local network — in the browser.**
+**Discover, monitor and manage Shelly devices on your LAN — one go-to app, with an MCP server for AI assistants.**
+
+A single lightweight Docker container that runs standalone, or inside Home Assistant as
+an app with extra features.
 
 ShellyLanMan is a network-based tool for monitoring and managing Shelly IoT devices.
 It automatically discovers devices on the local network and shows key information
@@ -23,15 +26,16 @@ available from the toolbar. Firmware management is built in, with a QR code for 
 quick download of the firmware, so you can update a device through the Shelly's
 own access point.
 
-It is heavily based on [ShellyScanner](https://github.com/usnasoft/shellyscanner)
-by usnasoft — the same features and terminology, as a native web UI in a single
-lightweight Docker image. No desktop, no VNC, no Java, no cloud.
+It grew from [ShellyScanner](https://github.com/usnasoft/shellyscanner) by usnasoft —
+its features, terminology and Shelly know-how — and went further: an MCP server for AI
+assistants, a Home Assistant app and integration, eight languages. No desktop, no VNC,
+no Java, no cloud.
 
-[Why](#why-shellylanman) · [Quick start](#quick-start) · [Features](#features) ·
-[Pages](#pages) · [Screenshots](#screenshots) · [AI assistants (MCP)](#ai-assistants-mcp) · [Home Assistant](#home-assistant) · [Security](#security) ·
-[Configuration](#configuration) · [Development](#development) · [Support](#support) · [Credits](#credits)
+[Why](#-why-shellylanman) · [Quick start](#-quick-start) · [Features](#-features) ·
+[Pages](#-pages) · [Screenshots](#-screenshots) · [AI assistants (MCP)](#-ai-assistants-mcp) · [Home Assistant](#-home-assistant) · [Security](#-security) ·
+[Configuration](#configuration) · [Development](#-development) · [Contributing](#-contributing) · [Support](#-support) · [Credits](#-credits)
 
-## Why ShellyLanMan
+## ✨ Why ShellyLanMan
 
 - **One place for every Shelly on the LAN** — Gen1 to Gen4, Pro, BLU through their
   gateways, range-extender clients and protected devices.
@@ -43,8 +47,21 @@ lightweight Docker image. No desktop, no VNC, no Java, no cloud.
   ShellyLanMan, to update a device through its own access point.
 - **In your language** — English, Nederlands, Deutsch, Français, Español, Italiano,
   Български, 中文.
+- **Better than the phone app** — Shelly's own app is built around the cloud and shows
+  only part of what the devices can do. ShellyLanMan talks to the devices directly, in
+  any browser, also on your phone, with every setting, script, schedule and backup.
+- **For AI assistants** — a built-in [MCP server](#-ai-assistants-mcp): Claude Code,
+  Claude Desktop or a local model can read your devices and, if you allow it, switch,
+  configure and script them. Locally, with confirmation for anything destructive.
+- **At home in Home Assistant** — [an app](#-home-assistant) in the sidebar behind Home
+  Assistant's login, in Home Assistant's own colours, and an integration that adds
+  ShellyLanMan's status, configuration backups and settings checklist to the Shelly
+  devices Home Assistant already has, plus its tools for Assist.
+- **More than ShellyScanner** — on top of all of ShellyScanner's functions: the MCP
+  server and Home Assistant support above, scenes, eight languages, a choice of colour
+  palettes (including a Home Assistant look), release notes in the app.
 
-## Quick start
+## 🚀 Quick start
 
 Linux with Docker Engine. `docker-compose.yml`:
 
@@ -140,7 +157,7 @@ Terminate TLS at the proxy, forward WebSocket upgrades for `/ws`, and set
 default — add authentication at the proxy if the UI is reachable beyond your
 own LAN. See [`SECURITY.md`](SECURITY.md).
 
-## Features
+## 🧭 Features
 
 Everything ShellyScanner does, in the browser:
 
@@ -162,7 +179,7 @@ What leaves your LAN: the devices' own firmware checks (as with ShellyScanner); 
 firmware index when you open the Firmware page; the ShellyLanMan release check only
 if you switch it on (off by default). No telemetry.
 
-## Pages
+## 📑 Pages
 
 | Page | What it is for |
 |---|---|
@@ -174,7 +191,7 @@ if you switch it on (off by default). No telemetry.
 | **Settings** | Scan mode and IP ranges, archive, device credentials, backups, web server port, script editor, appearance and language. |
 | **About** | What is running (version, runtime, uptime), release notes, dependencies with their licences, credits and help. |
 
-## Screenshots
+## 📸 Screenshots
 
 | | |
 |---|---|
@@ -185,7 +202,7 @@ if you switch it on (off by default). No telemetry.
 
 The screenshots show simulated devices (`cmd/shellysim`).
 
-## AI assistants (MCP)
+## 🤖 AI assistants (MCP)
 
 ShellyLanMan has a built-in [Model Context Protocol](https://modelcontextprotocol.io)
 server, so an AI assistant — Claude Code, Claude Desktop, or a local model — can ask
@@ -214,7 +231,7 @@ Off by default, read-only unless you choose otherwise, a bearer token on every
 request, browser requests from other sites refused, and every action that changes
 something written to the log. Devices are named by name, host name, IP or MAC.
 
-## Home Assistant
+## 🏠 Home Assistant
 
 [`shellylanman-ha`](https://github.com/wimmme/shellylanman-ha) packages ShellyLanMan
 for Home Assistant:
@@ -227,7 +244,7 @@ for Home Assistant:
 
 Relays, lights and meters stay with Home Assistant's own Shelly integration.
 
-## Security
+## 🔒 Security
 
 - **Keep it on your LAN.** ShellyLanMan can change the configuration of your devices;
   do not expose it to the internet. For remote access use a reverse proxy with TLS
@@ -244,7 +261,7 @@ Relays, lights and meters stay with Home Assistant's own Shelly integration.
   or configuration.
 - Report vulnerabilities privately: see [`SECURITY.md`](SECURITY.md).
 
-## Development
+## 💻 Development
 
 Only Docker is needed:
 
@@ -255,7 +272,15 @@ sh tools/verify.sh     # typecheck, tests, gofmt, vet, go test -race, image buil
 Try it without hardware: `go run ./cmd/shellysim testdata/gen1/SHPLG-S testdata/gen2/Plus1`
 starts simulated devices on ports 8081 and 8082. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-## Support
+## 🤝 Contributing
+
+Issues and pull requests are welcome, from typo fixes to new pages. Check the
+[open issues](https://github.com/wimmme/shellylanman/issues) first, and open one before a
+large change so the approach can be agreed. You do not need Shelly devices to
+contribute: the simulator (`cmd/shellysim`) plays recorded devices. See
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## ☕ Support
 
 ShellyLanMan is free and open source, and always will be. If it saves you time, a
 coffee (or a few tokens for coding) is welcome — and never expected.
@@ -265,7 +290,7 @@ coffee (or a few tokens for coding) is welcome — and never expected.
 
 Bugs and ideas: [open an issue](https://github.com/wimmme/shellylanman/issues/new).
 
-## Credits
+## 🙏 Credits
 
 - **[ShellyScanner](https://github.com/usnasoft/shellyscanner)** by Antonio
   Flaccomio (usnasoft) — the functional and code reference for everything
@@ -282,13 +307,17 @@ Bugs and ideas: [open an issue](https://github.com/wimmme/shellylanman/issues/ne
   fonts under the SIL Open Font License. Full list in
   [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-## Disclaimer
+## ⚖️ Disclaimer
 
 ShellyLanMan is an independent project. It is heavily based on ShellyScanner but
 not affiliated with it, and not affiliated with or endorsed by usnasoft or Shelly
 Group. Shelly is a trademark
 of its owner.
 
-## Licence
+## 📄 Licence
 
 [GPL-3.0-or-later](LICENSE).
+
+---
+
+<p align="center"><sub>Built with the help of <a href="https://claude.ai">Claude</a> by Anthropic.</sub></p>

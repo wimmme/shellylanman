@@ -41,6 +41,7 @@ function hero(a: About, u: UpdateStatus | null): HTMLElement {
       h('div', { class: 'about-tagline' }, t('about.tagline')),
       h('p', {}, t('about.what1')),
       h('p', {}, t('about.what2')),
+      h('p', {}, t('about.what3')),
       h('div', { class: 'about-meta' },
         h('span', { class: 'about-version mono' }, /^\d/.test(a.version) ? 'v' + a.version : a.version),
         versionState(u), uptime, link(a.source, a.source.replace('https://', '')))));
@@ -49,7 +50,7 @@ function hero(a: About, u: UpdateStatus | null): HTMLElement {
 function system(a: About): HTMLElement {
   const langs = a.languages.map((id) => LANGUAGES.find((l) => l.id === id)?.label ?? id).join(', ');
   const row = (k: Key, ...v: (Node | string)[]): Node[] => [h('dt', {}, t(k)), h('dd', {}, ...v)];
-  return card(t('about.system'), null,
+  return card('🖥️ ' + t('about.system'), null,
     h('dl', { class: 'kv' },
       ...row('about.version', h('span', { class: 'mono' }, a.version + (a.commit ? ` (${a.commit})` : ''))),
       ...row('about.runtime', h('span', { class: 'mono' }, a.runtime.go)),
@@ -65,18 +66,19 @@ function system(a: About): HTMLElement {
 
 function support(a: About): HTMLElement {
   const [coffee, paypal] = a.donate;
-  return card(t('about.support'), null,
+  return card('☕ ' + t('about.support'), null,
     h('p', {}, t('about.free')),
     h('div', { class: 'about-buttons' },
       link(a.issues, t('about.bug'), 'btn'),
       coffee && link(coffee.url, '☕ ' + t('about.coffee'), 'btn btn-coffee'),
       paypal && link(paypal.url, t('about.paypal'), 'btn btn-paypal')),
-    h('p', { class: 'muted' }, t('about.notice')));
+    h('p', { class: 'muted' }, t('about.notice')),
+    h('p', { class: 'muted about-built' }, t('about.builtWith'), ' ', link('https://claude.ai', 'Claude'), ' · Anthropic'));
 }
 
 function basedOn(a: About): HTMLElement {
   const text: Key[] = ['about.basedOnSS', 'about.basedOnMD', 'about.basedOnSM'];
-  return card(t('about.basedOn'), null, h('div', { class: 'about-based' }, ...a.basedOn.map((c, i) =>
+  return card('✨ ' + t('about.basedOn'), null, h('div', { class: 'about-based' }, ...a.basedOn.map((c, i) =>
     h('div', { class: 'about-origin' },
       h('div', { class: 'about-origin-name' }, link(c.url, c.name), h('span', { class: 'muted' }, ` · ${c.author} · ${c.license}`)),
       h('p', {}, t(text[i] ?? 'about.basedOnMD', { author: c.author })),
@@ -107,11 +109,11 @@ function tabsCard(a: About, releases: Release[], webDeps: Dep[]): HTMLElement {
   const tabs = h('div', { class: 'tabs', role: 'tablist' });
   const count = (n: number): HTMLElement => h('span', { class: 'card-badge' }, String(n));
   const panes: [string, (Node | string)[], () => Node[]][] = [
-    ['notes', [t('about.releaseNotes'), count(releases.length)], () => [releaseNotes(releases)]],
-    ['deps', [t('about.deps'), count(a.deps.length + webDeps.length)], () => [depTable(t('about.depsGo'), a.deps), depTable(t('about.depsWeb'), webDeps)]],
-    ['credits', [t('about.credits')], () => [h('dl', { class: 'kv' }, ...a.credits.flatMap((c) => [
+    ['notes', ['🧾 ' + t('about.releaseNotes'), count(releases.length)], () => [releaseNotes(releases)]],
+    ['deps', ['📦 ' + t('about.deps'), count(a.deps.length + webDeps.length)], () => [depTable(t('about.depsGo'), a.deps), depTable(t('about.depsWeb'), webDeps)]],
+    ['credits', ['🙏 ' + t('about.credits')], () => [h('dl', { class: 'kv' }, ...a.credits.flatMap((c) => [
       h('dt', {}, link(c.url, c.name)), h('dd', {}, `${c.what} — ${c.author} — ${c.license}`)]))]],
-    ['help', [t('help.title')], () => HELP.map((k) =>
+    ['help', ['❓ ' + t('help.title')], () => HELP.map((k) =>
       h('details', { class: 'help-item' }, h('summary', {}, t(`help.${k}.title` as Key)), ...t(`help.${k}` as Key).split('\n').map((l) => h('p', {}, l))))],
   ];
   const show = (id: string): void => {

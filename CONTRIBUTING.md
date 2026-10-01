@@ -1,7 +1,8 @@
 # Contributing
 
-Thanks for helping. ShellyLanMan is a web version of ShellyScanner; the goal is
-**functional parity** with it, in a small, maintainable package.
+Thanks for helping. ShellyLanMan grew from ShellyScanner: **functional parity** with
+it is the base, in a small, maintainable package, with the agreed extras on top (MCP
+server, Home Assistant app and integration, languages).
 
 ## Before you start
 
