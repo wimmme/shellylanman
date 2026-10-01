@@ -15,7 +15,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   code, RPC writes and the device password need `confirm: true`; factory reset also
   `allow_data_loss`.
 - Palette **Home Assistant** (dark and light): the colours of Home Assistant's default
-  themes, so ShellyLanMan blends in when it runs as a Home Assistant app.
+  themes, so ShellyLanMan blends in when it runs as a Home Assistant app. Opened in Home
+  Assistant and with nothing chosen yet, ShellyLanMan uses it, light or dark as the
+  browser prefers (and follows a change); a palette or theme you pick is kept.
 - Home Assistant app support: with `SHELLYLANMAN_INGRESS` set, a second listener for
   Home Assistant's ingress that only the Supervisor may use; the web UI works under a
   path prefix (relative URLs), hides the no-auth banner inside Home Assistant and shows

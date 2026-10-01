@@ -203,10 +203,39 @@ export function storedFontSize(): string {
   return lsGet(KEYS.fontSize) || 'normal';
 }
 
+/** True when the page is served through Home Assistant's ingress (app panel). */
+export function insideHomeAssistant(pathname: string): boolean {
+  return pathname.startsWith('/api/hassio_ingress/');
+}
+
+/**
+ * The look before anything is chosen: inside Home Assistant the Home Assistant
+ * palette, light or dark as the browser prefers (and following it while
+ * nothing is chosen); elsewhere the default dark look. A stored choice wins.
+ */
+export function startLook(pathname: string, prefersDark: boolean, storedTheme: string | null, storedPalette: string | null):
+  { theme: 'dark' | 'light'; palette: string; follow: boolean } {
+  if (insideHomeAssistant(pathname) && !storedTheme && !storedPalette) {
+    return { theme: prefersDark ? 'dark' : 'light', palette: 'homeassistant', follow: true };
+  }
+  return { theme: storedTheme === 'light' ? 'light' : 'dark', palette: storedPalette || 'default', follow: false };
+}
+
+let following = false;
+
 /** Run before first paint (preflight) and again at startup. */
 export function initAppearance(): void {
-  const theme = lsGet(KEYS.theme) === 'light' ? 'light' : 'dark';
-  const palette = lsGet(KEYS.palette) || 'default';
+  const dark = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+  const { theme, palette, follow } = startLook(location.pathname, dark ? dark.matches : true, lsGet(KEYS.theme), lsGet(KEYS.palette));
+  if (follow && dark && !following) {
+    following = true;
+    dark.addEventListener('change', () => {
+      if (!lsGet(KEYS.theme) && !lsGet(KEYS.palette)) {
+        root().setAttribute('data-theme', dark.matches ? 'dark' : 'light');
+        reapply();
+      }
+    });
+  }
   if (palette !== 'default') root().setAttribute('data-palette', palette);
   root().setAttribute('data-theme', theme);
   for (const [attr, key] of [['data-contrast', KEYS.contrast], ['data-text-bright', KEYS.textBright], ['data-bg-bright', KEYS.bgBright]] as const) {
