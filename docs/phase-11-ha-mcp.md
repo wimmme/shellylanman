@@ -157,3 +157,62 @@ Not in 11b (they belong with the integration, 11c): Supervisor discovery
 Testing before a release: the app is installed as a **local app** on `ha-test`
 (`/addons/shellylanman`, built on the device from a development image), then from the
 `shellylanman-ha` repository once the images are on GHCR.
+
+---
+
+## 6. Phase 11c — design (2026-10-01, for review)
+
+A HACS custom integration `shellylanman` in `shellylanman-ha`
+(`custom_components/shellylanman`, `hacs.json` at the root next to the app). Python,
+only Home Assistant's own libraries (aiohttp); tests with
+`pytest-homeassistant-custom-component` in Docker, CI in that repository.
+
+### 6.1 Facts checked
+
+| Fact | Source | Consequence |
+|---|---|---|
+| An app lists its discovery services in `config.yaml` (`discovery:`) and posts `{service, config}` to the Supervisor with its token; Core then starts the config flow of the integration **with that domain**, custom integrations included | `supervisor/api/discovery.py`, `core/components/hassio/discovery.py` | The app announces `shellylanman` (URL of ShellyLanMan) and `mcp` (Q5); both appear in HA as "discovered" |
+| HACS: one integration per repository under `custom_components/<domain>/`, `manifest.json` with domain, documentation, issue_tracker, codeowners, name, version; brand images in `custom_components/<domain>/brand/` (Core: `Integration.has_branding`) | hacs.xyz, `core/loader.py` | The app folder can stay next to it; icon from the app |
+| The official Shelly integration registers devices with `connections={(mac, …)}` | `core/components/shelly/coordinator.py` | Our entities land on the same device card |
+| Integrations can register an LLM API (`llm.async_register_api`, `llm.API`, `llm.Tool`) — HA's MCP client does exactly that | `core/helpers/llm.py`, `core/components/mcp` | "ShellyLanMan" selectable as an LLM API for conversation agents (Assist) |
+| ShellyLanMan's REST API has no login on the LAN; the MCP server needs its token | ShellyLanMan | Set-up asks for the URL; the MCP token only for Assist |
+
+### 6.2 What the integration does
+
+1. **Set-up**: discovered from the app (one click), or by hand with the URL
+   (`http://host:3082`) and, optionally, the MCP token for Assist.
+2. **Live state** from ShellyLanMan's WebSocket (`device.upsert`), the checklist read
+   every 30 minutes and on request (it costs one RPC per device).
+3. **Entities per Shelly device** (diagnostic category, attached by MAC to the device
+   of the official Shelly integration, or a device of their own when that one is not
+   set up) — proposal for Q7/Q8:
+   - `sensor` ShellyLanMan status (online / offline / login / error / ghost) — enabled
+   - `sensor` last configuration backup (timestamp) and `button` "Back up configuration" — enabled
+   - `binary_sensor` per checklist item: eco mode, LED off (Gen1), logs on, Bluetooth,
+     access point, roaming, Wi-Fi static IP, range extender, automatic firmware update — **disabled by default**, the user switches on what he wants to watch
+   - not duplicated: relays, lights, meters, firmware update (the Shelly integration has them)
+4. **A device "ShellyLanMan"** for the service itself: number of devices on line /
+   off line / needing attention, version, a "Rescan" button (Q9).
+5. **Assist**: an LLM API "ShellyLanMan" whose tools are the MCP server's tools
+   (listed live, so the access level set in ShellyLanMan applies) — with the token,
+   or token-less in app mode (below).
+
+### 6.3 ShellyLanMan side (main repository)
+
+- In app mode (`SUPERVISOR_TOKEN` present): announce discovery `shellylanman`
+  (`{"url": "http://127.0.0.1:<port>"}` — Home Assistant Core runs on the host network)
+  and `mcp` (`{"url": "http://127.0.0.1:<mcp-port>/mcp"}`).
+- Q5 implemented: in app mode an extra **MCP listener on `127.0.0.1` only, without
+  token**, at the access level set in ShellyLanMan; off unless MCP is enabled; an app
+  option can switch it off. Residual risk documented: other host-network apps on the
+  same machine can reach it.
+- App `config.yaml`: `discovery: [shellylanman, mcp]`.
+
+### 6.4 Questions
+
+| # | Question | Proposal |
+|---|---|---|
+| Q7 | Checklist entities read-only, or also switches (eco mode, LED, roaming, …) that change the device from HA? | Read-only first; switches later if wanted |
+| Q8 | The entity list of §6.2 point 3, and which are enabled by default | As proposed |
+| Q9 | A "ShellyLanMan" device with counters and a Rescan button? | Yes |
+| Q10 | Discovery handoff to the official Shelly integration (B) now or later? | Later (separate phase) |
