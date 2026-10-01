@@ -1,6 +1,6 @@
 # ShellyLanMan — Feature parity with ShellyScanner
 
-> Status: **Phase 0 inventory, decisions of 2026-09-26 applied.** No feature is implemented yet. A row is ticked (✅) only when it is
+> Status: **all rows implemented or agreed as a deviation (Phases 1–10, v0.2.0).** A row is ticked (✅) only when it is
 > implemented **and** covered by tests (unit + simulator, and real hardware where it touches devices).
 >
 > Reference: ShellyScanner 1.3.4, commit `a8e9b93` (2026-09-17). Java paths are relative to

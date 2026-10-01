@@ -1,6 +1,7 @@
 # ShellyLanMan — Architecture
 
-> Status: **Phase 0 design, decisions of 2026-09-26 applied** (`DECISIONS.md` §8). Nothing here is built.
+> Status: **Phase 0 design, decisions of 2026-09-26 applied** (`DECISIONS.md` §8); built in Phases 1–10 (v0.2.0)
+> and extended with the MCP server (`DECISIONS.md` §18). Later decisions in `DECISIONS.md` §9–§18 refine this design.
 > Companion documents: [`FEATURE_PARITY.md`](FEATURE_PARITY.md) (every feature, where it lives in the
 > Java code, how it maps) and [`DECISIONS.md`](DECISIONS.md) (technology choice, UI mapping, licensing,
 > firmware/QR, tests, plan, risks, open questions).

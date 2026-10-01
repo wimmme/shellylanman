@@ -17,6 +17,12 @@ versions follow [Semantic Versioning](https://semver.org/).
   "LED off", an empty `ble` list means Bluetooth on with nothing relayed, `-` / `null`
   mean not applicable / no such setting).
 
+### Fixed
+- Documentation: `DECISIONS.md` §1–15 and the Phase 2–9 hardware test results in
+  `docs/hardware-tests.md` were lost when later phases overwrote the files instead of
+  appending; restored from history. Status headers of `ARCHITECTURE.md`,
+  `DECISIONS.md` and `FEATURE_PARITY.md` brought up to date.
+
 ## [0.2.0] - 2026-09-28
 
 Feedback on the first release: a steady devices table, eight languages, the port as a
