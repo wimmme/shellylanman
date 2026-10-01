@@ -8,7 +8,7 @@ if [ "${1:-}" = "--check" ]; then
 	versions="$(sed -n 's/^## \[\([0-9][0-9.]*\)\].*/\1/p' "$changelog")"
 	[ -n "$versions" ] || { echo "no released versions in CHANGELOG.md" >&2; exit 1; }
 	for v in $versions; do
-		"$0" "$v" >/dev/null
+		sh "$0" "$v" >/dev/null
 	done
 	echo "release notes: OK ($(echo $versions | wc -w) versions)"
 	exit 0
