@@ -35,7 +35,11 @@ type Command struct {
 	Value  *float64 `json:"value,omitempty"`
 	RGB    []int    `json:"rgb,omitempty"`
 	White  *int     `json:"white,omitempty"` // with ActionColor on RGBW lights
-	Event  int      `json:"event,omitempty"` // ActionEvent: index in Module.Events
+	// Timer (seconds) flips a relay back after on/off/toggle (Gen1 timer,
+	// Gen2+ toggle_after). Transition (seconds) fades a light change.
+	Timer      *float64 `json:"timer,omitempty"`
+	Transition *float64 `json:"transition,omitempty"`
+	Event      int      `json:"event,omitempty"` // ActionEvent: index in Module.Events
 	// Confirm is required for the circuit breaker (ShellyScanner asks
 	// "Confirm you want to toggle the circuit status?").
 	Confirm bool `json:"confirm,omitempty"`
@@ -154,6 +158,9 @@ func rgbOf(cmd Command) (r, g, b int, err error) {
 
 func isOn(m *parse.Module) bool { return m.On != nil && *m.On }
 
+// lightKinds take a transition.
+var lightKinds = map[string]bool{parse.KindLight: true, parse.KindCCT: true, parse.KindRGB: true, parse.KindRGBW: true, parse.KindRGBCCT: true}
+
 // targetIn checks a thermostat target against the module range.
 func targetIn(m *parse.Module, cmd Command) (float64, error) {
 	t, err := val(cmd)
@@ -182,7 +189,14 @@ func turn(action string) (string, bool) {
 
 // gen1Command: REST GETs of the g1 modules.
 func gen1Command(ctx context.Context, c *shelly.Conn, m *parse.Module, cmd Command) error {
-	get := func(path string) error { _, err := c.Get(ctx, path); return err }
+	extra := ""
+	if _, isTurn := turn(cmd.Action); isTurn && m.Kind == parse.KindRelay && cmd.Timer != nil {
+		extra += "&timer=" + num(*cmd.Timer)
+	}
+	if lightKinds[m.Kind] && cmd.Transition != nil && cmd.Action != ActionMode {
+		extra += "&transition=" + strconv.Itoa(int(math.Round(*cmd.Transition*1000))) // ms
+	}
+	get := func(path string) error { _, err := c.Get(ctx, path+extra); return err }
 	prefix := "/" + m.Key // relay/0, roller/0, light/0, white/2, color/0, thermostats/0, input/1
 	switch m.Kind {
 	case parse.KindRelay:
@@ -290,8 +304,15 @@ func gen2Command(ctx context.Context, c *shelly.Conn, m *parse.Module, cmd Comma
 	post := func(method string, params any) error { _, err := c.Call(ctx, method, params); return err }
 	comp, idxStr, _ := strings.Cut(m.Key, ":")
 	idx, _ := strconv.Atoi(idxStr)
+	timed := ""
+	if cmd.Timer != nil {
+		timed = "&toggle_after=" + num(*cmd.Timer)
+	}
+	if lightKinds[m.Kind] && cmd.Transition != nil {
+		timed += "&transition_duration=" + num(*cmd.Transition)
+	}
 	set := func(method, extra string) error {
-		return get(fmt.Sprintf("/rpc/%s.Set?id=%d%s", method, idx, extra))
+		return get(fmt.Sprintf("/rpc/%s.Set?id=%d%s%s", method, idx, extra, timed))
 	}
 	onOff := func(method string) (bool, error) { // change(on) / toggle = change(!isOn)
 		switch cmd.Action {
@@ -321,6 +342,9 @@ func gen2Command(ctx context.Context, c *shelly.Conn, m *parse.Module, cmd Comma
 		}
 		switch cmd.Action {
 		case ActionToggle:
+			if cmd.Timer != nil { // Switch.Toggle has no timer: Set the opposite state
+				return set("Switch", "&on="+strconv.FormatBool(!isOn(m)))
+			}
 			return get(fmt.Sprintf("/rpc/Switch.Toggle?id=%d", idx))
 		case ActionOn, ActionOff:
 			return set("Switch", "&on="+strconv.FormatBool(cmd.Action == ActionOn))

@@ -94,6 +94,8 @@ type Devices struct {
 
 	ring        sampleRing // chart samples (Phase 8)
 	samplesOnce sync.Once
+
+	scenes sceneStore // named action lists, run on request (Phase 11, MCP)
 }
 
 type entry struct {
