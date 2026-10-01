@@ -2,7 +2,7 @@
 
 > Status: **Q1–Q4 answered (`DECISIONS.md` §20). 11a (MCP parity) built (P11-6 … P11-10).
 > Q5: both ways, the token-less path only in app mode on 127.0.0.1, to be proven on a
-> test HA OS first. Q6: test VM `ha-test` on Hyper-V being set up. 11b and 11c not built.**
+> test HA OS first. Q6: test VM `ha-test` on Hyper-V. 11b done: app v0.4.0 from `wimmme/shellylanman-ha` (P11-12, P11-13). 11c not built.**
 
 Parked idea (2026-10-01): an optional, off-by-default Shelly cloud link for other users
 (devices at another site, last state of sleeping devices). Not in Phase 11; decide when
