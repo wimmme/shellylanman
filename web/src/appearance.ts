@@ -42,6 +42,7 @@ export const PALETTES: { id: string; label: string; light: boolean; swatch: [str
   { id: 'material', label: 'Material', light: true, swatch: ['#1b2528', '#80cbc4'] },
   { id: 'palenight', label: 'Palenight', light: false, swatch: ['#202336', '#82aaff'] },
   { id: 'github', label: 'GitHub', light: true, swatch: ['#010409', '#58a6ff'] },
+  { id: 'homeassistant', label: 'Home Assistant', light: true, swatch: ['#111111', '#009ac7'] },
 ];
 
 /** Fonts bundled under /fonts (OFL), plus the system font. */

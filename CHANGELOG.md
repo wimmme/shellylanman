@@ -14,6 +14,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   ShellyLanMan; a flip-back timer for relays and a fade for lights; rescan. Deletes,
   code, RPC writes and the device password need `confirm: true`; factory reset also
   `allow_data_loss`.
+- Palette **Home Assistant** (dark and light): the colours of Home Assistant's default
+  themes, so ShellyLanMan blends in when it runs as a Home Assistant app.
 - Home Assistant app support: with `SHELLYLANMAN_INGRESS` set, a second listener for
   Home Assistant's ingress that only the Supervisor may use; the web UI works under a
   path prefix (relative URLs), hides the no-auth banner inside Home Assistant and shows
