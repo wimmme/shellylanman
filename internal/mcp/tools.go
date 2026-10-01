@@ -382,8 +382,13 @@ var tools = []tool{
 	},
 	{
 		name: "shelly_checklist", title: "Configuration checklist",
-		description: "Settings worth checking per device (ShellyScanner's checklist): eco mode, LED, logs, Bluetooth, access point, roaming, Wi-Fi static/DHCP, range extender, scripts, automatic firmware update.",
-		schema:      obj(nil, map[string]any{"devices": devicesArg}),
+		description: "Settings worth checking per device (ShellyScanner's checklist): eco mode, LED, logs, Bluetooth, access point, roaming, Wi-Fi static/DHCP, range extender, scripts, automatic firmware update. " +
+			"Cells are as in the original table: true/false, \"✓\"/\"✗\", \"-\" = not applicable to this generation, null = the device does not have the setting (or it could not be read). " +
+			"eco: eco mode on. led: the device LED is OFF (Gen1 only; true = LED disabled). logs: false, or the active log targets (\"socket\", \"mqtt\", \"udp\"). " +
+			"ble: Gen2+ list of BLU devices this device relays as gateway (empty list = Bluetooth on, nothing relayed), \"✗\" = Bluetooth off; for a BLU device, the gateways that see it. " +
+			"ap: own access point on. roaming: RSSI threshold in dBm when on, \"✗\" when off. wifi1/wifi2: \"✓\" static IP, \"✗\" DHCP, \"-\" not configured (e.g. on Ethernet). " +
+			"extender: number of clients when the range extender is on, \"✗\" off. scripts: \"total / enabled\". autoFW: update stage (\"stable\"/\"beta\") of the daily update schedule, \"✗\" none.",
+		schema: obj(nil, map[string]any{"devices": devicesArg}),
 		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {
 			var a struct{ Devices []string }
 			if err := decode(args, &a); err != nil {

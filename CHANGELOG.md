@@ -13,6 +13,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   read-only unless set to control, control actions logged. Settings → MCP shows the
   token once and the command for Claude Code. API: `GET/PUT /api/v1/mcp`,
   `POST /api/v1/mcp/token`.
+- MCP `shelly_checklist`: the tool description explains every cell (`led` is
+  "LED off", an empty `ble` list means Bluetooth on with nothing relayed, `-` / `null`
+  mean not applicable / no such setting).
 
 ## [0.2.0] - 2026-09-28
 

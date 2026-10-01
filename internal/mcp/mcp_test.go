@@ -220,6 +220,10 @@ func TestAccessLevels(t *testing.T) {
 		if tl["name"] == "shelly_list_devices" && ann["readOnlyHint"] != true {
 			t.Fatal("list not marked read-only")
 		}
+		// The checklist cells follow the Java table; "led" is "LED off" there.
+		if d, _ := tl["description"].(string); tl["name"] == "shelly_checklist" && !strings.Contains(d, "LED is OFF") {
+			t.Fatalf("checklist legend missing: %s", d)
+		}
 	}
 }
 
