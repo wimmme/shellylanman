@@ -6,6 +6,14 @@ versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- MCP: everything the Shelly-MCP offers, locally (DECISIONS §20). A third access level
+  **configure** (Settings → MCP) for scripts (create, upload, start/stop, eval,
+  delete), KVS, schedules, webhooks, virtual components, any Gen2+ RPC write and the
+  device password; raw status and configuration for every generation with passwords
+  masked; component list, script code, energy history of EM meters; scenes stored in
+  ShellyLanMan; a flip-back timer for relays and a fade for lights; rescan. Deletes,
+  code, RPC writes and the device password need `confirm: true`; factory reset also
+  `allow_data_loss`.
 - `docs/phase-11-ha-mcp.md`: analysis for Home Assistant (app, integration, Assist) and
   MCP parity with the Shelly-MCP — for review, nothing built yet.
 

@@ -1,7 +1,12 @@
 # Phase 11 — Home Assistant and MCP parity (analysis, 2026-10-01)
 
-> Status: **Q1–Q4 answered (`DECISIONS.md` §20); Q5, Q6 and the cloud question open.**
-> Nothing is built.
+> Status: **Q1–Q4 answered (`DECISIONS.md` §20). 11a (MCP parity) built (P11-6 … P11-10).
+> Q5: both ways, the token-less path only in app mode on 127.0.0.1, to be proven on a
+> test HA OS first. Q6: test VM `ha-test` on Hyper-V being set up. 11b and 11c not built.**
+
+Parked idea (2026-10-01): an optional, off-by-default Shelly cloud link for other users
+(devices at another site, last state of sleeping devices). Not in Phase 11; decide when
+users ask for it.
 
 Wim's direction (2026-10-01):
 

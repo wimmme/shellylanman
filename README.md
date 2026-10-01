@@ -204,13 +204,15 @@ claude mcp add --transport http shellylanman http://<your-host>:3082/mcp \
 
 | Tools | |
 |---|---|
-| Read (always) | `shelly_list_devices`, `shelly_get_device`, `shelly_get_readings` (24 h of history), `shelly_firmware_check`, `shelly_checklist`, `shelly_list_backups`, `shelly_rpc_read` (Gen2+ `Get*`/`List*` methods only) |
-| Control (when set to *read and control*) | `shelly_switch`, `shelly_light`, `shelly_cover`, `shelly_thermostat`, `shelly_backup` |
-| Destructive (control, and `confirm: true`) | `shelly_reboot`, `shelly_firmware_update` |
+| Read (always) | `shelly_list_devices`, `shelly_get_device`, `shelly_get_status` and `shelly_get_config` (raw, Gen1 too; passwords masked), `shelly_list_components`, `shelly_get_readings` (24 h of history), `shelly_energy_history` (EM meters), `shelly_firmware_check`, `shelly_checklist`, `shelly_list_backups`, `shelly_script_code`, `shelly_scenes`, `shelly_rpc_read` (Gen2+ `Get*`/`List*` methods, e.g. KVS, schedules, scripts, webhooks) |
+| Control (*read and control*) | `shelly_switch` (with a flip-back timer), `shelly_light` (with a fade), `shelly_cover`, `shelly_thermostat`, `shelly_scene_run`, `shelly_backup`, `shelly_rescan`; with `confirm: true`: `shelly_reboot`, `shelly_firmware_update` |
+| Configure (*read, control and configure*) | `shelly_kvs_set`, `shelly_schedule_set`, `shelly_script_create`, `shelly_script_run`, `shelly_webhook_set`, `shelly_virtual_add`, `shelly_scene_set`; with `confirm: true`: `shelly_kvs_delete`, `shelly_schedule_delete`, `shelly_script_put_code`, `shelly_script_eval`, `shelly_script_delete`, `shelly_webhook_delete`, `shelly_virtual_delete`, `shelly_scene_delete`, `shelly_rpc_write` (any Gen2+ method; factory reset also needs `allow_data_loss`), `shelly_device_login` |
+
+Scenes are named lists of device actions stored in ShellyLanMan (`/data/scenes.json`).
 
 Off by default, read-only unless you choose otherwise, a bearer token on every
-request, browser requests from other sites refused, and every control action written
-to the log. Devices are named by name, host name, IP or MAC.
+request, browser requests from other sites refused, and every action that changes
+something written to the log. Devices are named by name, host name, IP or MAC.
 
 ## Security
 
@@ -225,7 +227,8 @@ to the log. Devices are named by name, host name, IP or MAC.
   WebSocket, a strict Content Security Policy, no third-party scripts or fonts.
 - **Destructive actions** (reboot, restore, firmware update, port change) always ask
   for confirmation, and the API requires `confirm: true`.
-- **MCP** is off by default, needs a token, and is read-only unless you allow control.
+- **MCP** is off by default, needs a token, and is read-only unless you allow control
+  or configuration.
 - Report vulnerabilities privately: see [`SECURITY.md`](SECURITY.md).
 
 ## Development

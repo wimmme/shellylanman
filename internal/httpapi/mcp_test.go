@@ -33,6 +33,10 @@ func TestMCPSettingsAndEndpoint(t *testing.T) {
 	if r := do(t, "PUT", srv.URL+"/api/v1/mcp", `{"access":"everything"}`, jsonHdr); r.StatusCode != 400 {
 		t.Fatalf("bad access: %d", r.StatusCode)
 	}
+	var cfgd MCPInfo
+	if decode(t, do(t, "PUT", srv.URL+"/api/v1/mcp", `{"access":"configure"}`, jsonHdr), &cfgd); cfgd.Access != "configure" {
+		t.Fatalf("configure access: %+v", cfgd)
+	}
 
 	ping := `{"jsonrpc":"2.0","id":1,"method":"ping"}`
 	auth := map[string]string{"Content-Type": "application/json", "Authorization": "Bearer " + token}

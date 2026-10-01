@@ -8,6 +8,8 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -31,6 +33,7 @@ type fake struct {
 	rebooted []string
 	rpc      []string
 	samples  []service.Sample
+	scenes   []service.Scene
 }
 
 func (f *fake) List() []model.Device { return f.devs }
@@ -61,6 +64,53 @@ func (f *fake) DeviceRPC(_ context.Context, id, method string, _ json.RawMessage
 	return json.RawMessage(`{"ok":true}`), nil
 }
 func (f *fake) Checklist(context.Context, []string) []service.ChecklistRow { return nil }
+func (f *fake) DeviceGet(_ context.Context, id, path string) (json.RawMessage, error) {
+	f.rpc = append(f.rpc, id+" GET "+path)
+	return json.RawMessage(`{"wifi_ap":{"ssid":"shelly-ap","key":"apsecret"},"mqtt":{"user":"u","pass":"mqttsecret"},"relays":[{"ison":true}],"name":"Kitchen LED"}`), nil
+}
+func (f *fake) Rescan() { f.rpc = append(f.rpc, "rescan") }
+func (f *fake) EMEnergy(context.Context, string, int64, int64) ([]service.EMSeries, error) {
+	return nil, nil
+}
+func (f *fake) ScriptCode(context.Context, string, int) (string, error) { return "let a=1;", nil }
+func (f *fake) ScriptCreate(_ context.Context, id, name string) (service.ScriptInfo, error) {
+	f.rpc = append(f.rpc, id+" create "+name)
+	return service.ScriptInfo{ID: 1, Name: name}, nil
+}
+func (f *fake) ScriptPutCode(_ context.Context, id string, sid int, code string) error {
+	f.rpc = append(f.rpc, id+" putcode "+code)
+	return nil
+}
+func (f *fake) ScriptRun(_ context.Context, id string, sid int, run, withLog bool) error {
+	f.rpc = append(f.rpc, id+" run "+strconv.FormatBool(run)+" "+strconv.FormatBool(withLog))
+	return nil
+}
+func (f *fake) ScriptDelete(_ context.Context, id string, sid int) error {
+	f.rpc = append(f.rpc, id+" delete "+strconv.Itoa(sid))
+	return nil
+}
+func (f *fake) ConfigApply(_ context.Context, ids []string, section string, body any) ([]service.ResultLine, error) {
+	l := body.(service.LoginApply)
+	f.rpc = append(f.rpc, strings.Join(ids, ",")+" "+section+" "+l.User+" "+strconv.FormatBool(l.Enabled))
+	return []service.ResultLine{{DeviceRef: service.DeviceRef{ID: ids[0]}, Result: "ok"}}, nil
+}
+func (f *fake) Scenes() ([]service.Scene, error) { return f.scenes, nil }
+func (f *fake) Scene(name string) (service.Scene, error) {
+	for _, s := range f.scenes {
+		if s.Name == name {
+			return s, nil
+		}
+	}
+	return service.Scene{}, service.ErrNoScene
+}
+func (f *fake) SceneSave(sc service.Scene, _ bool) (service.Scene, error) {
+	f.scenes = append(f.scenes, sc)
+	return sc, nil
+}
+func (f *fake) SceneDelete(string) error { f.scenes = nil; return nil }
+func (f *fake) SceneRunNow(_ context.Context, name string) (service.SceneRun, error) {
+	return service.SceneRun{Scene: name, Status: "ok"}, nil
+}
 
 func tru() *bool { b := true; return &b }
 
@@ -321,6 +371,155 @@ func TestControlTools(t *testing.T) {
 	}
 }
 
+func TestConfigureLevel(t *testing.T) {
+	cfg := &Config{Enabled: true, Access: AccessControl, Token: "t"}
+	f := newFake()
+	c := serve(t, f, cfg)
+	names := toolNames(c.call("tools/list", map[string]any{}))
+	if !slices.Contains(names, "shelly_scene_run") || slices.Contains(names, "shelly_kvs_set") || slices.Contains(names, "shelly_rpc_write") {
+		t.Fatalf("control level: %v", names)
+	}
+	if _, b := c.post(`{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"shelly_kvs_set","arguments":{"device":"A1","key":"k","value":1}}}`); !strings.Contains(string(b), "unknown tool") {
+		t.Fatalf("configure tool callable at control: %s", b)
+	}
+	cfg.Access = AccessConfigure
+	names = toolNames(c.call("tools/list", map[string]any{}))
+	for _, n := range []string{"shelly_list_devices", "shelly_switch", "shelly_kvs_set", "shelly_rpc_write", "shelly_scene_set", "shelly_device_login"} {
+		if !slices.Contains(names, n) {
+			t.Fatalf("configure level misses %s: %v", n, names)
+		}
+	}
+	if !ValidAccess(AccessConfigure) || ValidAccess("admin") {
+		t.Fatal("ValidAccess")
+	}
+}
+
+func TestRawReadTools(t *testing.T) {
+	f := newFake()
+	c := serve(t, f, &Config{Enabled: true, Access: AccessRead, Token: "t"})
+	// Gen1: /settings with the passwords masked; names and component keys stay.
+	txt, isErr := c.tool("shelly_get_config", map[string]any{"device": "B2"})
+	if isErr || strings.Contains(txt, "apsecret") || strings.Contains(txt, "mqttsecret") || !strings.Contains(txt, `"key": "***"`) || !strings.Contains(txt, "shelly-ap") {
+		t.Fatalf("gen1 config: %s", txt)
+	}
+	if txt, isErr = c.tool("shelly_get_status", map[string]any{"device": "B2", "component": "relays"}); isErr || !strings.Contains(txt, `"ison": true`) {
+		t.Fatalf("gen1 status component: %s", txt)
+	}
+	if txt, isErr = c.tool("shelly_get_status", map[string]any{"device": "B2", "component": "switch:0"}); !isErr || !strings.Contains(txt, "relays") {
+		t.Fatalf("unknown component: %s", txt)
+	}
+	if !slices.Contains(f.rpc, "B2 GET /settings") || !slices.Contains(f.rpc, "B2 GET /status") {
+		t.Fatalf("gen1 reads: %v", f.rpc)
+	}
+	f.rpc = nil
+	if _, isErr = c.tool("shelly_get_config", map[string]any{"device": "A1"}); isErr || !slices.Equal(f.rpc, []string{"A1 Shelly.GetConfig"}) {
+		t.Fatalf("gen2 config: %v", f.rpc)
+	}
+	if txt, isErr = c.tool("shelly_script_code", map[string]any{"device": "A1", "id": 1}); isErr || !strings.Contains(txt, "let a=1;") {
+		t.Fatalf("script code: %s", txt)
+	}
+	if txt, isErr = c.tool("shelly_energy_history", map[string]any{"device": "A1"}); !isErr || !strings.Contains(txt, "no energy log") {
+		t.Fatalf("energy without EM: %s", txt)
+	}
+}
+
+func TestMask(t *testing.T) {
+	v := map[string]any{"wifi_sta": map[string]any{"key": "k", "pass": "p"}, "ap": map[string]any{"key": "x"},
+		"components": []any{map[string]any{"key": "switch:0"}}, "kvs": map[string]any{"key": "mykey", "token": "t", "password": ""}}
+	b, _ := json.Marshal(mask(v, ""))
+	got := string(b)
+	for _, want := range []string{`"wifi_sta":{"key":"***","pass":"***"}`, `"ap":{"key":"***"}`, `{"key":"switch:0"}`, `"key":"mykey"`, `"token":"***"`, `"password":""`} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("mask: %s lacks %s", got, want)
+		}
+	}
+}
+
+func TestConfigTools(t *testing.T) {
+	f := newFake()
+	c := serve(t, f, &Config{Enabled: true, Access: AccessConfigure, Token: "t"})
+	refused := func(tool string, args map[string]any, want string) {
+		t.Helper()
+		n := len(f.rpc)
+		if txt, isErr := c.tool(tool, args); !isErr || !strings.Contains(txt, want) || len(f.rpc) != n {
+			t.Fatalf("%s %v not refused (%s): %v", tool, args, txt, f.rpc)
+		}
+	}
+	ok := func(tool string, args map[string]any, want string) {
+		t.Helper()
+		if txt, isErr := c.tool(tool, args); isErr || !slices.Contains(f.rpc, want) {
+			t.Fatalf("%s: %s %v", tool, txt, f.rpc)
+		}
+	}
+	ok("shelly_kvs_set", map[string]any{"device": "A1", "key": "mode", "value": map[string]any{"a": 1}}, "A1 KVS.Set")
+	refused("shelly_kvs_delete", map[string]any{"device": "A1", "key": "mode", "confirm": false}, "confirm")
+	ok("shelly_kvs_delete", map[string]any{"device": "A1", "key": "mode", "confirm": true}, "A1 KVS.Delete")
+
+	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 22 * * *", "calls": []any{map[string]any{"method": "Switch.Set"}}}, "6 cron fields")
+	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 0 22 * * *"}, "needs timespec and calls")
+	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 0 22 * * *", "calls": []any{map[string]any{"method": "Shelly.FactoryReset"}}}, "not allowed")
+	ok("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 0 22 * * *", "calls": []any{map[string]any{"method": "Switch.Set", "params": map[string]any{"id": 0, "on": false}}}}, "A1 Schedule.Create")
+	ok("shelly_schedule_set", map[string]any{"device": "A1", "id": 1, "enable": false}, "A1 Schedule.Update")
+
+	ok("shelly_script_create", map[string]any{"device": "A1", "name": "night"}, "A1 create night")
+	refused("shelly_script_put_code", map[string]any{"device": "A1", "id": 1, "code": "x", "confirm": false}, "confirm")
+	ok("shelly_script_put_code", map[string]any{"device": "A1", "id": 1, "code": "let b=2;", "append": true, "confirm": true}, "A1 putcode let a=1;let b=2;")
+	ok("shelly_script_run", map[string]any{"device": "A1", "id": 1, "action": "start"}, "A1 run true false")
+	refused("shelly_script_eval", map[string]any{"device": "A1", "id": 1, "code": "a", "confirm": false}, "confirm")
+	ok("shelly_script_delete", map[string]any{"device": "A1", "id": 1, "confirm": true}, "A1 delete 1")
+
+	refused("shelly_webhook_set", map[string]any{"device": "A1", "event": "switch.on"}, "needs event, cid and urls")
+	refused("shelly_webhook_set", map[string]any{"device": "A1", "id": 2, "event": "switch.off"}, "cannot change")
+	ok("shelly_webhook_set", map[string]any{"device": "A1", "event": "switch.on", "cid": 0, "urls": []string{"http://10.0.0.9/x"}}, "A1 Webhook.Create")
+	refused("shelly_virtual_add", map[string]any{"device": "A1", "type": "slider"}, "unknown type")
+	ok("shelly_virtual_add", map[string]any{"device": "A1", "type": "boolean", "id": 200}, "A1 Virtual.Add")
+
+	refused("shelly_rpc_write", map[string]any{"device": "A1", "method": "Switch.GetStatus", "confirm": true}, "shelly_rpc_read")
+	refused("shelly_rpc_write", map[string]any{"device": "A1", "method": "Shelly.SetAuth", "confirm": true}, "shelly_device_login")
+	refused("shelly_rpc_write", map[string]any{"device": "A1", "method": "Shelly.FactoryReset", "confirm": true}, "allow_data_loss")
+	refused("shelly_rpc_write", map[string]any{"device": "A1", "method": "Switch.SetConfig", "confirm": false}, "confirm")
+	ok("shelly_rpc_write", map[string]any{"device": "A1", "method": "Switch.SetConfig", "params": map[string]any{"id": 0}, "confirm": true}, "A1 Switch.SetConfig")
+	ok("shelly_rpc_write", map[string]any{"device": "A1", "method": "Shelly.FactoryReset", "confirm": true, "allow_data_loss": true}, "A1 Shelly.FactoryReset")
+
+	refused("shelly_device_login", map[string]any{"devices": []string{"A1"}, "enabled": true, "password": "short", "confirm": true}, "8 characters")
+	ok("shelly_device_login", map[string]any{"devices": []string{"A1", "B2"}, "enabled": true, "password": "longenough", "confirm": true}, "A1,B2 login admin true")
+}
+
+func TestSceneTools(t *testing.T) {
+	f := newFake()
+	c := serve(t, f, &Config{Enabled: true, Access: AccessConfigure, Token: "t"})
+	txt, isErr := c.tool("shelly_scene_set", map[string]any{"name": "Evening", "actions": []any{
+		map[string]any{"tool": "shelly_switch", "arguments": map[string]any{"device": "Kitchen", "action": "toggle"}},
+		map[string]any{"tool": "shelly_light", "arguments": map[string]any{"device": "B2", "on": true, "brightness": 30, "transition_s": 2}},
+		map[string]any{"device": "A1", "method": "Switch.Set", "params": map[string]any{"id": 0, "on": true}},
+	}})
+	if isErr || !strings.Contains(txt, `"actions": 4`) || !strings.Contains(txt, "toggle depends") {
+		t.Fatalf("scene set: %s", txt)
+	}
+	sc := f.scenes[0]
+	if sc.Actions[0].Command.Key != "switch:0" || sc.Actions[1].Command.Action != service.ActionBrightness || *sc.Actions[2].Command.Transition != 2 || sc.Actions[3].Method != "Switch.Set" {
+		t.Fatalf("scene actions: %+v", sc.Actions)
+	}
+	for _, bad := range []map[string]any{
+		{"tool": "shelly_reboot", "arguments": map[string]any{}},
+		{"tool": "shelly_switch", "arguments": map[string]any{"device": "Kitchen LED", "action": "on"}},
+		{"device": "A1"},
+	} {
+		if txt, isErr = c.tool("shelly_scene_set", map[string]any{"name": "Bad", "actions": []any{bad}}); !isErr {
+			t.Fatalf("bad action accepted: %v %s", bad, txt)
+		}
+	}
+	if txt, isErr = c.tool("shelly_scenes", map[string]any{}); isErr || !strings.Contains(txt, `"actions": 4`) {
+		t.Fatalf("scenes: %s", txt)
+	}
+	if txt, isErr = c.tool("shelly_scene_run", map[string]any{"name": "Evening"}); isErr || !strings.Contains(txt, `"status": "ok"`) {
+		t.Fatalf("scene run: %s", txt)
+	}
+	if txt, isErr = c.tool("shelly_scene_delete", map[string]any{"name": "Evening", "confirm": false}); !isErr || len(f.scenes) == 0 {
+		t.Fatalf("scene delete without confirm: %s", txt)
+	}
+}
+
 // ---- end to end: the real device service and a simulated Plug S -------------------------
 
 func TestEndToEndWithSimulator(t *testing.T) {
@@ -363,7 +562,8 @@ func TestEndToEndWithSimulator(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 	}
 
-	c := serve(t, devs, &Config{Enabled: true, Access: AccessControl, Token: "t"})
+	cfg := &Config{Enabled: true, Access: AccessControl, Token: "t"}
+	c := serve(t, devs, cfg)
 	c.call("initialize", map[string]any{"protocolVersion": versions[0]})
 	txt, isErr := c.tool("shelly_list_devices", map[string]any{})
 	if isErr || !strings.Contains(txt, "PlugS") {
@@ -377,5 +577,28 @@ func TestEndToEndWithSimulator(t *testing.T) {
 	}
 	if _, isErr = c.tool("shelly_rpc_read", map[string]any{"device": "127.0.0.1", "method": "Shelly.GetStatus"}); !isErr {
 		t.Fatal("RPC on a Gen1 device should be refused")
+	}
+	// Phase 11a: a flip-back timer, the raw Gen1 config, a scene saved in the data folder and run.
+	if txt, isErr = c.tool("shelly_switch", map[string]any{"device": "127.0.0.1", "action": "on", "timer_s": 5}); isErr || !slices.Contains(d.Calls(), "GET /relay/0?turn=on&timer=5") {
+		t.Fatalf("timer: %s %v", txt, d.Calls())
+	}
+	if txt, isErr = c.tool("shelly_get_config", map[string]any{"device": "127.0.0.1", "component": "relays"}); isErr || !strings.Contains(txt, "default_state") {
+		t.Fatalf("gen1 config: %s", txt)
+	}
+	cfg.Access = AccessConfigure
+	if txt, isErr = c.tool("shelly_scene_set", map[string]any{"name": "Off", "actions": []any{
+		map[string]any{"tool": "shelly_switch", "arguments": map[string]any{"device": "127.0.0.1", "action": "off"}}}}); isErr {
+		t.Fatalf("scene set: %s", txt)
+	}
+	if txt, isErr = c.tool("shelly_scene_set", map[string]any{"name": "Gen1 RPC", "actions": []any{
+		map[string]any{"device": "127.0.0.1", "method": "Switch.Set", "params": map[string]any{"id": 0}}}}); !isErr || !strings.Contains(txt, "Gen2+") {
+		t.Fatalf("RPC scene on Gen1 accepted: %s", txt)
+	}
+	if b, err := os.ReadFile(filepath.Join(st.Dir(), service.SceneFile)); err != nil || !strings.Contains(string(b), "relay/0") {
+		t.Fatalf("scenes file: %v %s", err, b)
+	}
+	n := len(d.Calls())
+	if txt, isErr = c.tool("shelly_scene_run", map[string]any{"name": "off"}); isErr || !strings.Contains(txt, `"status": "ok"`) || !slices.Contains(d.Calls()[n:], "GET /relay/0?turn=off") {
+		t.Fatalf("scene run: %s %v", txt, d.Calls()[n:])
 	}
 }

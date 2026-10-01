@@ -27,7 +27,8 @@ export async function mcpSettings(body: HTMLElement): Promise<void> {
       draw(next.token);
     });
     const access = h('select', { id: 'mcpAccess' },
-      h('option', { value: 'read' }, t('mcp.access.read')), h('option', { value: 'control' }, t('mcp.access.control')));
+      h('option', { value: 'read' }, t('mcp.access.read')), h('option', { value: 'control' }, t('mcp.access.control')),
+      h('option', { value: 'configure' }, t('mcp.access.configure')));
     access.value = info.access;
     access.disabled = !info.enabled;
     access.addEventListener('change', async () => { info = await api.setMCP({ access: access.value as MCPInfo['access'] }); toast(t('settings.saved'), 'info'); });

@@ -158,8 +158,8 @@ func (s Settings) Validate() error {
 	if s.MQTTSlow < 0 || s.MQTTSlow > 600 {
 		return errors.New("MQTT delay must be 0–600 tenths of a second")
 	}
-	if s.MCP.Access != "" && s.MCP.Access != "read" && s.MCP.Access != "control" {
-		return errors.New("MCP access must be read or control")
+	if s.MCP.Access != "" && s.MCP.Access != "read" && s.MCP.Access != "control" && s.MCP.Access != "configure" {
+		return errors.New("MCP access must be read, control or configure")
 	}
 	if s.Port < 0 || s.Port > 65535 {
 		return errors.New("port must be 1–65535")

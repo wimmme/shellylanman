@@ -26,12 +26,28 @@ type Service interface {
 	Samples(ids []string, since int64) map[string][]service.Sample
 	DeviceRPC(ctx context.Context, id, method string, params json.RawMessage) (json.RawMessage, error)
 	Checklist(ctx context.Context, ids []string) []service.ChecklistRow
+
+	// Phase 11a
+	DeviceGet(ctx context.Context, id, path string) (json.RawMessage, error)
+	Rescan()
+	EMEnergy(ctx context.Context, id string, start, end int64) ([]service.EMSeries, error)
+	ScriptCode(ctx context.Context, id string, sid int) (string, error)
+	ScriptCreate(ctx context.Context, id, name string) (service.ScriptInfo, error)
+	ScriptPutCode(ctx context.Context, id string, sid int, code string) error
+	ScriptRun(ctx context.Context, id string, sid int, run, withLog bool) error
+	ScriptDelete(ctx context.Context, id string, sid int) error
+	ConfigApply(ctx context.Context, ids []string, section string, body any) ([]service.ResultLine, error)
+	Scenes() ([]service.Scene, error)
+	Scene(name string) (service.Scene, error)
+	SceneSave(sc service.Scene, overwrite bool) (service.Scene, error)
+	SceneDelete(name string) error
+	SceneRunNow(ctx context.Context, name string) (service.SceneRun, error)
 }
 
 type tool struct {
 	name, title, description string
 	schema                   map[string]any
-	control                  bool // needs access "control"
+	level                    int  // levelRead, levelControl or levelConfigure
 	destructive              bool // also needs confirm=true
 	run                      func(ctx context.Context, s Service, args json.RawMessage) (any, error)
 }
@@ -44,9 +60,9 @@ func (t *tool) describe() map[string]any {
 		"inputSchema": t.schema,
 		"annotations": map[string]any{
 			"title":           t.title,
-			"readOnlyHint":    !t.control,
+			"readOnlyHint":    t.level == levelRead,
 			"destructiveHint": t.destructive,
-			"idempotentHint":  !t.control,
+			"idempotentHint":  t.level == levelRead,
 			"openWorldHint":   false, // only devices on this LAN
 		},
 	}
@@ -461,28 +477,17 @@ var tools = []tool{
 
 	// ---- control ----
 	{
-		name: "shelly_switch", title: "Switch a relay", control: true,
-		description: "Turn a relay (switch, plug) on, off or toggle it.",
+		name: "shelly_switch", title: "Switch a relay", level: levelControl,
+		description: "Turn a relay (switch, plug) on, off or toggle it, optionally flipping back after timer_s seconds.",
 		schema: obj([]string{"device", "action"}, map[string]any{
 			"device": deviceArg, "channel": channelArg,
-			"action": str("What to do", "on", "off", "toggle"),
+			"action":  str("What to do", "on", "off", "toggle"),
+			"timer_s": num("Flip back after this many seconds (optional)", 1, maxTimer),
 		}),
-		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {
-			var a struct {
-				Device, Action string
-				Channel        *int
-			}
-			if err := decode(args, &a); err != nil {
-				return nil, err
-			}
-			if !slices.Contains([]string{service.ActionOn, service.ActionOff, service.ActionToggle}, a.Action) {
-				return nil, fmt.Errorf("%w: action must be on, off or toggle", errUser)
-			}
-			return command(ctx, s, a.Device, a.Channel, []string{parse.KindRelay}, service.Command{Action: a.Action})
-		},
+		run: planTool("shelly_switch"),
 	},
 	{
-		name: "shelly_light", title: "Set a light", control: true,
+		name: "shelly_light", title: "Set a light", level: levelControl,
 		description: "Switch a light and/or set its brightness, colour, white level or colour temperature. Give only what should change.",
 		schema: obj([]string{"device"}, map[string]any{
 			"device": deviceArg, "channel": channelArg,
@@ -492,126 +497,32 @@ var tools = []tool{
 			"rgb":           map[string]any{"type": "array", "items": integer("0–255", 0, 255), "minItems": 3, "maxItems": 3, "description": "Colour [red, green, blue], each 0–255"},
 			"white":         integer("White channel 0–255 (RGBW lights, with rgb)", 0, 255),
 			"temperature_k": integer("Colour temperature in kelvin (CCT lights)", 1000, 10000),
+			"transition_s":  num("Fade time in seconds (optional)", 0, 60),
 		}),
-		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {
-			var a struct {
-				Device       string
-				Channel      *int
-				On           *bool
-				Brightness   *float64
-				Gain         *float64
-				RGB          []int
-				White        *int
-				TemperatureK *float64 `json:"temperature_k"`
-			}
-			if err := decode(args, &a); err != nil {
-				return nil, err
-			}
-			var cmds []service.Command
-			if a.Brightness != nil {
-				cmds = append(cmds, service.Command{Action: service.ActionBrightness, Value: a.Brightness})
-			}
-			if a.Gain != nil {
-				cmds = append(cmds, service.Command{Action: service.ActionGain, Value: a.Gain})
-			}
-			if a.RGB != nil {
-				if len(a.RGB) != 3 {
-					return nil, fmt.Errorf("%w: rgb needs three values", errUser)
-				}
-				cmds = append(cmds, service.Command{Action: service.ActionColor, RGB: a.RGB, White: a.White})
-			} else if a.White != nil {
-				v := float64(*a.White)
-				cmds = append(cmds, service.Command{Action: service.ActionWhite, Value: &v})
-			}
-			if a.TemperatureK != nil {
-				cmds = append(cmds, service.Command{Action: service.ActionTemp, Value: a.TemperatureK})
-			}
-			if a.On != nil {
-				act := service.ActionOff
-				if *a.On {
-					act = service.ActionOn
-				}
-				cmds = append(cmds, service.Command{Action: act})
-			}
-			if len(cmds) == 0 {
-				return nil, fmt.Errorf("%w: nothing to change", errUser)
-			}
-			var out any
-			for _, c := range cmds {
-				var err error
-				if out, err = command(ctx, s, a.Device, a.Channel, lightKinds, c); err != nil {
-					return nil, err
-				}
-			}
-			return out, nil
-		},
+		run: planTool("shelly_light"),
 	},
 	{
-		name: "shelly_cover", title: "Move a cover", control: true,
+		name: "shelly_cover", title: "Move a cover", level: levelControl,
 		description: "Open, close or stop a roller shutter / cover, or move it to a position (when calibrated).",
 		schema: obj([]string{"device", "action"}, map[string]any{
 			"device": deviceArg, "channel": channelArg,
 			"action":   str("What to do", "open", "close", "stop", "position"),
 			"position": num("Position % (0 closed, 100 open) with action position", 0, 100),
 		}),
-		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {
-			var a struct {
-				Device, Action string
-				Channel        *int
-				Position       *float64
-			}
-			if err := decode(args, &a); err != nil {
-				return nil, err
-			}
-			if !slices.Contains([]string{service.ActionOpen, service.ActionClose, service.ActionStop, service.ActionPosition}, a.Action) {
-				return nil, fmt.Errorf("%w: action must be open, close, stop or position", errUser)
-			}
-			if a.Action == service.ActionPosition && a.Position == nil {
-				return nil, fmt.Errorf("%w: position is required", errUser)
-			}
-			return command(ctx, s, a.Device, a.Channel, []string{parse.KindCover}, service.Command{Action: a.Action, Value: a.Position})
-		},
+		run: planTool("shelly_cover"),
 	},
 	{
-		name: "shelly_thermostat", title: "Set a thermostat", control: true,
+		name: "shelly_thermostat", title: "Set a thermostat", level: levelControl,
 		description: "Set the target temperature of a thermostat or TRV, and/or enable or disable it.",
 		schema: obj([]string{"device"}, map[string]any{
 			"device": deviceArg, "channel": channelArg,
 			"target_c": num("Target temperature °C", 4, 35),
 			"enabled":  boolean("Enable (true) or disable (false) the thermostat"),
 		}),
-		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {
-			var a struct {
-				Device  string
-				Channel *int
-				TargetC *float64 `json:"target_c"`
-				Enabled *bool
-			}
-			if err := decode(args, &a); err != nil {
-				return nil, err
-			}
-			if a.TargetC == nil && a.Enabled == nil {
-				return nil, fmt.Errorf("%w: nothing to change", errUser)
-			}
-			var out any
-			if a.Enabled != nil {
-				v := 0.0
-				if *a.Enabled {
-					v = 1
-				}
-				var err error
-				if out, err = command(ctx, s, a.Device, a.Channel, []string{parse.KindThermostat}, service.Command{Action: service.ActionEnable, Value: &v}); err != nil {
-					return nil, err
-				}
-			}
-			if a.TargetC != nil {
-				return command(ctx, s, a.Device, a.Channel, []string{parse.KindThermostat}, service.Command{Action: service.ActionTarget, Value: a.TargetC})
-			}
-			return out, nil
-		},
+		run: planTool("shelly_thermostat"),
 	},
 	{
-		name: "shelly_backup", title: "Back up configuration", control: true,
+		name: "shelly_backup", title: "Back up configuration", level: levelControl,
 		description: "Back up the configuration of devices to ShellyLanMan's backup folder (.sbk, compatible with ShellyScanner). Nothing on the devices changes.",
 		schema:      obj([]string{"devices"}, map[string]any{"devices": devicesArg}),
 		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {
@@ -631,7 +542,7 @@ var tools = []tool{
 		},
 	},
 	{
-		name: "shelly_reboot", title: "Reboot devices", control: true, destructive: true,
+		name: "shelly_reboot", title: "Reboot devices", level: levelControl, destructive: true,
 		description: "Reboot devices. Their outputs may switch while they restart. Ask the user first and pass confirm=true.",
 		schema:      obj([]string{"devices", "confirm"}, map[string]any{"devices": devicesArg, "confirm": confirmArg}),
 		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {
@@ -656,7 +567,7 @@ var tools = []tool{
 		},
 	},
 	{
-		name: "shelly_firmware_update", title: "Update firmware", control: true, destructive: true,
+		name: "shelly_firmware_update", title: "Update firmware", level: levelControl, destructive: true,
 		description: "Update the firmware of devices to the stable or beta version they report (see shelly_firmware_check). Devices restart. Off-line devices get a deferred update. Ask the user first and pass confirm=true.",
 		schema: obj([]string{"devices", "stage", "confirm"}, map[string]any{
 			"devices": devicesArg,
@@ -696,30 +607,3 @@ var tools = []tool{
 }
 
 var lightKinds = []string{parse.KindLight, parse.KindRGB, parse.KindRGBW, parse.KindCCT, parse.KindRGBCCT}
-
-// command runs one Command on the chosen module and returns the device's
-// channels as they are afterwards.
-func command(ctx context.Context, s Service, ref string, channel *int, kinds []string, cmd service.Command) (any, error) {
-	d, err := resolve(s, ref)
-	if err != nil {
-		return nil, err
-	}
-	m, err := module(d, channel, kinds...)
-	if err != nil {
-		return nil, err
-	}
-	cmd.Key = m.Key
-	if err := s.Command(ctx, d.ID, cmd); err != nil {
-		return nil, err
-	}
-	after := d
-	if again, err := resolve(s, d.ID); err == nil {
-		after = again
-	}
-	for _, x := range after.Modules {
-		if x.Key == m.Key {
-			return map[string]any{"device": d.ID, "name": label(d), "channel": x}, nil
-		}
-	}
-	return map[string]any{"device": d.ID, "name": label(d), "done": cmd.Action}, nil
-}

@@ -11,7 +11,7 @@ export interface About {
   basedOn: Credit[]; credits: Credit[]; deps: Dep[]; notice: string; languages: string[]; donate: { name: string; url: string }[];
 }
 export interface ServerInfo { port: number; fixed: boolean }
-export interface MCPInfo { enabled: boolean; access: 'read' | 'control'; hasToken: boolean; token?: string }
+export interface MCPInfo { enabled: boolean; access: 'read' | 'control' | 'configure'; hasToken: boolean; token?: string }
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
