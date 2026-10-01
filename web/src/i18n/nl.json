@@ -743,6 +743,7 @@
   "about.paypal": "Doneer met PayPal",
   "about.basedOnSS": "De functionele en code-referentie: elke functie, de terminologie en de Shelly-kennis komen uit ShellyScanner van {author}.",
   "about.basedOnMD": "{author} gaf met MikroDash het idee, de inspiratie en de basis van de look-and-feel.",
+  "about.basedOnSM": "De Shelly-MCP van {author} was het voorbeeld voor de MCP-server van ShellyLanMan: de tools voor AI-assistenten, de bevestigingen en de scènes.",
   "about.coffeeFor": "Naast de credits verdient {author} ook wel een koffie.",
   "about.releaseNotes": "Release notes",
   "about.deps": "Afhankelijkheden",

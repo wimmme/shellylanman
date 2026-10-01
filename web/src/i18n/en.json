@@ -743,6 +743,7 @@
   "about.paypal": "Donate with PayPal",
   "about.basedOnSS": "The functional and code reference: every feature, the terminology and the Shelly know-how come from ShellyScanner by {author}.",
   "about.basedOnMD": "{author} gave the idea, the inspiration and the basis of the look and feel with MikroDash.",
+  "about.basedOnSM": "{author}'s Shelly-MCP was the model for ShellyLanMan's MCP server: its tools for AI assistants, the confirmation gates and scenes.",
   "about.coffeeFor": "Beyond the credits, {author} deserves a coffee too.",
   "about.releaseNotes": "Release notes",
   "about.deps": "Dependencies",

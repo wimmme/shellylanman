@@ -70,7 +70,7 @@ func TestAboutCreditsShellyScanner(t *testing.T) {
 	srv, _ := newTestServer(t, nil)
 	var a About
 	decode(t, do(t, "GET", srv.URL+"/api/v1/about", "", nil), &a)
-	if len(a.BasedOn) != 2 || a.BasedOn[0].Name != "ShellyScanner" || !strings.Contains(a.BasedOn[0].URL, "usnasoft/shellyscanner") || a.BasedOn[1].Name != "MikroDash" {
+	if len(a.BasedOn) != 3 || a.BasedOn[0].Name != "ShellyScanner" || !strings.Contains(a.BasedOn[0].URL, "usnasoft/shellyscanner") || a.BasedOn[1].Name != "MikroDash" || !strings.Contains(a.BasedOn[2].URL, "Buggy1111/shelly-mcp") {
 		t.Fatalf("about does not credit ShellyScanner and MikroDash: %+v", a.BasedOn)
 	}
 	if a.Started == 0 || a.Runtime.Go == "" || len(a.Deps) == 0 {

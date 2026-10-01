@@ -75,7 +75,7 @@ function support(a: About): HTMLElement {
 }
 
 function basedOn(a: About): HTMLElement {
-  const text: Key[] = ['about.basedOnSS', 'about.basedOnMD'];
+  const text: Key[] = ['about.basedOnSS', 'about.basedOnMD', 'about.basedOnSM'];
   return card(t('about.basedOn'), null, h('div', { class: 'about-based' }, ...a.basedOn.map((c, i) =>
     h('div', { class: 'about-origin' },
       h('div', { class: 'about-origin-name' }, link(c.url, c.name), h('span', { class: 'muted' }, ` · ${c.author} · ${c.license}`)),

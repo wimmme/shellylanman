@@ -743,6 +743,7 @@
   "about.paypal": "Дари с PayPal",
   "about.basedOnSS": "Функционалната и кодова основа: всяка функция, терминологията и познанията за Shelly идват от ShellyScanner на {author}.",
   "about.basedOnMD": "{author} даде с MikroDash идеята, вдъхновението и основата на визията.",
+  "about.basedOnSM": "Shelly-MCP на {author} беше образецът за MCP сървъра на ShellyLanMan: инструментите за AI асистенти, потвържденията и сцените.",
   "about.coffeeFor": "Освен благодарностите, {author} също заслужава едно кафе.",
   "about.releaseNotes": "Бележки към версиите",
   "about.deps": "Зависимости",

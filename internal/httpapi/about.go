@@ -139,10 +139,18 @@ func (s *server) about(w http.ResponseWriter, r *http.Request) {
 				License: "MIT",
 				What:    "idea, inspiration and look and feel",
 			},
+			{
+				Name:    "Shelly-MCP",
+				Author:  "Buggy1111 (Michal Bugy)",
+				URL:     "https://github.com/Buggy1111/shelly-mcp",
+				License: "MIT",
+				What:    "model for the MCP server",
+			},
 		},
 		Credits: []Credit{
 			{Name: "ShellyScanner", Author: "Antonio Flaccomio (usnasoft)", URL: "https://www.usna.it/shellyscanner/", License: "GPL-3.0", What: "every feature, the terminology and the Shelly know-how"},
 			{Name: "MikroDash", Author: "SecOps-7", URL: "https://github.com/SecOps-7/MikroDash", License: "MIT", What: "the idea, the inspiration, design tokens, palettes and appearance settings"},
+			{Name: "Shelly-MCP", Author: "Buggy1111 (Michal Bugy)", URL: "https://github.com/Buggy1111/shelly-mcp", License: "MIT", What: "the model for the MCP server: its tool set, the confirm gates and scenes (no code taken)"},
 			{Name: "Bundled fonts", Author: "see OFL.txt", URL: "/fonts/OFL.txt", License: "OFL-1.1", What: "Inter, Oxanium, IBM Plex Sans, Nunito, Roboto, JetBrains Mono"},
 			{Name: "CodeMirror 6", Author: "Marijn Haverbeke and others", URL: "https://codemirror.net", License: "MIT", What: "script editor"},
 			{Name: "Chart.js", Author: "Chart.js contributors", URL: "https://www.chartjs.org", License: "MIT", What: "charts (with chartjs-plugin-zoom and Hammer.js, MIT)"},

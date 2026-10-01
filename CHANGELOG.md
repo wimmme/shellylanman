@@ -22,6 +22,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   Home Assistant's ingress that only the Supervisor may use; the web UI works under a
   path prefix (relative URLs), hides the no-auth banner inside Home Assistant and shows
   the LAN address of the MCP there. The app itself lives in `shellylanman-ha`.
+- About page and README: Shelly-MCP by Buggy1111 under "Based on" and "Credits", as the
+  model for the MCP server.
 - `docs/phase-11-ha-mcp.md`: analysis for Home Assistant (app, integration, Assist) and
   MCP parity with the Shelly-MCP — for review, nothing built yet.
 

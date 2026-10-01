@@ -743,6 +743,7 @@
   "about.paypal": "通过 PayPal 捐赠",
   "about.basedOnSS": "功能和代码的参考：每项功能、术语以及 Shelly 相关知识都来自 {author} 的 ShellyScanner。",
   "about.basedOnMD": "{author} 通过 MikroDash 提供了创意、灵感以及界面风格的基础。",
+  "about.basedOnSM": "{author} 的 Shelly-MCP 是 ShellyLanMan MCP 服务器的蓝本：面向 AI 助手的工具、确认机制和场景。",
   "about.coffeeFor": "除了致谢之外，{author} 也值得一杯咖啡。",
   "about.releaseNotes": "发行说明",
   "about.deps": "依赖项",

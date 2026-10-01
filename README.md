@@ -261,6 +261,10 @@ Bugs and ideas: [open an issue](https://github.com/wimmme/shellylanman/issues/ne
 - **[MikroDash](https://github.com/SecOps-7/MikroDash)** by SecOps-7 — the idea, the
   inspiration and the basis of the look and feel: design tokens, palettes and
   appearance settings (MIT). Beyond the credits, SecOps-7 deserves a coffee too.
+- **[Shelly-MCP](https://github.com/Buggy1111/shelly-mcp)** by Buggy1111 (Michal Bugy)
+  — the model for ShellyLanMan's MCP server: its tools for AI assistants, the
+  confirmation gates and scenes (MIT; no code taken). Beyond the credits, he deserves a
+  coffee too.
 - CodeMirror 6 (script editor), Chart.js (charts), go-qrcode (QR codes) — MIT;
   fonts under the SIL Open Font License. Full list in
   [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
