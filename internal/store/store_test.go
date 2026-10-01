@@ -112,3 +112,22 @@ func TestNewerFileVersionIsRefused(t *testing.T) {
 		t.Fatal("future settings version accepted")
 	}
 }
+
+func TestInstanceIDStablePerDataDir(t *testing.T) {
+	dir := t.TempDir()
+	a, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(a.InstanceID()) != 16 || a.InstanceID() != b.InstanceID() || a.InstanceID() == c.InstanceID() {
+		t.Fatalf("ids %q %q %q", a.InstanceID(), b.InstanceID(), c.InstanceID())
+	}
+}

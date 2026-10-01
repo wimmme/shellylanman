@@ -72,6 +72,10 @@ type Server struct {
 	Config  func() Config
 	Version string
 	Log     *slog.Logger
+	// Local: the token-less listener on 127.0.0.1 of the Home Assistant app
+	// (DECISIONS Q5, docs/phase-11-ha-mcp.md §6.3). MCP must still be enabled
+	// and the access level still applies; only the token is not asked.
+	Local bool
 }
 
 type request struct {
@@ -109,7 +113,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "MCP is switched off (Settings → MCP)", http.StatusNotFound)
 		return
 	}
-	if !authorized(r, cfg.Token) {
+	if !s.Local && !authorized(r, cfg.Token) {
 		w.Header().Set("WWW-Authenticate", `Bearer realm="shellylanman"`)
 		http.Error(w, "missing or wrong bearer token", http.StatusUnauthorized)
 		return

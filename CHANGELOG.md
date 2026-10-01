@@ -5,6 +5,15 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- As a Home Assistant app, ShellyLanMan announces itself to Home Assistant (Supervisor
+  discovery `shellylanman` and `mcp`), so the integration and Home Assistant's own MCP
+  client are offered with one click; announced again after a port change.
+- `SHELLYLANMAN_MCP_LOCAL`: an MCP listener without token on a loopback address, for
+  Home Assistant on the same host (the app sets it; MCP must be enabled, the access
+  level applies).
+- `/api/v1/about` reports an `instanceId` (stable per data folder) for the integration.
+
 ## [0.4.0] - 2026-10-01
 
 ShellyLanMan in Home Assistant, an MCP server that can do everything the Shelly-MCP

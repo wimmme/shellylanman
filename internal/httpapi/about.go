@@ -18,20 +18,22 @@ var started = time.Now()
 
 // About is what the About page shows.
 type About struct {
-	Name     string   `json:"name"`
-	Version  string   `json:"version"`
-	Commit   string   `json:"commit,omitempty"`
-	License  string   `json:"license"`
-	Source   string   `json:"source"`
-	Issues   string   `json:"issues"`
-	Started  int64    `json:"started"` // Unix ms
-	Runtime  Runtime  `json:"runtime"`
-	BasedOn  []Credit `json:"basedOn"`
-	Credits  []Credit `json:"credits"`
-	Deps     []Dep    `json:"deps"` // Go modules in the binary; the frontend adds its own (deps.json)
-	Notice   string   `json:"notice"`
-	Language []string `json:"languages"`
-	Donate   []Link   `json:"donate"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	// InstanceID identifies this installation (Home Assistant integration unique id).
+	InstanceID string   `json:"instanceId"`
+	Commit     string   `json:"commit,omitempty"`
+	License    string   `json:"license"`
+	Source     string   `json:"source"`
+	Issues     string   `json:"issues"`
+	Started    int64    `json:"started"` // Unix ms
+	Runtime    Runtime  `json:"runtime"`
+	BasedOn    []Credit `json:"basedOn"`
+	Credits    []Credit `json:"credits"`
+	Deps       []Dep    `json:"deps"` // Go modules in the binary; the frontend adds its own (deps.json)
+	Notice     string   `json:"notice"`
+	Language   []string `json:"languages"`
+	Donate     []Link   `json:"donate"`
 }
 
 // Credit names a project ShellyLanMan builds on.
@@ -116,14 +118,15 @@ func (s *server) about(w http.ResponseWriter, r *http.Request) {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
 	writeJSON(w, http.StatusOK, About{
-		Name:    "ShellyLanMan",
-		Version: version.Version,
-		Commit:  version.Commit,
-		License: "GPL-3.0-or-later",
-		Source:  "https://github.com/wimmme/shellylanman",
-		Issues:  "https://github.com/wimmme/shellylanman/issues/new",
-		Started: started.UnixMilli(),
-		Runtime: Runtime{Go: runtime.Version(), OS: runtime.GOOS, Arch: runtime.GOARCH, Kernel: kernel(), MemMB: ms.Sys >> 20, Data: "JSON files"},
+		Name:       "ShellyLanMan",
+		Version:    version.Version,
+		InstanceID: s.Store.InstanceID(),
+		Commit:     version.Commit,
+		License:    "GPL-3.0-or-later",
+		Source:     "https://github.com/wimmme/shellylanman",
+		Issues:     "https://github.com/wimmme/shellylanman/issues/new",
+		Started:    started.UnixMilli(),
+		Runtime:    Runtime{Go: runtime.Version(), OS: runtime.GOOS, Arch: runtime.GOARCH, Kernel: kernel(), MemMB: ms.Sys >> 20, Data: "JSON files"},
 		BasedOn: []Credit{
 			{
 				Name:    "ShellyScanner",

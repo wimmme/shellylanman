@@ -3,6 +3,8 @@ package httpapi
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"log/slog"
+	"net"
 	"net/http"
 
 	"github.com/wimmme/shellylanman/internal/mcp"
@@ -31,6 +33,31 @@ func (s *server) mcpRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/mcp", s.getMCP)
 	mux.HandleFunc("PUT /api/v1/mcp", s.putMCP)
 	mux.HandleFunc("POST /api/v1/mcp/token", s.newMCPToken)
+}
+
+// MCPLocal is the handler of the Home Assistant app's token-less MCP listener
+// on 127.0.0.1 (DECISIONS Q5): only /mcp, only from the loopback address.
+func MCPLocal(cfg Config) http.Handler {
+	if cfg.Log == nil {
+		cfg.Log = slog.Default()
+	}
+	s := &server{Config: cfg}
+	srv := &mcp.Server{Config: s.mcpConfig, Version: version.Version, Log: cfg.Log, Local: true}
+	if cfg.Devices != nil {
+		srv.Service = cfg.Devices
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		host, _, _ := net.SplitHostPort(r.RemoteAddr)
+		if ip := net.ParseIP(host); ip == nil || !ip.IsLoopback() {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Path != "/mcp" || srv.Service == nil {
+			http.NotFound(w, r)
+			return
+		}
+		srv.ServeHTTP(w, r)
+	})
 }
 
 func (s *server) mcpConfig() mcp.Config {

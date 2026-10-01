@@ -15,7 +15,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -181,6 +183,7 @@ type fileFormat struct {
 
 // Store is safe for concurrent use.
 type Store struct {
+	id   string // InstanceID
 	dir  string
 	aead cipher.AEAD
 
@@ -205,7 +208,8 @@ func Open(dir string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &Store{dir: dir, aead: aead}
+	id := sha256.Sum256(append([]byte("shellylanman-instance:"), key...))
+	s := &Store{dir: dir, aead: aead, id: hex.EncodeToString(id[:8])}
 	if err := s.load(); err != nil {
 		return nil, err
 	}
@@ -214,6 +218,11 @@ func Open(dir string) (*Store, error) {
 
 // Dir is the data directory.
 func (s *Store) Dir() string { return s.dir }
+
+// InstanceID identifies this ShellyLanMan installation (its data directory):
+// a one-way hash of the secret key, stable for the life of the key. Home
+// Assistant uses it as the unique id of the integration's entry.
+func (s *Store) InstanceID() string { return s.id }
 
 func loadOrCreateKey(path string) ([]byte, error) {
 	key, err := os.ReadFile(path)

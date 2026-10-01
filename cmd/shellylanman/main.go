@@ -9,6 +9,7 @@
 //	-origins  SHELLYLANMAN_ORIGINS  extra allowed Origin hosts, comma separated
 //	-ingress  SHELLYLANMAN_INGRESS  Home Assistant app: ingress listener address
 //	-ingress-from SHELLYLANMAN_INGRESS_FROM  the Supervisor's address (172.30.32.2)
+//	-mcp-local SHELLYLANMAN_MCP_LOCAL  Home Assistant app: token-less MCP on a loopback address
 //	-healthcheck                    probe /healthz of a running server and exit (used by Docker)
 package main
 
@@ -34,6 +35,7 @@ import (
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/shelly"
 	"github.com/wimmme/shellylanman/internal/store"
+	"github.com/wimmme/shellylanman/internal/supervisor"
 	"github.com/wimmme/shellylanman/internal/update"
 	"github.com/wimmme/shellylanman/internal/version"
 	"github.com/wimmme/shellylanman/internal/web"
@@ -45,6 +47,7 @@ func main() {
 	origins := flag.String("origins", env("SHELLYLANMAN_ORIGINS", ""), "extra allowed Origin hosts, comma separated")
 	ingress := flag.String("ingress", env("SHELLYLANMAN_INGRESS", ""), "Home Assistant app: address of the ingress listener, e.g. 172.30.32.1:8099")
 	ingressFrom := flag.String("ingress-from", env("SHELLYLANMAN_INGRESS_FROM", "172.30.32.2"), "the only client address the ingress listener accepts (the Supervisor)")
+	mcpLocal := flag.String("mcp-local", env("SHELLYLANMAN_MCP_LOCAL", ""), "Home Assistant app: token-less MCP listener on a loopback address, e.g. 127.0.0.1:8097")
 	healthcheck := flag.Bool("healthcheck", false, "probe /healthz of a running server and exit")
 	flag.Parse()
 
@@ -54,13 +57,13 @@ func main() {
 
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(log)
-	if err := run(log, *fixed, *dataDir, splitList(*origins), *ingress, *ingressFrom); err != nil {
+	if err := run(log, *fixed, *dataDir, splitList(*origins), *ingress, *ingressFrom, *mcpLocal); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ingressFrom string) error {
+func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ingressFrom, mcpLocal string) error {
 	log.Info("starting ShellyLanMan", "version", version.Version, "commit", version.Commit, "data", dataDir)
 
 	st, err := store.Open(dataDir)
@@ -85,8 +88,28 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
+	sup := supervisor.FromEnv() // set only when running as a Home Assistant app
+	announce := func(port int) {
+		if sup == nil {
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		// Home Assistant Core runs on the host network: the loopback address reaches us.
+		if err := sup.Announce(ctx, supervisor.ServiceShellyLanMan, map[string]any{"url": fmt.Sprintf("http://127.0.0.1:%d", port)}); err != nil {
+			log.Warn("Home Assistant discovery", "service", supervisor.ServiceShellyLanMan, "err", err)
+		}
+		if mcpLocal != "" {
+			if err := sup.Announce(ctx, supervisor.ServiceMCP, map[string]any{"url": "http://" + mcpLocal + "/mcp"}); err != nil {
+				log.Warn("Home Assistant discovery", "service", supervisor.ServiceMCP, "err", err)
+			}
+		}
+	}
 	savePort := func(port int) error {
 		_, err := st.Update(func(s *store.Settings) { s.Port = port })
+		if err == nil {
+			go announce(port) // the integration follows the new address
+		}
 		return err
 	}
 	ln, err := listen.New(srv, listen.Addr(fixed, st.Settings().Port), fixed != "", savePort, log)
@@ -111,6 +134,25 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 		}()
 		log.Info("Home Assistant ingress", "listen", ingress, "from", ingressFrom)
 	}
+	var mcpLocalSrv *http.Server
+	if mcpLocal != "" { // Home Assistant app: MCP without token, loopback only (DECISIONS Q5)
+		host, _, err := net.SplitHostPort(mcpLocal)
+		if ip := net.ParseIP(host); err != nil || ip == nil || !ip.IsLoopback() {
+			return fmt.Errorf("SHELLYLANMAN_MCP_LOCAL must be a loopback address, got %q", mcpLocal)
+		}
+		mcpLn, err := net.Listen("tcp", mcpLocal)
+		if err != nil {
+			return fmt.Errorf("local MCP listener: %w", err)
+		}
+		mcpLocalSrv = &http.Server{Handler: httpapi.MCPLocal(httpapi.Config{Store: st, Devices: devices, Log: log}), ReadHeaderTimeout: 10 * time.Second}
+		go func() {
+			if err := mcpLocalSrv.Serve(mcpLn); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Error("local MCP listener", "err", err)
+			}
+		}()
+		log.Info("local MCP listener (no token, loopback only)", "listen", mcpLocal)
+	}
+	go announce(ln.Info().Port)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	devices.Start(ctx)
@@ -130,6 +172,9 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 	defer cancel()
 	if ingressSrv != nil {
 		_ = ingressSrv.Shutdown(sctx)
+	}
+	if mcpLocalSrv != nil {
+		_ = mcpLocalSrv.Shutdown(sctx)
 	}
 	if err := srv.Shutdown(sctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err

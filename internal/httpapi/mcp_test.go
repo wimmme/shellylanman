@@ -3,8 +3,11 @@ package httpapi
 import (
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/wimmme/shellylanman/internal/store"
 )
 
 func TestMCPSettingsAndEndpoint(t *testing.T) {
@@ -63,5 +66,22 @@ func TestMCPSettingsAndEndpoint(t *testing.T) {
 	}
 	if r := do(t, "POST", srv.URL+"/mcp", ping, auth); r.StatusCode != 401 {
 		t.Fatalf("old token still works: %d", r.StatusCode)
+	}
+}
+
+func TestMCPLocalWithoutToken(t *testing.T) {
+	_, devs, st := newDeviceServerStore(t)
+	srv := httptest.NewServer(MCPLocal(Config{Store: st, Devices: devs}))
+	t.Cleanup(srv.Close)
+	ping := `{"jsonrpc":"2.0","id":1,"method":"ping"}`
+	if r := do(t, "POST", srv.URL+"/mcp", ping, jsonHdr); r.StatusCode != http.StatusNotFound {
+		t.Fatalf("MCP off: %d", r.StatusCode)
+	}
+	st.Update(func(s *store.Settings) { s.MCP.Enabled = true })
+	if r := do(t, "POST", srv.URL+"/mcp", ping, jsonHdr); r.StatusCode != http.StatusOK {
+		t.Fatalf("no token on the loopback listener: %d", r.StatusCode)
+	}
+	if r := do(t, "GET", srv.URL+"/api/v1/status", "", nil); r.StatusCode != http.StatusNotFound {
+		t.Fatalf("other paths served: %d", r.StatusCode)
 	}
 }
