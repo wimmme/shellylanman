@@ -224,3 +224,21 @@ app (`/addons/shellylanman`: the 0.3.0 image with a 0.4.0-dev binary, the
 | LAN port 3082 | status `"ingress": false` |
 | Panel in the Home Assistant sidebar (Wim, browser) | **"refused to connect"** at first: Home Assistant shows ingress apps in an iframe and ShellyLanMan sent `frame-ancestors 'none'` / `X-Frame-Options: DENY`; through ingress it now sends `'self'` / `SAMEORIGIN` (the LAN port still forbids framing) |
 | Release: ShellyLanMan v0.4.0, `shellylanman-ha` v0.4.0 (image `ghcr.io/wimmme/shellylanman-ha:0.4.0`, public) | repository added on `ha-test`, app installed and started (`state: started`), runs v0.4.0, ingress listener up; sidebar panel switched on; local dev app removed |
+
+## Phase 11c — Home Assistant integration (2026-10-01)
+
+`ha-test` (HA 2026.9.4) with the app as a local development build (0.5.0-dev) and the
+integration copied to `/homeassistant/custom_components/shellylanman`.
+
+| Check | Result |
+|---|---|
+| App start | ingress listener, local MCP `127.0.0.1:8097`; Supervisor discovery list: `shellylanman {"url": "http://127.0.0.1:3082"}` and `mcp {"url": "http://127.0.0.1:8097/mcp"}` |
+| Discovered flows after a Core restart | `shellylanman` at `hassio_confirm` (one click) → entry created, loaded; `mcp` at `user` (HA 2026.9.4 has no `async_step_hassio` in its MCP integration) → URL entered → entry created via the token-less listener, loaded |
+| Entities | status sensor per Shelly device (20 on line), ShellyLanMan device: on line 20 / off line 0 / attention 0, version, rescan button |
+| Backup button (Grondwaterpomp) | **500 at first**: the client expected a list, ShellyLanMan answers `{"results": [...]}` (the test mock had the wrong shape); fixed, test corrected and a failure test added; then 200 and the last-backup sensor updated |
+| Integration tests | 13 passed on Home Assistant 2026.9.4 and 2026.10.0b0 |
+
+Seen on the way: the Supervisor's own "Version" sensor of the app device and ours share
+the name, so ours became `sensor.shellylanman_versie_2` (cosmetic). Enabling MCP on a
+fresh instance returns the new token in the API answer; on the test instance it was
+rotated afterwards.

@@ -28,7 +28,7 @@ by usnasoft — the same features and terminology, as a native web UI in a singl
 lightweight Docker image. No desktop, no VNC, no Java, no cloud.
 
 [Why](#why-shellylanman) · [Quick start](#quick-start) · [Features](#features) ·
-[Pages](#pages) · [Screenshots](#screenshots) · [AI assistants (MCP)](#ai-assistants-mcp) · [Security](#security) ·
+[Pages](#pages) · [Screenshots](#screenshots) · [AI assistants (MCP)](#ai-assistants-mcp) · [Home Assistant](#home-assistant) · [Security](#security) ·
 [Configuration](#configuration) · [Development](#development) · [Support](#support) · [Credits](#credits)
 
 ## Why ShellyLanMan
@@ -213,6 +213,19 @@ Scenes are named lists of device actions stored in ShellyLanMan (`/data/scenes.j
 Off by default, read-only unless you choose otherwise, a bearer token on every
 request, browser requests from other sites refused, and every action that changes
 something written to the log. Devices are named by name, host name, IP or MAC.
+
+## Home Assistant
+
+[`shellylanman-ha`](https://github.com/wimmme/shellylanman-ha) packages ShellyLanMan
+for Home Assistant:
+
+- **App** (Home Assistant OS): ShellyLanMan in the sidebar, behind Home Assistant's
+  login, with a *Home Assistant* look in light and dark.
+- **Integration** (HACS): ShellyLanMan's status, configuration backup and settings
+  checklist on the Shelly devices Home Assistant already has, and ShellyLanMan's tools
+  for Assist.
+
+Relays, lights and meters stay with Home Assistant's own Shelly integration.
 
 ## Security
 
