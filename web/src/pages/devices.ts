@@ -2,7 +2,7 @@
 import { devicesApi, type Device, type DeviceStatus } from '../api';
 import { commandCell, interacting, whenIdle } from '../command';
 import { addressText, allDevices, archiveInUse, compareAddress, onDevicesChanged, scanState } from '../devices';
-import { h, icon, ICONS, patch } from '../dom';
+import { keepOrReplace, h, icon, ICONS, patch } from '../dom';
 import { dateTime, formatTemp, formatUptime, meterSetText, metersText, moduleText, prefs, uptimeTooltip } from '../format';
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
@@ -257,12 +257,6 @@ function exportCSV(rows: Device[], cols: Col[]): void {
   const header = cols.map((c) => t(c.label));
   const body = rows.map((d) => cols.map((c) => (c.live && !hasLive(d) ? '' : c.text(d))));
   download('shellylanman-devices.csv', toCSV(header, body, prefs.csvSeparator()));
-}
-
-/** Replace box's children unless they would come out the same (keeps a button being clicked). */
-function keepOrReplace(box: HTMLElement, kids: HTMLElement[]): void {
-  const same = box.children.length === kids.length && kids.every((k, i) => box.children[i]!.outerHTML === k.outerHTML);
-  if (!same) box.replaceChildren(...kids);
 }
 
 // ---- page ------------------------------------------------------------------------

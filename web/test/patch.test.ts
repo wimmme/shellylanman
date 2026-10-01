@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { patch } from '../src/dom';
+import { keepOrReplace, patch } from '../src/dom';
 
 // Just enough of the DOM for patch(): elements, attributes, children, text.
 class El {
@@ -16,6 +16,7 @@ class El {
   getAttribute(n: string): string | null { return this.attributes.find((x) => x.name === n)?.value ?? null; }
   setAttribute(n: string, v: string): void { this.removeAttribute(n); this.attributes.push({ name: n, value: v }); }
   removeAttribute(n: string): void { this.attributes = this.attributes.filter((x) => x.name !== n); }
+  replaceChildren(...kids: El[]): void { for (const c of [...this.children]) c.remove(); for (const k of kids) this.insertBefore(k, null); }
   remove(): void { if (this.parent) { this.parent.children.splice(this.parent.children.indexOf(this), 1); this.parent = null; } }
   replaceWith(n: El): void { const p = this.parent!; n.remove(); p.children[p.children.indexOf(this)] = n; n.parent = p; this.parent = null; }
   insertBefore(n: El, ref: El | null): void {
@@ -63,4 +64,14 @@ test('rows are matched by data-id across reordering, additions and removals', ()
   assert.deepEqual(body.children.map((r) => r.getAttribute('data-id')), ['c', 'd', 'a']);
   assert.equal(body.children[0], c);
   assert.equal(body.children[2], a);
+});
+
+test('keepOrReplace keeps the children (a hovered button) when nothing changed', () => {
+  const box = el('div');
+  const btn = el('button', { class: 'btn' }, 'Refresh');
+  box.insertBefore(btn, null);
+  keepOrReplace(box as unknown as Element, [el('button', { class: 'btn' }, 'Refresh') as unknown as Element]);
+  assert.equal(box.children[0], btn, 'same markup: the old button stays');
+  keepOrReplace(box as unknown as Element, [el('button', { class: 'btn', disabled: '' }, 'Refresh') as unknown as Element]);
+  assert.notEqual(box.children[0], btn, 'changed markup: replaced');
 });

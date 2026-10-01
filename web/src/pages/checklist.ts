@@ -9,7 +9,7 @@
 import { configApi, devicesApi, type BLEItem, type ChecklistRow, type Device } from '../api';
 import { cellView, editable, FALSE, isBLU, isG1, isG2, sameBoolean, sameObject, sameStringOrInt, type Col } from '../checklistlogic';
 import { addressText, allDevices, loadDevices, onDevicesChanged } from '../devices';
-import { h, ICONS } from '../dom';
+import { h, ICONS, keepOrReplace, patch } from '../dom';
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
 import { openDeviceSettings } from '../panels/devsettings';
@@ -82,6 +82,7 @@ export const checklistPage: Page = {
     const selected = new Set<string>();
     let anchor: string | null = null;
     let filter = '';
+    let shown: ChecklistRow[] = []; // the rows the table shows (filtered)
     const status = h('div', { class: 'muted status-line' });
     const toolbar = h('div', { class: 'row' });
     const hint = h('p', { class: 'muted chk-hint' }, t('chk.actionsHint'));
@@ -188,74 +189,91 @@ export const checklistPage: Page = {
         return a.tip ? h('span', { class: 'tip-wrap', title: t(a.tip) }, b) : b;
       };
       const settings = acts.filter((a) => a.key !== 'web' && a.key !== 'reboot');
-      toolbar.replaceChildren(
+      keepOrReplace(toolbar, [
         h('button', { class: 'btn', onclick: () => void reload(), title: t('action.refreshTip') }, t('action.refresh')),
         h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' }),
         h('span', { class: 'toolbar-label muted' }, t('chk.actionsLabel')),
         ...settings.map(button),
         h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' }),
-        ...acts.filter((a) => a.key === 'web' || a.key === 'reboot').map(button));
+        ...acts.filter((a) => a.key === 'web' || a.key === 'reboot').map(button)]);
       hint.hidden = selected.size > 0;
-      const shown = rows.filter((r) => !filter || `${r.host} ${r.address}`.toLowerCase().includes(filter));
+      shown = rows.filter((r) => !filter || `${r.host} ${r.address}`.toLowerCase().includes(filter));
       status.textContent = t('status.listed', { total: rows.length, selected: selected.size });
       if (!rows.length) { body.replaceChildren(emptyState(t('devices.empty.title'), t('devices.empty.text'), ICONS.checklist)); return; }
       const tbody = h('tbody');
       for (const r of shown) {
-        const tr = h('tr', { class: selected.has(r.id) ? 'selected' : '' },
+        const tr = h('tr', { 'data-id': r.id, class: selected.has(r.id) ? 'selected' : '' },
           h('td', {}, h('span', { class: 'pill ' + r.status }, t(('status.' + r.status) as Key))),
           h('td', {}, r.host, (r as { loading?: boolean }).loading ? h('span', { class: 'spinner small', 'aria-label': t('state.loading') }) : null),
           h('td', { class: 'mono' }, r.address.replace(/:80$/, '')),
           ...COLS.map((c) => { const v = cellView(c.key, r[c.key], c.good); return h('td', { class: 'chk ' + v.cls }, v.text); }));
-        tr.addEventListener('click', (e) => {
-          if (e.shiftKey && anchor) {
-            const list = shown.map((x) => x.id);
-            const [a, b] = [list.indexOf(anchor), list.indexOf(r.id)].sort((x, y) => x - y);
-            for (const id of list.slice(a!, b! + 1)) selected.add(id);
-          } else if (e.ctrlKey || e.metaKey) {
-            if (selected.has(r.id)) selected.delete(r.id); else selected.add(r.id);
-            anchor = r.id;
-          } else { selected.clear(); selected.add(r.id); anchor = r.id; }
-          draw();
-        });
-        tr.addEventListener('dblclick', () => void webUI([r]));
-        tr.addEventListener('contextmenu', (e) => { // popup: the column's action, then Web UI and Reboot
-          e.preventDefault();
-          if (!selected.has(r.id)) { selected.clear(); selected.add(r.id); draw(); }
-          const td = (e.target as HTMLElement).closest('td');
-          const idx = td ? [...td.parentElement!.children].indexOf(td) - 3 : -1;
-          const col = COLS[idx]?.key;
-          const all = actions();
-          const items: { label: string; run: () => void }[] = [];
-          const a = all.find((x) => x.key === col);
-          if (col === 'wifi1' || col === 'wifi2') {
-            items.push({ label: `${t('chk.edit')} (${t(COLS[idx]!.label)})`, run: () => openDeviceSettings(sel().map((x) => x.id), col, () => void reload()) });
-          } else if (a && a.enabled) {
-            if (a.menu) items.push(...a.menu.map((m) => ({ label: t(m.label), run: m.run })));
-            else if (a.run) items.push({ label: t(a.label), run: a.run });
-          }
-          for (const k of ['web', 'reboot']) { const x = all.find((y) => y.key === k)!; if (x.enabled) items.push({ label: t(x.label), run: x.run! }); }
-          menu(items, e.clientX, e.clientY);
-        });
         tbody.append(tr);
       }
-      body.replaceChildren(h('div', { class: 'table-wrap' }, h('table', { class: 'data checklist' },
+      const table = h('table', { class: 'data checklist' },
         h('thead', {}, h('tr', {}, h('th', {}, ''), h('th', {}, t('col.device')), h('th', {}, t('col.ip')),
-          ...COLS.map((c) => h('th', { title: t(c.tip) }, t(c.label))))), tbody)));
+          ...COLS.map((c) => h('th', { title: t(c.tip) }, t(c.label))))), tbody);
+      // Update in place: the row under the mouse stays the same element, so it
+      // keeps its hover colour (and the scroll position stays).
+      const old = body.querySelector('table.checklist');
+      if (old) patch(old, table);
+      else body.replaceChildren(h('div', { class: 'table-wrap' }, table));
     };
+
+    // Row mouse handling, delegated: rows are kept across redraws.
+    const rowOf = (e: Event): ChecklistRow | undefined => {
+      const id = e.target instanceof Element ? e.target.closest('tbody tr[data-id]')?.getAttribute('data-id') : null;
+      return id ? rows.find((x) => x.id === id) : undefined;
+    };
+    body.addEventListener('click', (e) => {
+      const r = rowOf(e);
+      if (!r) return;
+      if (e.shiftKey && anchor) {
+        const list = shown.map((x) => x.id);
+        const [a, b] = [list.indexOf(anchor), list.indexOf(r.id)].sort((x, y) => x - y);
+        for (const id of list.slice(a!, b! + 1)) selected.add(id);
+      } else if (e.ctrlKey || e.metaKey) {
+        if (selected.has(r.id)) selected.delete(r.id); else selected.add(r.id);
+        anchor = r.id;
+      } else { selected.clear(); selected.add(r.id); anchor = r.id; }
+      draw();
+    });
+    body.addEventListener('dblclick', (e) => { const r = rowOf(e); if (r) void webUI([r]); });
+    body.addEventListener('contextmenu', (e) => { // popup: the column's action, then Web UI and Reboot
+      const r = rowOf(e);
+      if (!r) return;
+      e.preventDefault();
+      if (!selected.has(r.id)) { selected.clear(); selected.add(r.id); draw(); }
+      const td = (e.target as HTMLElement).closest('td');
+      const idx = td ? [...td.parentElement!.children].indexOf(td) - 3 : -1;
+      const col = COLS[idx]?.key;
+      const all = actions();
+      const items: { label: string; run: () => void }[] = [];
+      const a = all.find((x) => x.key === col);
+      if (col === 'wifi1' || col === 'wifi2') {
+        items.push({ label: `${t('chk.edit')} (${t(COLS[idx]!.label)})`, run: () => openDeviceSettings(sel().map((x) => x.id), col, () => void reload()) });
+      } else if (a && a.enabled) {
+        if (a.menu) items.push(...a.menu.map((m) => ({ label: t(m.label), run: m.run })));
+        else if (a.run) items.push({ label: t(a.label), run: a.run });
+      }
+      for (const k of ['web', 'reboot']) { const x = all.find((y) => y.key === k)!; if (x.enabled) items.push({ label: t(x.label), run: x.run! }); }
+      menu(items, e.clientX, e.clientY);
+    });
 
     // A device that comes back on line is read again (CheckListView.update).
     const off = onDevicesChanged(() => {
-      let refetch: string[] = [];
+      const refetch: string[] = [];
+      let changed = false;
       for (const r of rows) {
         const d = devOf(r.id);
         if (d && d.status !== r.status) {
           if (d.status === 'online' && r.status !== 'online') refetch.push(r.id);
           r.status = d.status;
+          changed = true;
         }
       }
+      // Device updates arrive every few seconds; only a status change shows here.
       if (refetch.length) void configApi.checklist(refetch).then((nr) => { for (const x of nr) { const i = rows.findIndex((r) => r.id === x.id); if (i >= 0) rows[i] = x; } draw(); });
-      else draw();
-      refetch = [];
+      else if (changed) draw();
     });
     disposeFn = off;
     main.append(card(t('chk.title'), null, h('div', { class: 'toolbar' }, toolbar, h('div', { class: 'spacer' }), filterInput), hint, status, body));

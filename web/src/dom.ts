@@ -60,6 +60,12 @@ export function patch(old: Element, next: Element): Element {
   return old;
 }
 
+/** Replace box's children unless they would come out the same (keeps a button being clicked or hovered). */
+export function keepOrReplace(box: Element, kids: Element[]): void {
+  const same = box.children.length === kids.length && kids.every((k, i) => box.children[i]!.outerHTML === k.outerHTML);
+  if (!same) box.replaceChildren(...kids);
+}
+
 /** An inline SVG icon from a 24×24 stroke path. */
 export function icon(path: string, size = 18): SVGSVGElement {
   const ns = 'http://www.w3.org/2000/svg';

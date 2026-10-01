@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Checklist page: the row under the mouse flickered between light and dark: every
+  device update (every few seconds) rebuilt the whole table and toolbar. It now redraws
+  only when a status changes, and then updates the table in place.
+
 ### Added
 - As a Home Assistant app, ShellyLanMan announces itself to Home Assistant (Supervisor
   discovery `shellylanman` and `mcp`), so the integration and Home Assistant's own MCP
