@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Releases: a version tag now also creates the GitHub release (notes from this
+  changelog). The in-app release check reads GitHub releases, and there were none, so
+  it never reported a new version.
+
 ## [0.3.0] - 2026-10-01
 
 ShellyLanMan as a tool for AI assistants: an MCP server for the devices on the LAN.

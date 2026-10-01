@@ -518,3 +518,9 @@ Technical choices made while building discovery, within the scope agreed above.
 | M4 | Access "read" (default) or "control"; control tools are not even listed in read mode. Reboot and firmware update also need `confirm: true`; every control call is logged at Info | Safety pattern of Buggy1111/shelly-mcp (reference, MIT; no code taken) |
 | M5 | Tool set: list/get device, readings (samples, ≤120 points), firmware check, checklist, backups, `shelly_rpc_read` limited to `Get*`/`List*`/`CheckForUpdate`; switch, light, cover, thermostat, backup; reboot, firmware update. No restore, settings, scripts or generic RPC writes for now | Start with what is safe and useful; more on request |
 | M6 | Devices are named by id/MAC, IP, host name, exact name or a unique part of the name; ambiguous names are refused with the candidates | An assistant says "the kitchen", not a MAC |
+
+## 19. After v0.3.0 (2026-10-01)
+
+| # | Decision | Why |
+|---|---|---|
+| R1 | The publish workflow creates the GitHub release of a `vX.Y.Z` tag after the image is pushed, with that version's section of `CHANGELOG.md` as notes (`tools/release-notes.sh`); verify and CI fail when a released version has no notes. v0.1.0–v0.3.0 got their releases afterwards | The in-app release check (P10-1) reads GitHub releases; only tags and images existed, so it never reported an update |
