@@ -242,3 +242,5 @@ Seen on the way: the Supervisor's own "Version" sensor of the app device and our
 the name, so ours became `sensor.shellylanman_versie_2` (cosmetic). Enabling MCP on a
 fresh instance returns the new token in the API answer; on the test instance it was
 rotated afterwards.
+| Release 0.5.0 on `ha-test` | the store offered the app update 0.4.0 → 0.5.0; after it ShellyLanMan v0.5.0 with the local MCP listener; integration (released code) installed; after a Core restart `shellylanman` (one click) and `mcp` (URL, HA 2026.9) are offered as discovered |
+| `shellylanman-ha` CI | tests on HA 2026.9.4 and the newest release, `hassfest` (after sorting the manifest keys) and HACS validation (after adding repository topics) green |
