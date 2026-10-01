@@ -189,7 +189,7 @@ only Home Assistant's own libraries (aiohttp); tests with
    - `sensor` ShellyLanMan status (online / offline / login / error / ghost) — enabled
    - `sensor` last configuration backup (timestamp) and `button` "Back up configuration" — enabled
    - `binary_sensor` per checklist item: eco mode, LED off (Gen1), logs on, Bluetooth,
-     access point, roaming, Wi-Fi static IP, range extender, automatic firmware update — **disabled by default**, the user switches on what he wants to watch
+     access point, roaming, Wi-Fi static IP, range extender, automatic firmware update — **disabled by default**, the user switches on what they want to watch
    - not duplicated: relays, lights, meters, firmware update (the Shelly integration has them)
 4. **A device "ShellyLanMan"** for the service itself: number of devices on line /
    off line / needing attention, version, a "Rescan" button (Q9).
