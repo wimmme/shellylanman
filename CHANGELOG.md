@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-01
+
+ShellyLanMan as a tool for AI assistants: an MCP server for the devices on the LAN.
+
 ### Added
 - MCP server for AI assistants at `/mcp` (Model Context Protocol, Streamable HTTP):
   read tools (devices, readings, firmware, checklist, backups, read-only Gen2+ RPC),
