@@ -244,6 +244,11 @@ for Home Assistant:
 
 Relays, lights and meters stay with Home Assistant's own Shelly integration.
 
+[![Add the ShellyLanMan app repository to your Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fwimmme%2Fshellylanman-ha)
+[![Open the ShellyLanMan integration in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=wimmme&repository=shellylanman-ha&category=integration)
+
+Step by step: [`shellylanman-ha`](https://github.com/wimmme/shellylanman-ha#readme).
+
 ## 🔒 Security
 
 - **Keep it on your LAN.** ShellyLanMan can change the configuration of your devices;
