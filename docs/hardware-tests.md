@@ -222,3 +222,4 @@ app (`/addons/shellylanman`: the 0.3.0 image with a 0.4.0-dev binary, the
 | Port 8099 from the LAN | not reachable (bound to the Docker gateway) |
 | Through ingress (`https://ha-test.wimmme.net/api/hassio_ingress/<token>/`, ingress session) | page, `app.js`, `app.css`, logo, fonts 200; `/api/v1/status` `"ingress": true`; PUT settings with the same Origin 200; WebSocket `/ws` 101; without a session 401 |
 | LAN port 3082 | status `"ingress": false` |
+| Panel in the Home Assistant sidebar (Wim, browser) | **"refused to connect"** at first: Home Assistant shows ingress apps in an iframe and ShellyLanMan sent `frame-ancestors 'none'` / `X-Frame-Options: DENY`; through ingress it now sends `'self'` / `SAMEORIGIN` (the LAN port still forbids framing) |

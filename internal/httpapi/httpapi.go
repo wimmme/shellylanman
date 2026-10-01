@@ -219,10 +219,15 @@ func (s *server) originAllowed(origin, host string) bool {
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
-		h.Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+		// Home Assistant shows ingress apps in an iframe of its own (same) origin.
+		frame, xfo := "'none'", "DENY"
+		if viaIngress(r) {
+			frame, xfo = "'self'", "SAMEORIGIN"
+		}
+		h.Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors "+frame+"; base-uri 'none'; form-action 'self'")
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "same-origin")
-		h.Set("X-Frame-Options", "DENY")
+		h.Set("X-Frame-Options", xfo)
 		next.ServeHTTP(w, r)
 	})
 }

@@ -3,6 +3,7 @@ package httpapi
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/wimmme/shellylanman/internal/hub"
@@ -40,10 +41,20 @@ func TestIngressOnlyFromSupervisorAndMarked(t *testing.T) {
 		t.Fatalf("foreign origin through ingress: %d", r.StatusCode)
 	}
 
+	// Home Assistant shows the app in an iframe of its own origin; elsewhere framing stays forbidden.
+	if r := do(t, "GET", ing.URL+"/api/v1/status", "", nil); r.Header.Get("X-Frame-Options") != "SAMEORIGIN" ||
+		!strings.Contains(r.Header.Get("Content-Security-Policy"), "frame-ancestors 'self'") {
+		t.Fatalf("ingress framing headers: %v", r.Header)
+	}
+
 	direct := httptest.NewServer(h)
 	t.Cleanup(direct.Close)
-	decode(t, do(t, "GET", direct.URL+"/api/v1/status", "", nil), &s)
+	r := do(t, "GET", direct.URL+"/api/v1/status", "", nil)
+	decode(t, r, &s)
 	if s.Ingress {
 		t.Fatal("direct request marked as ingress")
+	}
+	if r.Header.Get("X-Frame-Options") != "DENY" || !strings.Contains(r.Header.Get("Content-Security-Policy"), "frame-ancestors 'none'") {
+		t.Fatalf("direct framing headers: %v", r.Header)
 	}
 }
