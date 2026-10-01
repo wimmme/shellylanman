@@ -36,6 +36,10 @@ type Device struct {
 	// Password, when set, protects everything except /shelly: Gen1 with Basic
 	// auth (User/Password), Gen2+ with SHA-256 Digest for user "admin".
 	User, Password string
+	// FW2Auth: a POST /rpc without credentials is answered like firmware
+	// 2.0+ (401, challenge only in WWW-Authenticate, empty body) instead of
+	// the older challenge in the JSON body.
+	FW2Auth bool
 
 	mu     sync.Mutex
 	calls  []string                 // "GET /relay/0?turn=on", "RPC Switch.Set {"id":0,"on":true}"
@@ -100,7 +104,7 @@ func (d *Device) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		body, _ = io.ReadAll(io.LimitReader(r.Body, 1<<20))
 	}
 	if d.Password != "" && r.URL.Path != "/shelly" {
-		if rpcPost && r.Header.Get("Authorization") == "" {
+		if rpcPost && r.Header.Get("Authorization") == "" && !d.FW2Auth {
 			if !d.rpcAuthorized(w, body) {
 				return
 			}
@@ -257,7 +261,9 @@ func (d *Device) authorized(w http.ResponseWriter, r *http.Request) bool {
 	}
 	w.Header().Set("WWW-Authenticate", `Digest qop="auth", realm="`+d.id+`", nonce="`+simNonce+`", algorithm=SHA-256`)
 	w.WriteHeader(http.StatusUnauthorized)
-	w.Write([]byte(`{"code":401,"message":"unauthorized"}`))
+	if r.Method != http.MethodPost {
+		w.Write([]byte(`{"code":401,"message":"unauthorized"}`))
+	}
 	return false
 }
 

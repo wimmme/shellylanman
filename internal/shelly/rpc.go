@@ -18,9 +18,12 @@ import (
 
 // Call runs a Gen2+ RPC method with POST /rpc and returns its "result".
 //
-// Like ShellyScanner (AbstractG2Device.executeRPC), a protected device first
-// answers 401 with the challenge as a JSON string in "message"; the request
-// is repeated once with the JSON-RPC "auth" object
+// A protected device answers 401. Firmware 2.0+ puts the challenge only in the
+// WWW-Authenticate header (empty body); the request is then repeated with an
+// HTTP Digest header for POST /rpc, and the nonce is reused with a growing nc
+// as for GET. Older firmware puts it as a JSON string in "message" (as
+// ShellyScanner's AbstractG2Device.executeRPC expects); the request is then
+// repeated once with the JSON-RPC "auth" object
 // (https://shelly-api-docs.shelly.cloud/gen2/General/Authentication).
 func (d *Conn) Call(ctx context.Context, method string, params any) (json.RawMessage, error) {
 	d.mu.Lock()
@@ -38,19 +41,27 @@ func (d *Conn) Call(ctx context.Context, method string, params any) (json.RawMes
 		params = struct{}{}
 	}
 	req := map[string]any{"id": 1, "method": method, "params": params}
-	b, status, err := d.post(ctx, req)
+	b, status, hdr, err := d.post(ctx, req, d.postAuth())
 	if err != nil {
 		return nil, err
 	}
 	if status == http.StatusUnauthorized && d.cred != nil {
-		auth, ok := rpcAuth(b, d.cred.Password)
-		if !ok {
-			return nil, ErrUnauthorized
-		}
-		time.Sleep(Pacing)
-		req["auth"] = auth
-		if b, status, err = d.post(ctx, req); err != nil {
-			return nil, err
+		if ds, ok := parseChallenge(hdr.Get("WWW-Authenticate")); ok {
+			d.digest = ds
+			time.Sleep(Pacing)
+			if b, status, _, err = d.post(ctx, req, d.postAuth()); err != nil {
+				return nil, err
+			}
+		} else {
+			auth, ok := rpcAuth(b, d.cred.Password)
+			if !ok {
+				return nil, ErrUnauthorized
+			}
+			time.Sleep(Pacing)
+			req["auth"] = auth
+			if b, status, _, err = d.post(ctx, req, ""); err != nil {
+				return nil, err
+			}
 		}
 	}
 	switch status {
@@ -82,26 +93,37 @@ func (d *Conn) Call(ctx context.Context, method string, params any) (json.RawMes
 	return resp.Result, nil
 }
 
-func (d *Conn) post(ctx context.Context, body any) ([]byte, int, error) {
+// postAuth is the Digest header for POST /rpc once a challenge is known.
+func (d *Conn) postAuth() string {
+	if d.cred == nil || d.digest == nil {
+		return ""
+	}
+	return d.digest.header(http.MethodPost, "/rpc", d.cred.Password)
+}
+
+func (d *Conn) post(ctx context.Context, body any, auth string) ([]byte, int, http.Header, error) {
 	payload, err := json.Marshal(body)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, nil, err
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://"+d.addr+"/rpc", bytes.NewReader(payload))
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if auth != "" {
+		req.Header.Set("Authorization", auth)
+	}
 	resp, err := d.client.HTTP.Do(req)
 	if err != nil {
-		return nil, 0, &OfflineError{err}
+		return nil, 0, nil, &OfflineError{err}
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
 	if err != nil {
-		return nil, 0, &OfflineError{err}
+		return nil, 0, nil, &OfflineError{err}
 	}
-	return b, resp.StatusCode, nil
+	return b, resp.StatusCode, resp.Header, nil
 }
 
 // rpcAuth builds the "auth" object from a 401 answer

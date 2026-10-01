@@ -186,3 +186,25 @@ Seen on the way: after the container restart ShellyTestPlug stayed a ghost (arch
 until a Reload, although it answered on its address — the mDNS scan did not find it.
 Not tested on hardware: `shelly_light`, `shelly_cover`, `shelly_thermostat` (no test
 device of those kinds; simulator tests cover them).
+
+## Phase 11a — MCP parity (2026-10-01)
+
+Live container on dockerhostvm, MCP access "configure" for the test, "read" afterwards.
+Writes on ShellyTestPlug (Plug S Gen3, 2.0.1) only, each undone; Grondwaterpomp read only.
+
+| Check | Result |
+|---|---|
+| `shelly_get_config` Grondwaterpomp (Gen1 /settings) | full settings; this firmware returns no passwords (AP key empty), masking covered by unit tests |
+| `shelly_get_status` / `shelly_list_components` (TestPlug) | `switch:0` status; components incl. `script:1`, `script:2` (existing, left alone) |
+| `shelly_energy_history` Laadpaal (Pro 3EM, 2 h) | EMData per minute, 3 lines |
+| `shelly_switch` with `timer_s: 5` | on, off again after 5 s (`source: timer`) |
+| KVS set (object value) / read / delete | ok |
+| Schedule create (disabled) / update / delete | ok, `Schedule.List` checked |
+| Script create / put code / append / read code / start / eval (`sllNext()` → 42) / stop / delete | ok; scripts 1 and 2 unchanged |
+| Webhook create (disabled) / update / delete; virtual `boolean:200` add / list / delete | ok |
+| `shelly_rpc_write` `Switch.SetConfig` name set and back to `null`; `Shelly.FactoryReset` without `allow_data_loss` | ok; refused |
+| `shelly_device_login` set → protected reads and KVS writes → remove | **failed at first**: POST RPC to the protected 2.0.1 plug answered 401 without a body challenge, so every call failed and the plug's brute-force lock answered 429; password removed with the stored credentials, fixed (P11-11), then the whole sequence passed |
+| Scene with a switch action and an RPC action: set / list / run / delete | `ok` per step, `scenes.json` empty afterwards |
+
+Seen on the way: Grondwaterpomp restarted by itself during the test (uptime 319 s at
+12:16) and came back **off** (its default state); ShellyLanMan sent it no command.

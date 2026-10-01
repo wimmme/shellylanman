@@ -129,6 +129,31 @@ func TestGen2PostCommands(t *testing.T) {
 	}
 }
 
+// Firmware 2.0+ answers an unauthenticated POST /rpc with an empty 401 and the
+// challenge only in WWW-Authenticate: the call is repeated with a Digest header.
+func TestGen2PostCommandsFirmware2Auth(t *testing.T) {
+	m, _, ctx := newService(t, nil)
+	simd, addr := startSimDev(t, fixtureDir(t, "gen2/Plus1", map[string]string{
+		"shelly.json":               `{"id":"shellywalldisplay-aabbcc000002","mac":"AABBCC000002","model":"SAWD-0A1XX10EU1","gen":2,"app":"WallDisplay","auth_en":true}`,
+		"rpc_Shelly.GetConfig.json": `{"sys":{"device":{"name":"Hall"}},"thermostat:0":{"name":"Living","type":"heating"}}`,
+		"rpc_Shelly.GetStatus.json": `{"sys":{"uptime":10},"thermostat:0":{"enable":true,"target_C":21,"output":false},"temperature:0":{"tC":20}}`,
+	}), func(d *sim.Device) { d.Password = "pw"; d.FW2Auth = true })
+	m.SetGlobalCredentials(shelly.Credentials{User: "admin", Password: "pw"})
+	m.handle(ctx, addr, "shellywalldisplay-aabbcc000002", true)
+	d := waitDevice(t, m, "AABBCC000002", func(d model.Device) bool { return online(d) && len(d.Modules) == 1 })
+	for _, v := range []float64{22.5, 23} { // the second call reuses the nonce
+		if err := m.Command(ctx, d.ID, Command{Key: "thermostat:0", Action: ActionTarget, Value: fv(v)}); err != nil {
+			t.Fatalf("target %v: %v (calls %v)", v, err, simd.Calls())
+		}
+	}
+	if !hasCall(simd, `RPC Thermostat.SetConfig {"config":{"target_C":23},"id":0}`) {
+		t.Fatalf("calls %v", simd.Calls())
+	}
+	if _, err := m.DeviceRPC(ctx, d.ID, "Shelly.GetConfig", nil); err != nil {
+		t.Fatalf("rpc: %v", err)
+	}
+}
+
 func TestBreakerNeedsConfirmation(t *testing.T) {
 	m, _, ctx := newService(t, nil)
 	simd, addr := startSimDev(t, fixtureDir(t, "gen2/Plus1", map[string]string{

@@ -18,6 +18,11 @@ versions follow [Semantic Versioning](https://semver.org/).
   MCP parity with the Shelly-MCP — for review, nothing built yet.
 
 ### Fixed
+- Password-protected Gen2+ devices with firmware 2.0 or newer: every command and
+  setting sent with POST /rpc (thermostats, configuration, scripts, KVS, login,
+  restore) failed with "unauthorized", and the retries set off the device's
+  brute-force lock. The firmware now sends the login challenge only in a header;
+  ShellyLanMan answers it.
 - Releases: a version tag now also creates the GitHub release (notes from this
   changelog). The in-app release check reads GitHub releases, and there were none, so
   it never reported a new version.
