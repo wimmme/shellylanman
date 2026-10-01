@@ -1,7 +1,7 @@
 # Phase 11 — Home Assistant and MCP parity (analysis, 2026-10-01)
 
-> Status: **analysis for Wim's review. Nothing is built.** Once agreed, the decisions
-> go to `DECISIONS.md` and this file becomes the plan of record.
+> Status: **Q1–Q4 answered (`DECISIONS.md` §20); Q5, Q6 and the cloud question open.**
+> Nothing is built.
 
 Wim's direction (2026-10-01):
 

@@ -524,3 +524,13 @@ Technical choices made while building discovery, within the scope agreed above.
 | # | Decision | Why |
 |---|---|---|
 | R1 | The publish workflow creates the GitHub release of a `vX.Y.Z` tag after the image is pushed, with that version's section of `CHANGELOG.md` as notes (`tools/release-notes.sh`); verify and CI fail when a released version has no notes. v0.1.0–v0.3.0 got their releases afterwards | The in-app release check (P10-1) reads GitHub releases; only tags and images existed, so it never reported an update |
+
+## 20. Phase 11 — Home Assistant and MCP parity (2026-10-01, Wim's answers to `docs/phase-11-ha-mcp.md` §4)
+
+| # | Decision | Why |
+|---|---|---|
+| P11-1 | Order: 11a MCP parity with the Shelly-MCP → 11b ShellyLanMan as an HA app → 11c HA integration (entities on the Shelly devices, Assist); discovery hand-off (B) later | Q1; parity pays off in Claude Code right away, 11c builds on 11a |
+| P11-2 | MCP access levels read / control / **configure**; configure covers scripts, KVS, schedules, webhooks, virtual components and RPC writes | Q2 |
+| P11-3 | Scenes stored in ShellyLanMan (`/data`), as in the Shelly-MCP | Q3, parity |
+| P11-4 | The HA app and the HA integration live in a separate repository (`shellylanman-ha`); both repositories document how they work together, the API contract and version compatibility | Q4; Python, own releases, HACS layout |
+| P11-5 | MCP tools beyond ShellyScanner's feature set are approved up to the Shelly-MCP's set (webhooks, virtual components, scenes, script eval, …), LAN only | Wim: "at least the functions of the Shelly-MCP" |
