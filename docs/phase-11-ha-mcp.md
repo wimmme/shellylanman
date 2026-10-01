@@ -216,3 +216,32 @@ only Home Assistant's own libraries (aiohttp); tests with
 | Q8 | The entity list of §6.2 point 3, and which are enabled by default | As proposed |
 | Q9 | A "ShellyLanMan" device with counters and a Rescan button? | Yes |
 | Q10 | Discovery handoff to the official Shelly integration (B) now or later? | Later (separate phase) |
+
+---
+
+## 7. Open work (2026-10-02, end of session)
+
+1. **Push** the local commits: `shellylanman` `fdfe585` (README install buttons) and
+   `shellylanman-ha` `8709980` (my.home-assistant buttons for every step) — ask first.
+2. **"Inspired by ShellyScanner"** everywhere in descriptions (GitHub, READMEs, About
+   page in 8 languages, app texts, docs) — **wait for Wim**: he asks ShellyScanner's
+   developer first. Keep the GPL obligations: per-file "Portions derived from
+   ShellyScanner" headers, `docs/PROVENANCE.md`, `THIRD_PARTY_NOTICES.md`, and one
+   factual credits line ("contains code derived from ShellyScanner, GPL-3.0").
+   May be prepared on a separate branch if Wim agrees.
+3. **Screenshots**: main README again with the simulator (no real names/IPs), light and
+   dark (devices, checklist, firmware, About); `shellylanman-ha`: ShellyLanMan in the
+   Home Assistant palette, light and dark. Open question: also a screenshot inside the
+   HA panel (needs a HA login on `ha-test` for screenshots, or Wim takes them).
+   Together with item 2, so texts and images change once.
+4. **Text review** of the GitHub pages and the rest of the documentation after item 2.
+5. Later, if wanted: submit the integration to the HACS default list (`hacs/default`),
+   a Home Assistant forum post.
+6. The integration's manifest key-order fix is on `shellylanman-ha` `main`, not in tag
+   v0.5.0 — goes into the next release.
+7. Wim tests 0.5.0 for a few days (`ha-test`: two discovered integrations waiting —
+   ShellyLanMan one click; MCP needs MCP enabled in the new app instance and, on HA
+   2026.9, the URL `http://127.0.0.1:8097/mcp`) and comes back with feedback.
+8. Leftovers: the dev volume `shellylanman_data` on dockerhostvm (fallback, can go
+   when Wim agrees); option B (discovery handoff to the Shelly integration) only as its
+   own phase, with a thorough documented analysis first (P11-15).
