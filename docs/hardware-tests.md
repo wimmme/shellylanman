@@ -208,3 +208,17 @@ Writes on ShellyTestPlug (Plug S Gen3, 2.0.1) only, each undone; Grondwaterpomp 
 
 Seen on the way: Grondwaterpomp restarted by itself during the test (uptime 319 s at
 12:16) and came back **off** (its default state); ShellyLanMan sent it no command.
+
+## Phase 11b — Home Assistant app (2026-10-01)
+
+Test system `ha-test` (HA OS 18.3, HA 2026.9.4, Hyper-V). The app installed as a local
+app (`/addons/shellylanman`: the 0.3.0 image with a 0.4.0-dev binary, the
+`shellylanman-ha` entry script), built on the device.
+
+| Check | Result |
+|---|---|
+| Install, start | started (`state: started` once the image health check is healthy); ShellyLanMan logs the ingress listener `172.30.32.1:8099` from `172.30.32.2`, LAN port 3082, mDNS on `eth0` |
+| `HEALTHCHECK NONE` in the app image | the Supervisor kept the app in `startup` (it treats `{"Test":["NONE"]}` as a health check): the image's own health check is kept |
+| Port 8099 from the LAN | not reachable (bound to the Docker gateway) |
+| Through ingress (`https://ha-test.wimmme.net/api/hassio_ingress/<token>/`, ingress session) | page, `app.js`, `app.css`, logo, fonts 200; `/api/v1/status` `"ingress": true`; PUT settings with the same Origin 200; WebSocket `/ws` 101; without a session 401 |
+| LAN port 3082 | status `"ingress": false` |

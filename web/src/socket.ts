@@ -1,5 +1,6 @@
 // Server events over WebSocket, reconnecting with capped exponential backoff.
 // The socket is receive-only; actions go through the REST API.
+import { wsURL } from './api';
 
 export interface ServerEvent { type: string; data?: unknown }
 export type ConnState = 'connecting' | 'ok' | 'down';
@@ -16,8 +17,7 @@ export class EventSocket {
 
   connect(): void {
     this.onState('connecting');
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${proto}//${location.host}/ws`);
+    const ws = new WebSocket(wsURL('ws'));
     this.ws = ws;
     ws.onopen = () => {
       this.retry = 0;

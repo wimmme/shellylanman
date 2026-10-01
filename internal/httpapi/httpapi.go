@@ -77,6 +77,9 @@ type Status struct {
 	FirstRunDone bool `json:"firstRunDone"`
 	AuthEnabled  bool `json:"authEnabled"`
 	Clients      int  `json:"clients"`
+	// Ingress: this request came through the Home Assistant ingress (the
+	// user is logged in to Home Assistant; the page is under a path prefix).
+	Ingress bool `json:"ingress"`
 }
 
 func (s *server) status(w http.ResponseWriter, r *http.Request) {
@@ -84,6 +87,7 @@ func (s *server) status(w http.ResponseWriter, r *http.Request) {
 		FirstRunDone: s.Store.Settings().FirstRunDone,
 		AuthEnabled:  false, // optional UI password: not built yet
 		Clients:      s.Hub.Clients(),
+		Ingress:      viaIngress(r),
 	})
 }
 

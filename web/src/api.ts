@@ -1,6 +1,15 @@
 // REST client for /api/v1. Types mirror internal/httpapi.
 
-export interface Status { firstRunDone: boolean; authEnabled: boolean; clients: number }
+export interface Status { firstRunDone: boolean; authEnabled: boolean; clients: number; ingress?: boolean }
+
+// URLs are relative to the page, so ShellyLanMan also works under a path prefix
+// (Home Assistant ingress: /api/hassio_ingress/<token>/).
+export function wsURL(path: string): string {
+  const u = new URL(path, location.href);
+  u.protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
+  u.hash = '';
+  return u.href;
+}
 export interface Settings { firstRunDone: boolean; language: string; updateCheck?: string; skipVersion?: string }
 export interface UpdateStatus { mode: string; current: string; latest?: string; url?: string; newer: boolean; skipped?: boolean; checked?: number; error?: string }
 export interface Credit { name: string; author: string; url: string; license: string; what: string }
@@ -25,7 +34,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     init.body = JSON.stringify(body);
     (init.headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
-  const resp = await fetch('/api/v1' + path, init);
+  const resp = await fetch('api/v1' + path, init);
   const data = resp.status === 204 ? {} : await resp.json().catch(() => ({}));
   if (!resp.ok) throw new ApiError(resp.status, (data as { error?: string }).error || resp.statusText);
   return data as T;
@@ -111,7 +120,7 @@ export const devicesApi = {
   command: (id: string, cmd: Command) => request<unknown>('POST', `/devices/${encodeURIComponent(id)}/command`, cmd),
   reboot: (ids: string[]) => request<unknown>('POST', '/devices/reboot', { ids, confirm: true }),
   logText: async (id: string, file: number): Promise<string> => {
-    const r = await fetch(`/api/v1/devices/${encodeURIComponent(id)}/log?file=${file}`);
+    const r = await fetch(`api/v1/devices/${encodeURIComponent(id)}/log?file=${file}`);
     const text = await r.text();
     if (!r.ok) throw new ApiError(r.status, text);
     return text;
@@ -170,7 +179,7 @@ export interface RestoreResult { result: 'ok' | 'queued' | 'fail'; problems?: st
 export const backupApi = {
   backup: (ids: string[]) => request<{ results: ResultLine[] }>('POST', '/backup', { ids }),
   list: (id?: string) => request<BackupFile[]>('GET', '/backups' + (id ? '?id=' + encodeURIComponent(id) : '')),
-  downloadURL: (f: BackupFile): string => `/api/v1/devices/${encodeURIComponent(f.deviceId)}/backups/${encodeURIComponent(f.name)}`,
+  downloadURL: (f: BackupFile): string => `api/v1/devices/${encodeURIComponent(f.deviceId)}/backups/${encodeURIComponent(f.name)}`,
   check: (id: string, source: RestoreSource) => request<RestorePlan>('POST', `/devices/${encodeURIComponent(id)}/restore/check`, { source }),
   restore: (id: string, source: RestoreSource, answers: Record<string, string>) =>
     request<RestoreResult>('POST', `/devices/${encodeURIComponent(id)}/restore`, { source, answers, confirm: true }),

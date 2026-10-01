@@ -131,3 +131,29 @@ a test on Wim's HA OS.
 | Q4 | Where do the app and the integration live: in this repository (`ha/app`, `custom_components/shellylanman`) or a separate `shellylanman-ha` repository? HACS expects `custom_components/` at the root | A separate repository: other language (Python), own releases, HACS layout |
 | Q5 | Assist through our own LLM API (recommended) or through HA's MCP integration with an unauthenticated path for HA Core? | Our own LLM API |
 | Q6 | May the app/integration test write to your HA OS (install app, add integration)? Which HA instance and version? | — |
+
+---
+
+## 5. Phase 11b — design (2026-10-01)
+
+Checked against `home-assistant/supervisor` (`docker/app.py`, `apps/validate.py`,
+`api/ingress.py`, `api/discovery.py`) and the test system `ha-test` (HA OS 18.3,
+HA 2026.9.4).
+
+| Fact | Consequence |
+|---|---|
+| A `host_network` app is reached by ingress at the Docker gateway (`172.30.32.1`) on `ingress_port`; requests come from the Supervisor (`172.30.32.2`) | ShellyLanMan opens a second listener on `172.30.32.1:8099` in app mode, accepting only `172.30.32.2` — not reachable from the LAN |
+| Ingress forwards the browser's headers (`Host`, `Origin`, cookies) plus `X-Ingress-Path` and `X-Remote-User-*`, and strips the `/api/hassio_ingress/<token>` prefix | The same-origin check keeps working unchanged; the SPA must use relative URLs (it already routes with `#/…`); esbuild chunks are already relative |
+| `/data` is a bind mount owned by root; the Supervisor does not override the image's user (our image runs as uid 10001) | The app image is a thin layer on the main image: an entry script fixes `/data` ownership, then drops to uid 10001 (`su-exec`) — ShellyLanMan itself never runs as root |
+| `image:` + `version:` in `config.yaml` → the Supervisor pulls `image:version` (multi-arch manifest) | App image `ghcr.io/wimmme/shellylanman-ha:<version>` (amd64, aarch64), built from `ghcr.io/wimmme/shellylanman:<same version>` in the `shellylanman-ha` repository |
+| Options arrive in `/data/options.json`; the app's own settings stay in ShellyLanMan's `settings.json` in the same `/data` | Only a log level as app option; everything else in ShellyLanMan's Settings page |
+| `/data` is included in HA backups | Settings, archive, scenes and backups go along with HA backups |
+| In app mode the UI is behind HA's login | The "UI authentication is off" banner is not shown through ingress |
+| The LAN port (3082 by default) stays open | For the MCP from Claude Code, the integration (11c) and `*.wimmme.net`; the port is a ShellyLanMan setting as before |
+
+Not in 11b (they belong with the integration, 11c): Supervisor discovery
+(`shellylanman`, `mcp`) and the token-less MCP listener on `127.0.0.1` (Q5).
+
+Testing before a release: the app is installed as a **local app** on `ha-test`
+(`/addons/shellylanman`, built on the device from a development image), then from the
+`shellylanman-ha` repository once the images are on GHCR.

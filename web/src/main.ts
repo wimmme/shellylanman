@@ -53,7 +53,7 @@ function renderShell(): void {
   const main = h('main', { class: 'main', id: 'main' });
   const shell = h('div', { class: 'shell' },
     h('aside', { class: 'sidebar' },
-      h('div', { class: 'brand' }, h('img', { src: '/logo.png', alt: '', width: 28, height: 28 }), h('span', { class: 'label' }, t('app.name'))),
+      h('div', { class: 'brand' }, h('img', { src: 'logo.png', alt: '', width: 28, height: 28 }), h('span', { class: 'label' }, t('app.name'))),
       h('nav', { 'aria-label': 'Main' }, nav),
       h('div', { class: 'nav-foot' }, version && (version === 'dev' ? 'dev' : `v${version}`))),
     h('header', { class: 'topbar' }, h('h1', {}, t(page.title)), h('div', { class: 'spacer' }), connLabel()),
@@ -61,7 +61,7 @@ function renderShell(): void {
   app.replaceChildren(shell);
   document.title = `${t(page.title)} · ${t('app.name')}`;
 
-  if (!status.authEnabled && !noAuthDismissed()) {
+  if (!status.authEnabled && !status.ingress && !noAuthDismissed()) { // behind Home Assistant's login under ingress
     const banner = h('div', { class: 'banner warn', role: 'note' }, t('banner.noAuth'),
       h('button', { class: 'btn close', onclick: () => { dismiss(); banner.remove(); } }, t('banner.dismiss')));
     main.append(banner);

@@ -15,9 +15,15 @@ func TestEmbeddedFrontendIsComplete(t *testing.T) {
 	if err != nil {
 		t.Skip("frontend not built into this checkout (run via Docker)")
 	}
-	refs := regexp.MustCompile(`(?:src|href)="/([^"]+)"`).FindAllStringSubmatch(string(index), -1)
+	refs := regexp.MustCompile(`(?:src|href)="([^"/:][^":]*)"`).FindAllStringSubmatch(string(index), -1)
 	if len(refs) < 3 {
-		t.Fatalf("index.html references only %d assets", len(refs))
+		t.Fatalf("index.html references only %d relative assets", len(refs))
+	}
+	if regexp.MustCompile(`(?:src|href)="/`).Match(index) {
+		t.Fatal("index.html has an absolute asset path; it breaks under a path prefix")
+	}
+	if css, err := fs.ReadFile(files, "app.css"); err != nil || regexp.MustCompile(`url\(\s*['"]?/`).Match(css) {
+		t.Fatalf("app.css missing or with an absolute url(): %v", err)
 	}
 	for _, r := range refs {
 		st, err := fs.Stat(files, r[1])

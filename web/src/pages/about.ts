@@ -35,7 +35,7 @@ function hero(a: About, u: UpdateStatus | null): HTMLElement {
   tick();
   const timer = setInterval(() => { if (!uptime.isConnected) clearInterval(timer); else tick(); }, 30_000);
   return h('section', { class: 'card about-hero' },
-    h('img', { src: '/logo.png', alt: 'ShellyLanMan', width: 120, height: 120, class: 'about-logo' }),
+    h('img', { src: 'logo.png', alt: 'ShellyLanMan', width: 120, height: 120, class: 'about-logo' }),
     h('div', { class: 'about-intro' },
       h('h1', {}, a.name),
       h('div', { class: 'about-tagline' }, t('about.tagline')),
@@ -58,8 +58,8 @@ function system(a: About): HTMLElement {
       ...row('about.data', t('about.dataValue')),
       ...row('about.languages', langs),
       ...row('about.license', h('span', { class: 'mono' }, a.license), ' · ',
-        h('button', { class: 'linkish', onclick: () => showText(t('about.licenseText'), '/api/v1/about/license') }, t('about.licenseText')), ' · ',
-        h('button', { class: 'linkish', onclick: () => showText(t('about.notices'), '/api/v1/about/notices') }, t('about.notices'))),
+        h('button', { class: 'linkish', onclick: () => showText(t('about.licenseText'), 'api/v1/about/license') }, t('about.licenseText')), ' · ',
+        h('button', { class: 'linkish', onclick: () => showText(t('about.notices'), 'api/v1/about/notices') }, t('about.notices'))),
     ));
 }
 
@@ -131,8 +131,8 @@ export const aboutPage: Page = {
     const [a, u, changelog, webDeps] = await Promise.all([
       api.about(),
       api.update().catch(() => null),
-      textFile('/api/v1/about/changelog'),
-      fetch('/deps.json').then((r) => (r.ok ? r.json() as Promise<Dep[]> : [])).catch(() => [] as Dep[]),
+      textFile('api/v1/about/changelog'),
+      fetch('deps.json').then((r) => (r.ok ? r.json() as Promise<Dep[]> : [])).catch(() => [] as Dep[]),
     ]);
     main.append(
       hero(a, u),

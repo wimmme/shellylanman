@@ -6,7 +6,7 @@
 // to a file, upload to the device, run/stop, upload and run, undo/redo, find,
 // go to line, caret position, help, and the script's log (the device's debug
 // websocket, "info" lines of this script only).
-import { ApiError, scriptsApi, type Device, type ScriptInfo } from '../api';
+import { ApiError, scriptsApi, wsURL, type Device, type ScriptInfo } from '../api';
 import { download } from '../csv';
 import { h } from '../dom';
 import { t } from '../i18n';
@@ -63,8 +63,7 @@ export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running
     if (ws) return;
     await scriptsApi.logOn(d.id).catch(() => { /* the connection will report it */ });
     if (ws || !running) return;
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${proto}//${location.host}/ws/log/${encodeURIComponent(d.id)}`);
+    ws = new WebSocket(wsURL(`ws/log/${encodeURIComponent(d.id)}`));
     ws.onmessage = (m) => {
       try {
         const j = JSON.parse(String(m.data)) as { level?: number; fd?: number; data?: string; error?: string };

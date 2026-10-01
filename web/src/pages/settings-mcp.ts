@@ -15,8 +15,11 @@ function copyRow(text: string, label: string): HTMLElement {
 }
 
 export async function mcpSettings(body: HTMLElement): Promise<void> {
-  let info = await api.mcp();
-  const url = `${location.origin}/mcp`;
+  const [first, status, server] = await Promise.all([api.mcp(), api.status(), api.server()]);
+  let info = first;
+  // Under Home Assistant ingress the page is served by Home Assistant; the MCP
+  // is on ShellyLanMan's own port of the same host.
+  const url = status.ingress ? `http://${location.hostname}:${server.port}/mcp` : `${location.origin}/mcp`;
   const box = h('div');
 
   const draw = (token?: string): void => {

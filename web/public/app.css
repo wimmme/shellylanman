@@ -38,30 +38,30 @@ html[data-palette="github"][data-theme="light"]{--bg-deep:#e0e5e9;--bg-card:rgba
 :root{--card-badge-bg:rgba(99,130,190,.12);--card-badge-color:rgba(148,163,190,.7);--card-badge-bg-active-blue:rgba(56,189,248,.15);--card-badge-color-active-blue:rgba(56,189,248,.9);--card-badge-bg-active-green:rgba(52,211,153,.15);--card-badge-color-active-green:rgba(52,211,153,.9)}
 
 /* ── Fonts (self-hosted, SIL OFL 1.1 — see /fonts/OFL.txt) ───────────────── */
-@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/inter-400.woff2') format('woff2')}
-@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/inter-500.woff2') format('woff2')}
-@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/inter-600.woff2') format('woff2')}
-@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/inter-700.woff2') format('woff2')}
-@font-face{font-family:'Oxanium';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/oxanium-400.woff2') format('woff2')}
-@font-face{font-family:'Oxanium';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/oxanium-500.woff2') format('woff2')}
-@font-face{font-family:'Oxanium';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/oxanium-600.woff2') format('woff2')}
-@font-face{font-family:'Oxanium';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/oxanium-700.woff2') format('woff2')}
-@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/ibm-plex-sans-400.woff2') format('woff2')}
-@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/ibm-plex-sans-500.woff2') format('woff2')}
-@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/ibm-plex-sans-600.woff2') format('woff2')}
-@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/ibm-plex-sans-700.woff2') format('woff2')}
-@font-face{font-family:'Nunito';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/nunito-400.woff2') format('woff2')}
-@font-face{font-family:'Nunito';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/nunito-500.woff2') format('woff2')}
-@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/nunito-600.woff2') format('woff2')}
-@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/nunito-700.woff2') format('woff2')}
-@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/roboto-400.woff2') format('woff2')}
-@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/roboto-500.woff2') format('woff2')}
-@font-face{font-family:'Roboto';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/roboto-600.woff2') format('woff2')}
-@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/roboto-700.woff2') format('woff2')}
-@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/jetbrains-mono-400.woff2') format('woff2')}
-@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/jetbrains-mono-500.woff2') format('woff2')}
-@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/jetbrains-mono-600.woff2') format('woff2')}
-@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/jetbrains-mono-700.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/inter-400.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/inter-500.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/inter-600.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/inter-700.woff2') format('woff2')}
+@font-face{font-family:'Oxanium';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/oxanium-400.woff2') format('woff2')}
+@font-face{font-family:'Oxanium';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/oxanium-500.woff2') format('woff2')}
+@font-face{font-family:'Oxanium';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/oxanium-600.woff2') format('woff2')}
+@font-face{font-family:'Oxanium';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/oxanium-700.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/ibm-plex-sans-400.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/ibm-plex-sans-500.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/ibm-plex-sans-600.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/ibm-plex-sans-700.woff2') format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/nunito-400.woff2') format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/nunito-500.woff2') format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/nunito-600.woff2') format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/nunito-700.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/roboto-400.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/roboto-500.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/roboto-600.woff2') format('woff2')}
+@font-face{font-family:'Roboto';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/roboto-700.woff2') format('woff2')}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/jetbrains-mono-400.woff2') format('woff2')}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/jetbrains-mono-500.woff2') format('woff2')}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/jetbrains-mono-600.woff2') format('woff2')}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/jetbrains-mono-700.woff2') format('woff2')}
 
 /* ── ShellyLanMan components (GPL-3.0-or-later) ──────────────────────────── */
 :root{--radius:10px;--gap:14px;--topbar-h:52px;color-scheme:dark}

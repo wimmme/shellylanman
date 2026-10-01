@@ -14,6 +14,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   ShellyLanMan; a flip-back timer for relays and a fade for lights; rescan. Deletes,
   code, RPC writes and the device password need `confirm: true`; factory reset also
   `allow_data_loss`.
+- Home Assistant app support: with `SHELLYLANMAN_INGRESS` set, a second listener for
+  Home Assistant's ingress that only the Supervisor may use; the web UI works under a
+  path prefix (relative URLs), hides the no-auth banner inside Home Assistant and shows
+  the LAN address of the MCP there. The app itself lives in `shellylanman-ha`.
 - `docs/phase-11-ha-mcp.md`: analysis for Home Assistant (app, integration, Assist) and
   MCP parity with the Shelly-MCP — for review, nothing built yet.
 

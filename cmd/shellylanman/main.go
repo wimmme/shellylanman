@@ -7,6 +7,8 @@
 //	                                longer be changed in the settings (default ":3082")
 //	-data     SHELLYLANMAN_DATA     data directory (default "/data")
 //	-origins  SHELLYLANMAN_ORIGINS  extra allowed Origin hosts, comma separated
+//	-ingress  SHELLYLANMAN_INGRESS  Home Assistant app: ingress listener address
+//	-ingress-from SHELLYLANMAN_INGRESS_FROM  the Supervisor's address (172.30.32.2)
 //	-healthcheck                    probe /healthz of a running server and exit (used by Docker)
 package main
 
@@ -41,6 +43,8 @@ func main() {
 	fixed := flag.String("listen", env("SHELLYLANMAN_LISTEN", ""), "address to listen on (default: the port in the settings, else :3082)")
 	dataDir := flag.String("data", env("SHELLYLANMAN_DATA", "/data"), "data directory")
 	origins := flag.String("origins", env("SHELLYLANMAN_ORIGINS", ""), "extra allowed Origin hosts, comma separated")
+	ingress := flag.String("ingress", env("SHELLYLANMAN_INGRESS", ""), "Home Assistant app: address of the ingress listener, e.g. 172.30.32.1:8099")
+	ingressFrom := flag.String("ingress-from", env("SHELLYLANMAN_INGRESS_FROM", "172.30.32.2"), "the only client address the ingress listener accepts (the Supervisor)")
 	healthcheck := flag.Bool("healthcheck", false, "probe /healthz of a running server and exit")
 	flag.Parse()
 
@@ -50,13 +54,13 @@ func main() {
 
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(log)
-	if err := run(log, *fixed, *dataDir, splitList(*origins)); err != nil {
+	if err := run(log, *fixed, *dataDir, splitList(*origins), *ingress, *ingressFrom); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(log *slog.Logger, fixed, dataDir string, origins []string) error {
+func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ingressFrom string) error {
 	log.Info("starting ShellyLanMan", "version", version.Version, "commit", version.Commit, "data", dataDir)
 
 	st, err := store.Open(dataDir)
@@ -93,6 +97,20 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string) error {
 	if err := ln.Start(); err != nil {
 		return err
 	}
+	var ingressSrv *http.Server
+	if ingress != "" { // Home Assistant app: a listener only the Supervisor can use
+		ingressLn, err := net.Listen("tcp", ingress)
+		if err != nil {
+			return fmt.Errorf("ingress listener: %w", err)
+		}
+		ingressSrv = &http.Server{Handler: httpapi.Ingress(srv.Handler, ingressFrom), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 120 * time.Second}
+		go func() {
+			if err := ingressSrv.Serve(ingressLn); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				log.Error("ingress listener", "err", err)
+			}
+		}()
+		log.Info("Home Assistant ingress", "listen", ingress, "from", ingressFrom)
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	devices.Start(ctx)
@@ -110,6 +128,9 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string) error {
 	log.Info("shutting down")
 	sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	if ingressSrv != nil {
+		_ = ingressSrv.Shutdown(sctx)
+	}
 	if err := srv.Shutdown(sctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}

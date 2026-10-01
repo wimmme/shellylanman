@@ -1,7 +1,7 @@
 // Device logs (ShellyScanner: DialogDeviceLogsG1 / DialogDeviceLogsG2).
 // Gen1: the /debug/log and /debug/log1 files. Gen2+: the live /debug/log
 // WebSocket, relayed by the server; for a BLU device, its gateway's log.
-import { devicesApi, type Device } from '../api';
+import { devicesApi, wsURL, type Device } from '../api';
 import { allDevices } from '../devices';
 import { h } from '../dom';
 import { t } from '../i18n';
@@ -53,8 +53,7 @@ function gen2(dev: Device): void {
     if (atBottom) pre.scrollTop = pre.scrollHeight;
   };
   const connect = (): void => {
-    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${proto}//${location.host}/ws/log/${encodeURIComponent(dev.id)}`);
+    ws = new WebSocket(wsURL(`ws/log/${encodeURIComponent(dev.id)}`));
     on.setAttribute('disabled', '');
     offBtn.removeAttribute('disabled');
     ws.onopen = () => append('>>>> Open', 'log-meta');
