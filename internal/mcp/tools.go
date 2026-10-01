@@ -87,7 +87,9 @@ func integer(desc string, min, max int) map[string]any {
 	return map[string]any{"type": "integer", "description": desc, "minimum": min, "maximum": max}
 }
 
-func boolean(desc string) map[string]any { return map[string]any{"type": "boolean", "description": desc} }
+func boolean(desc string) map[string]any {
+	return map[string]any{"type": "boolean", "description": desc}
+}
 
 var (
 	deviceArg  = str("Device: id (MAC), name, host name or IP address")

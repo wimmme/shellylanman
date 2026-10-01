@@ -270,7 +270,11 @@ func TestReadTools(t *testing.T) {
 		f.samples = append(f.samples, service.Sample{T: now - int64(500-i)*1000, RSSI: -i})
 	}
 	txt, _ = c.tool("shelly_get_readings", map[string]any{"device": "A1", "minutes": 30})
-	var r struct{ Points []struct{ RSSI int `json:"rssi_dbm"` } }
+	var r struct {
+		Points []struct {
+			RSSI int `json:"rssi_dbm"`
+		}
+	}
 	json.Unmarshal([]byte(txt), &r)
 	if len(r.Points) > 121 || len(r.Points) < 100 || r.Points[len(r.Points)-1].RSSI != -499 {
 		t.Fatalf("readings: %d points, last %+v", len(r.Points), r.Points[len(r.Points)-1])
