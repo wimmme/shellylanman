@@ -164,3 +164,25 @@ New test device **ShellyTestPlug** (Plug S Gen3, 192.168.0.150, firmware 1.2.3 a
 | arm64 build (cross-compiled `build` stage on dockerhostvm) | static ARM aarch64 binary, 10.4 MB; the final stage needs QEMU, which is not installed on dockerhostvm — it runs on GitHub at the first tag |
 | Release check on the test container | setting off: no request; stable: checked, no release yet, no error; back to off |
 | Retry of failed devices every 2 minutes | simulator test (device down when discovered, back later → on line) |
+
+## MCP server (2026-10-01)
+
+Live container on dockerhostvm (port 3082), MCP calls over Streamable HTTP with the
+bearer token. Access set to "control" for the test and back to "read" afterwards; both
+test devices left as found (ShellyTestPlug off, Grondwaterpomp on).
+
+| Check | Result |
+|---|---|
+| Read tools in Claude Code (`shelly_list_devices`, `shelly_checklist`, `shelly_rpc_read`) | answers for all devices; checklist cells as the UI |
+| `tools/list` in read / control mode | 7 read tools / 14 tools |
+| `shelly_switch` on ShellyTestPlug (Gen3) and Grondwaterpomp (Gen1) | on/off confirmed by reading the devices directly (`Switch.GetStatus`, `/relay/0`) |
+| `shelly_backup` of both, `shelly_list_backups` | `.sbk` files written and listed |
+| `shelly_reboot` / `shelly_firmware_update` without `confirm` | refused, nothing sent (logged) |
+| `shelly_firmware_update` stable with `confirm` on ShellyTestPlug (already 2.0.1, 2.1.0-beta1 offered) | the device answers "FW stage stable not found", reported as a failed result line |
+| `shelly_reboot` with `confirm` on ShellyTestPlug | down ~30 s, back up; ShellyLanMan showed "error" for about 2 minutes before "online" (no browser open, so slow polling) |
+| Ambiguous name (`"Lampen"`) | refused with the 7 candidates |
+
+Seen on the way: after the container restart ShellyTestPlug stayed a ghost (archive)
+until a Reload, although it answered on its address — the mDNS scan did not find it.
+Not tested on hardware: `shelly_light`, `shelly_cover`, `shelly_thermostat` (no test
+device of those kinds; simulator tests cover them).
