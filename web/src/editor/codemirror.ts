@@ -38,7 +38,7 @@ function cspNonce(): string {
   return document.querySelector('meta[name="csp-nonce"]')?.getAttribute('content') ?? '';
 }
 
-export function createEditor(parent: HTMLElement, doc: string, p: IDEPrefs, onCursor: (line: number, col: number) => void): Editor {
+export function createEditor(parent: HTMLElement, doc: string, p: IDEPrefs, dark: boolean, onCursor: (line: number, col: number) => void): Editor {
   const enter = p.indent === 'NO' ? insertNewline : p.indent === 'STD' ? insertNewlineKeepIndent : null;
   const ext: Extension[] = [
     // CodeMirror injects its stylesheet as a <style> element: the page's CSP
@@ -67,7 +67,7 @@ export function createEditor(parent: HTMLElement, doc: string, p: IDEPrefs, onCu
   if (p.indent === 'SMART') ext.push(indentOnInput());
   const brackets = closingBrackets(p);
   if (brackets.length) ext.push(closeBrackets(), EditorState.languageData.of(() => [{ closeBrackets: { brackets } }]));
-  if (p.dark) ext.push(oneDark);
+  if (dark) ext.push(oneDark);
   const view = new EditorView({ state: EditorState.create({ doc, extensions: ext }), parent });
   return {
     text: () => view.state.doc.toString(),

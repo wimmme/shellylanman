@@ -1,5 +1,5 @@
 import { CHART_TYPES } from '../chartlogic';
-import { ideprefs, setIdeprefs, type Indent } from '../ideprefs';
+import { ideprefs, setIdeprefs, type IDETheme, type Indent } from '../ideprefs';
 import { api } from '../api';
 import {
   APPEAR_DEFAULT, FONTS, FONT_SIZES, PALETTES, SLIDER_MAX, applyFont, applyFontSize, applyLevel, applyPalette,
@@ -155,7 +155,8 @@ function ide(body: HTMLElement): void {
     h('div', { class: 'field' }, h('span', { class: 'cfg-label' }, t('ide.close')),
       chk('{ }', p.closeCurly, (b) => { p.closeCurly = b; }), chk('( )', p.closeBracket, (b) => { p.closeBracket = b; }),
       chk('[ ]', p.closeSquare, (b) => { p.closeSquare = b; }), chk('" "', p.closeString, (b) => { p.closeString = b; })),
-    chk(t('ide.dark'), p.dark, (b) => { p.dark = b; }),
+    field(t('ide.theme'), select('ideTheme', [{ value: 'auto', label: t('ide.theme.auto') }, { value: 'dark', label: t('appearance.dark') }, { value: 'light', label: t('appearance.light') }],
+      p.theme, (v) => { p.theme = v as IDETheme; save(); })),
     h('p', { class: 'muted' }, t('ide.note')),
   );
 }

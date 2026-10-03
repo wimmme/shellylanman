@@ -5,6 +5,15 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-10-04
+
+The script editor follows the app's light or dark look.
+
+### Changed
+- Script editor colours follow the app (light or dark) by default. Settings → Script
+  editor → *Editor colours* can fix them to dark or light; a dark editor chosen before
+  stays dark.
+
 ## [0.6.2] - 2026-10-03
 
 The script editor shows the code again.

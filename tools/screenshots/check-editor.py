@@ -5,7 +5,7 @@ Runs in the Playwright image against ShellyLanMan with simulated devices:
     SCRIPT=check-editor.py sh tools/screenshots/run.sh
 
 Opens the long demo script of "Heat pump" (tools/screenshots/script) in the
-editor, light and dark, and fails (exit 1) when CodeMirror's stylesheet was not
+editor, light and dark (the editor follows the app's theme by default), and fails (exit 1) when CodeMirror's stylesheet was not
 applied: the scroller must scroll (overflow not 'visible'), the first line must
 be inside the editor box, and the browser must not have refused an inline style
 (a CSP without the nonce did exactly that: an unstyled, garbled editor).
@@ -23,7 +23,7 @@ with sync_playwright() as p:
     br = p.chromium.launch()
     for scheme in ("light", "dark"):
         ctx = br.new_context(color_scheme=scheme, viewport={"width": 1440, "height": 900})
-        ctx.add_init_script(QUIET + ("try { localStorage.setItem('sl_ide', JSON.stringify({dark: true})) } catch (e) {}" if scheme == "dark" else ""))
+        ctx.add_init_script(QUIET)  # editor colours: the default, following the app
         pg = ctx.new_page()
         refused = []
         pg.on("console", lambda m: refused.append(m.text) if "Refused to apply inline style" in m.text else None)
@@ -39,6 +39,7 @@ with sync_playwright() as p:
           const box = document.querySelector('.ide-editor').getBoundingClientRect();
           const first = document.querySelector('.ide-editor .cm-line').getBoundingClientRect();
           return { overflow: getComputedStyle(scroller).overflow, first: first.top, top: box.top, bottom: box.bottom,
+                   dark: document.querySelector('.ide-editor').classList.contains('dark'),
                    text: document.querySelector('.ide-editor .cm-line').textContent };
         }""")
         print(scheme, r, "refused:", len(refused))
@@ -46,6 +47,8 @@ with sync_playwright() as p:
             problems.append(f"{scheme}: .cm-scroller overflow is visible (CodeMirror's stylesheet not applied)")
         if not (r["top"] <= r["first"] < r["bottom"]):
             problems.append(f"{scheme}: first line at y={r['first']}, editor box {r['top']}–{r['bottom']}")
+        if r["dark"] != (scheme == "dark"):
+            problems.append(f"{scheme}: the editor does not follow the app's theme (dark={r['dark']})")
         if refused:
             problems.append(f"{scheme}: CSP refused an inline style: {refused[0][:120]}")
         pg.screenshot(path=f"/shots/editor-{scheme}.png")

@@ -10,7 +10,8 @@ import { ApiError, scriptsApi, wsURL, type Device, type ScriptInfo } from '../ap
 import { download } from '../csv';
 import { h } from '../dom';
 import { t } from '../i18n';
-import { ideprefs } from '../ideprefs';
+import { currentTheme } from '../appearance';
+import { editorDark, ideprefs } from '../ideprefs';
 import { openModal } from '../modal';
 import { toast } from '../toast';
 
@@ -54,10 +55,11 @@ export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running
   if (cancelled) return;
   const { createEditor } = await import('../editor/codemirror');
   const prefs = ideprefs();
-  const host = h('div', { class: 'ide-editor' + (prefs.dark ? ' dark' : '') });
+  const dark = editorDark(prefs, currentTheme());
+  const host = h('div', { class: 'ide-editor' + (dark ? ' dark' : '') });
   const caret = h('span', { class: 'muted ide-caret' }, '1 : 1');
-  const logs = h('pre', { class: 'ide-log' + (prefs.dark ? ' dark' : ''), 'aria-live': 'polite' });
-  const editor = createEditor(host, code, prefs, (l, c) => { caret.textContent = `${l} : ${c}`; });
+  const logs = h('pre', { class: 'ide-log' + (dark ? ' dark' : ''), 'aria-live': 'polite' });
+  const editor = createEditor(host, code, prefs, dark, (l, c) => { caret.textContent = `${l} : ${c}`; });
   let fileName = s.name.endsWith('.js') ? s.name : s.name + '.js';
   let running = s.running;
   let ws: WebSocket | null = null;
