@@ -190,7 +190,7 @@ dl.kv dd{margin:0}
 .nav-back{display:none}
 @media (max-width:900px){
   .shell{grid-template-columns:1fr}
-  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(260px,80vw);z-index:45;transform:translateX(-100%);transition:transform .2s ease;visibility:hidden}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(260px,80vw);z-index:45;background:linear-gradient(var(--nav-bg),var(--nav-bg)),var(--bg-deep);transform:translateX(-100%);transition:transform .2s ease;visibility:hidden}
   .shell.nav-open .sidebar{transform:none;visibility:visible;box-shadow:0 0 24px rgba(0,0,0,.45)}
   .shell.nav-open .nav-back{display:block;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.4)}
   .menu-btn{display:inline-flex}
