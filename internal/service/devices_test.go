@@ -332,3 +332,56 @@ func TestFailedDeviceIsRetried(t *testing.T) {
 	d.SetDown(false)
 	waitDevice(t, m, "AABBCC000001", online)
 }
+
+func TestRescanKeepsDevicesSearching(t *testing.T) {
+	oldProbe, oldAfter := ProbeTimeout, searchProbeAfter
+	t.Cleanup(func() { ProbeTimeout, searchProbeAfter = oldProbe, oldAfter })
+	st, _ := store.Open(t.TempDir())
+	st.Update(func(s *store.Settings) {
+		s.Scan.Mode = store.ScanIP
+		s.Scan.Ranges = []discovery.Range{{Base: "127.0.0", First: 2, Last: 2}} // the device is not in the range
+		s.Archive.Use = false
+	})
+	errorsRetryAfter, ghostsRetryAfter = time.Hour, time.Hour
+	m := NewDevices(st, shelly.NewClient(), nil, nil)
+	m.IPScanPort = 1
+	ctx, cancel := context.WithCancel(context.Background())
+	defer func() { cancel(); m.Wait() }()
+	m.Start(ctx)
+	ProbeTimeout, searchProbeAfter = 500*time.Millisecond, 100*time.Millisecond
+	d, addr := startSimDev(t, fixtureDir(t, "gen2/Plus1", nil), nil)
+	m.handle(m.run, addr, "shellyplus1-aabbcc000001", true)
+	waitDevice(t, m, "AABBCC000001", online)
+
+	// Rescan: the device stays listed as "searching", then is found at its last address.
+	m.Rescan()
+	if x, ok := m.Get("AABBCC000001"); !ok || x.Status != model.StatusSearching {
+		t.Fatalf("right after the rescan: %+v, %v", x, ok)
+	}
+	waitDevice(t, m, "AABBCC000001", online)
+
+	// Not found again, archive on: it becomes a ghost when the search ends.
+	st.Update(func(s *store.Settings) { s.Archive.Use = true })
+	m.saveArchive()
+	d.SetDown(true)
+	m.Rescan()
+	waitDevice(t, m, "AABBCC000001", func(x model.Device) bool { return x.Status == model.StatusGhost })
+
+	// Archive off: it leaves the list.
+	st.Update(func(s *store.Settings) { s.Archive.Use = false })
+	d.SetDown(false)
+	m.handle(m.run, addr, "shellyplus1-aabbcc000001", true)
+	waitDevice(t, m, "AABBCC000001", online)
+	d.SetDown(true)
+	m.Rescan()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		if _, ok := m.Get("AABBCC000001"); !ok {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("device still listed after the search")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+}

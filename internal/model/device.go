@@ -21,6 +21,9 @@ const (
 	StatusReading Status = "reading" // READING: refresh or reboot in progress
 	StatusError   Status = "error"   // ERROR
 	StatusGhost   Status = "ghost"   // GHOST: known from the archive, not seen this session
+	// StatusSearching: listed before a rescan and not found again yet (ShellyLanMan
+	// only, DECISIONS P12-7); becomes ghost, or leaves the list, after the search.
+	StatusSearching Status = "searching"
 )
 
 // Generation values; Gen1–Gen4 are "1".."4" like ShellyScanner's getGeneration().

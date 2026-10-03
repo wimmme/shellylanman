@@ -291,7 +291,7 @@ var tools = []tool{
 		name: "shelly_list_devices", title: "List devices",
 		description: "All Shelly devices ShellyLanMan knows on this LAN, with status, type, IP, signal, uptime, temperature and meter readings. Optional filters.",
 		schema: obj(nil, map[string]any{
-			"status": str("Only devices with this status", "online", "offline", "login", "reading", "error", "ghost"),
+			"status": str("Only devices with this status", "online", "offline", "login", "reading", "error", "ghost", "searching"),
 			"query":  str("Only devices whose name, host name, type, keyword or IP contains this text"),
 		}),
 		run: func(ctx context.Context, s Service, args json.RawMessage) (any, error) {

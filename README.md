@@ -143,7 +143,7 @@ needed before the UI is up:
 | `secret.key` | Random key created on first start; encrypts secrets in `settings.json` |
 | `settings.json` | Application settings; device credentials encrypted |
 | `archive.json` | Device archive: known devices, last address, notes and keywords |
-| `deferred.json` | Deferred tasks for off-line devices (passwords encrypted) |
+| `deferred.json` | Deferred tasks for offline devices (passwords encrypted) |
 | `backups/<device>/*.sbk` | Device backups (newest N per device, setting) |
 | `firmware/` | Verified firmware files of the local download (cache) |
 
@@ -167,7 +167,7 @@ Everything ShellyScanner does, in the browser:
 - **Devices table** with all columns, filters, views, device information, live logs,
   controls (relays, rollers, lights, thermostats, …), reboot, CSV export and print.
 - **Configuration** of one or many devices (Wi-Fi, login, MQTT, NTP, cloud, …), the
-  configuration checklist and deferred tasks for devices that are off line.
+  configuration checklist and deferred tasks for devices that are offline.
 - **Backup and restore** (`.sbk`, compatible with ShellyScanner), kept on the server.
 - **Firmware** check and update with live progress, plus one new feature: a **QR code
   for a local firmware download**, to update a device through its own access point.
@@ -190,7 +190,7 @@ if you switch it on (off by default). No telemetry.
 | **Checklist** | One row per device with the settings worth checking — eco mode, LED, logs, Bluetooth, access point, roaming, Wi-Fi, range extender, scripts, automatic firmware update — and right-click actions to fix them. |
 | **Charts** | Power, energy, voltage, temperature, RSSI and more for the selected devices, with 24 hours of history, zoom, pause and CSV export. |
 | **Firmware** | Current, stable and beta firmware per device, update with live progress, and the QR code for the local download. |
-| **Deferred** | Actions for off-line devices, run when the device comes back. |
+| **Deferred** | Actions for offline devices, run when the device comes back. |
 | **Settings** | Scan mode and IP ranges, archive, device credentials, backups, web server port, script editor, appearance and language. |
 | **About** | What is running (version, runtime, uptime), release notes, dependencies with their licences, credits and help. |
 

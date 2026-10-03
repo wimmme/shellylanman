@@ -29,6 +29,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 - On narrow screens (phones, either way round, and small tablets) the navigation is a
   ☰ menu in the top bar instead of a bottom bar or an icon rail, so pages get the full
   width.
+- *Rescan* no longer shows almost every device as archived for a while: the devices
+  that were listed show *searching*, are asked at their last address at once, and
+  become archived (or leave the list without the archive) only when the search ends —
+  the end of the IP scan, or 30 s in the mDNS modes. New status `searching` in the API
+  and MCP.
+- A device in error says in its status tooltip how to read it again (*Reload*).
+- English writes *online* / *offline* (was *on line* / *off line*), Italian too.
 
 ### Added
 - ShellyLanMan can be installed as an app (PWA) when it is served over HTTPS or on

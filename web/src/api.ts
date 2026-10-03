@@ -55,7 +55,7 @@ export const api = {
 
 // ---- devices (Phase 2) ----
 
-export type DeviceStatus = 'online' | 'offline' | 'login' | 'reading' | 'error' | 'ghost';
+export type DeviceStatus = 'online' | 'offline' | 'login' | 'reading' | 'error' | 'ghost' | 'searching';
 
 export interface Device {
   id: string; mac: string; gen: string; typeId: string; typeName: string;

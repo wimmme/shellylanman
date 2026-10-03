@@ -139,6 +139,7 @@ table.data tbody tr:hover td{background:rgba(99,130,190,.05)}
 .pill.reading{color:var(--accent-rx)}
 .pill.error{color:var(--accent-err);border-style:dashed}
 .pill.ghost{color:var(--text-muted)}
+.pill.searching{color:var(--text-muted);font-style:italic}
 
 /* Empty / loading states */
 .state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:40px 16px;text-align:center;color:var(--text-muted)}

@@ -35,7 +35,7 @@ interface Col {
 const YES = '✓', NO = '✗';
 const LOG_LABEL: Record<string, string> = { NONE: NO, UNDEFINED: '-', FILE: 'file', MQTT: 'mqtt', SOCKET: 'socket', UDP: 'udp' };
 const isBLU = (d: Device): boolean => d.gen === 'blu' || d.gen === 'bth';
-const hasLive = (d: Device): boolean => d.status !== 'login' && d.status !== 'error' && d.status !== 'ghost';
+const hasLive = (d: Device): boolean => d.status !== 'login' && d.status !== 'error' && d.status !== 'ghost' && d.status !== 'searching';
 const num = (f: (d: Device) => number | undefined) => (a: Device, b: Device): number => (f(a) ?? -Infinity) - (f(b) ?? -Infinity);
 
 const STATUS: Record<DeviceStatus, { cls: string; key: Key }> = {
@@ -45,14 +45,17 @@ const STATUS: Record<DeviceStatus, { cls: string; key: Key }> = {
   reading: { cls: 'reading', key: 'status.reading' },
   error: { cls: 'error', key: 'status.error' },
   ghost: { cls: 'ghost', key: 'status.ghost' },
+  searching: { cls: 'searching', key: 'status.searching' },
 };
 
 function statusTip(d: Device): string {
   const tip = [t(STATUS[d.status]?.key ?? 'status.error')];
   if (d.rebootRequired) tip.push(t('status.rebootRequired'));
   if (d.status === 'online' && isBLU(d) && d.lastSeen > 0) tip.push(t('status.bluSeen', { when: dateTime(new Date(d.lastSeen), true) }));
-  if ((d.status === 'offline' || d.status === 'ghost') && d.lastSeen > 0) tip.push(t('status.lastSeen', { when: dateTime(new Date(d.lastSeen), true) }));
+  if (d.status === 'searching') tip.push(t('status.searchingTip'));
+  if ((d.status === 'offline' || d.status === 'ghost' || d.status === 'searching') && d.lastSeen > 0) tip.push(t('status.lastSeen', { when: dateTime(new Date(d.lastSeen), true) }));
   if (d.error) tip.push(d.error);
+  if (d.status === 'error') tip.push(t('status.errorTip'));
   if (d.paused) tip.push(t('logs.paused'));
   return tip.join(' — ');
 }

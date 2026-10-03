@@ -49,6 +49,12 @@ var (
 	errorsRetryEvery = 2 * time.Minute
 	ghostsRetryAfter = 45 * time.Second
 	archiveSaveEvery = 5 * time.Second
+	// After a rescan, devices that were listed are probed at their last address
+	// once discovery had a moment to find them (searchProbeAfter), and those
+	// still not found leave "searching" when the IP scan ends, or after
+	// searchWindow in the mDNS modes (DECISIONS P12-7).
+	searchProbeAfter = 3 * time.Second
+	searchWindow     = 30 * time.Second
 )
 
 // ScanState is what the UI shows about discovery.
@@ -166,6 +172,8 @@ func (m *Devices) Start(ctx context.Context) {
 
 // Rescan clears the list and discovers again with the current settings
 // (ShellyScanner: Rescan; archive ghosts are re-added when the archive is on).
+// Unlike ShellyScanner, the devices that were listed stay as "searching" until
+// they are found again or the search ends (DECISIONS P12-7).
 func (m *Devices) Rescan() {
 	st := m.store.Settings()
 	m.mu.Lock()
@@ -176,7 +184,8 @@ func (m *Devices) Rescan() {
 	if m.runCancel != nil {
 		m.runCancel()
 	}
-	for _, e := range m.devs {
+	prev := m.devs
+	for _, e := range prev {
 		if e.cancel != nil {
 			e.cancel()
 		}
@@ -189,6 +198,18 @@ func (m *Devices) Rescan() {
 	if st.Archive.Use {
 		for id, a := range m.archive {
 			m.devs[id] = &entry{dev: ghostDevice(a)}
+		}
+	}
+	// The devices that were listed stay, as "searching", until they are found
+	// again or the search is over (P12-7). Offline mode does not search.
+	if st.Scan.Mode != store.ScanOffline {
+		for id, e := range prev {
+			if e.dev.Status == model.StatusGhost {
+				continue
+			}
+			d := e.dev
+			d.Status, d.Error = model.StatusSearching, ""
+			m.devs[id] = &entry{dev: d}
 		}
 	}
 	m.mu.Unlock()
@@ -224,6 +245,7 @@ func (m *Devices) Rescan() {
 			m.emitScan()
 		}()
 	case store.ScanIP:
+		endAfter := searchProbeAfter + ProbeTimeout // the last address probes are answered
 		m.mu.Lock()
 		m.scan.Scanning = true
 		m.mu.Unlock()
@@ -236,11 +258,18 @@ func (m *Devices) Rescan() {
 			m.scan.Scanning = false
 			m.mu.Unlock()
 			m.emitScan()
+			m.after(run, endAfter, m.endSearch)
 		}()
 	case store.ScanOffline:
 		// archive only
 	}
 
+	if st.Scan.Mode != store.ScanOffline {
+		go m.after(run, searchProbeAfter, m.probeSearching)
+	}
+	if st.Scan.Mode == store.ScanFull || st.Scan.Mode == store.ScanLocal {
+		go m.after(run, searchWindow, m.endSearch)
+	}
 	go m.after(run, errorsRetryAfter, m.retryErrorsLoop)
 	// Auto reload applies to the mDNS modes only (PanelStore tooltip; Devices.scannerInit).
 	if st.Archive.Use && st.Archive.AutoReload && (st.Scan.Mode == store.ScanFull || st.Scan.Mode == store.ScanLocal) {
@@ -460,6 +489,50 @@ func (m *Devices) retryErrors(ctx context.Context) {
 		if !d.Managed && d.Error != "" {
 			go m.handle(ctx, d.Address(), d.Hostname, false)
 		}
+	}
+}
+
+// probeSearching asks every device still "searching" at its last address
+// (P12-7): a device that answers is listed again at once. Battery devices
+// sleep and BLU devices come back with their gateway, so they are not asked.
+func (m *Devices) probeSearching(ctx context.Context) {
+	for _, d := range m.List() {
+		if d.Status == model.StatusSearching && !d.Battery && d.Gen != model.GenBLU && d.Gen != model.GenBTHome {
+			go m.handle(ctx, d.Address(), d.Hostname, false)
+		}
+	}
+}
+
+// endSearch ends a rescan's search: a device still "searching" becomes a ghost
+// when the archive knows it, else it leaves the list (P12-7).
+func (m *Devices) endSearch(ctx context.Context) {
+	if ctx.Err() != nil {
+		return
+	}
+	use := m.store.Settings().Archive.Use
+	var upserts []model.Device
+	var removed []string
+	m.mu.Lock()
+	for id, e := range m.devs {
+		if e.dev.Status != model.StatusSearching {
+			continue
+		}
+		if a, ok := m.archive[id]; ok && use {
+			g := ghostDevice(a)
+			g.Note, g.Keyword = e.dev.Note, e.dev.Keyword
+			m.devs[id] = &entry{dev: g}
+			upserts = append(upserts, g)
+		} else {
+			delete(m.devs, id)
+			removed = append(removed, id)
+		}
+	}
+	m.mu.Unlock()
+	for _, d := range upserts {
+		m.emit(EventDeviceUpsert, d)
+	}
+	for _, id := range removed {
+		m.emit(EventDeviceRemoved, map[string]string{"id": id})
 	}
 }
 
