@@ -242,10 +242,12 @@ for Home Assistant:
 - **App** (Home Assistant OS): ShellyLanMan in the sidebar, behind Home Assistant's
   login, with a *Home Assistant* look in light and dark.
 - **Integration** (HACS): ShellyLanMan's status, configuration backup and settings
-  checklist on the Shelly devices Home Assistant already has, and ShellyLanMan's tools
-  for Assist.
+  checklist per Shelly, on a device that Home Assistant links to the Shelly
+  integration's device, and ShellyLanMan's tools for Assist. Works with the app and
+  with the Docker container.
 
-Relays, lights and meters stay with Home Assistant's own Shelly integration.
+The Shellys themselves — relays, lights, meters — come from Home Assistant's own Shelly
+integration: add them there first.
 
 [![Add the ShellyLanMan app repository to your Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fwimmme%2Fshellylanman-ha)
 [![Open the ShellyLanMan integration in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=wimmme&repository=shellylanman-ha&category=integration)
