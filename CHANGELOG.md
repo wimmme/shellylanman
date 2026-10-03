@@ -23,6 +23,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   else all. Clearer tooltips for *Refresh*, *Rescan* and *Reload*.
 - Firmware shows its rows at once and fills them in as each device answers, like the
   Checklist (was: a spinner until every device had answered).
+- The Home Assistant palette is now the start look everywhere, light or dark as your
+  system prefers, until you choose another. A look you already chose stays. The
+  former *Default* palette is called *Midnight*.
 
 ## [0.5.0] - 2026-10-02
 

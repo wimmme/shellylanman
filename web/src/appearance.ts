@@ -23,9 +23,14 @@ export const KEYS = {
   fontSize: 'sl_font_size',
 } as const;
 
-/** Palettes in app.css. `light` marks those with a light variant. */
+/**
+ * Palettes in app.css. `light` marks those with a light variant. Midnight is
+ * MikroDash's "Default" (the base rules, no data-palette attribute); it was
+ * stored as "default" before 0.6.0.
+ */
 export const PALETTES: { id: string; label: string; light: boolean; swatch: [string, string] }[] = [
-  { id: 'default', label: 'Default', light: true, swatch: ['#07090f', '#38bdf8'] },
+  { id: 'homeassistant', label: 'Home Assistant', light: true, swatch: ['#111111', '#009ac7'] },
+  { id: 'midnight', label: 'Midnight', light: true, swatch: ['#07090f', '#38bdf8'] },
   { id: 'nord', label: 'Nord', light: true, swatch: ['#1e2430', '#88c0d0'] },
   { id: 'catppuccin', label: 'Catppuccin', light: true, swatch: ['#11111b', '#89b4fa'] },
   { id: 'dracula', label: 'Dracula', light: false, swatch: ['#1c1e26', '#8be9fd'] },
@@ -42,8 +47,12 @@ export const PALETTES: { id: string; label: string; light: boolean; swatch: [str
   { id: 'material', label: 'Material', light: true, swatch: ['#1b2528', '#80cbc4'] },
   { id: 'palenight', label: 'Palenight', light: false, swatch: ['#202336', '#82aaff'] },
   { id: 'github', label: 'GitHub', light: true, swatch: ['#010409', '#58a6ff'] },
-  { id: 'homeassistant', label: 'Home Assistant', light: true, swatch: ['#111111', '#009ac7'] },
 ];
+
+/** The palette of the base CSS rules (no data-palette attribute). */
+export const BASE_PALETTE = 'midnight';
+/** The look before anything is chosen (DECISIONS P12-8). */
+export const START_PALETTE = 'homeassistant';
 
 /** Fonts bundled under /fonts (OFL), plus the system font. */
 export const FONTS: { id: string; label: string; family: string }[] = [
@@ -157,23 +166,24 @@ export function currentTheme(): 'dark' | 'light' {
   return root().getAttribute('data-theme') === 'light' ? 'light' : 'dark';
 }
 export function currentPalette(): string {
-  return root().getAttribute('data-palette') || 'default';
+  return root().getAttribute('data-palette') || BASE_PALETTE;
 }
 
-/** The default palette removes the attribute: the base rules are the default. */
+/** The base palette removes the attribute: the base rules are that palette. */
 export function applyPalette(palette: string, theme: 'dark' | 'light'): void {
-  if (!palette || palette === 'default') root().removeAttribute('data-palette');
+  palette = migratePalette(palette) || BASE_PALETTE;
+  if (palette === BASE_PALETTE) root().removeAttribute('data-palette');
   else root().setAttribute('data-palette', palette);
   root().setAttribute('data-theme', theme);
-  lsSet(KEYS.palette, palette || 'default');
+  lsSet(KEYS.palette, palette);
   lsSet(KEYS.theme, theme);
   reapply();
 }
 
 export function applyTheme(theme: 'dark' | 'light'): void {
   const p = PALETTES.find((x) => x.id === currentPalette());
-  // A palette without a light variant falls back to the default one in light mode.
-  applyPalette(theme === 'light' && p && !p.light ? 'default' : currentPalette(), theme);
+  // A palette without a light variant falls back to the base one in light mode.
+  applyPalette(theme === 'light' && p && !p.light ? BASE_PALETTE : currentPalette(), theme);
 }
 
 export function applyLevel(attr: 'data-contrast' | 'data-text-bright' | 'data-bg-bright', value: number): void {
@@ -203,22 +213,21 @@ export function storedFontSize(): string {
   return lsGet(KEYS.fontSize) || 'normal';
 }
 
-/** True when the page is served through Home Assistant's ingress (app panel). */
-export function insideHomeAssistant(pathname: string): boolean {
-  return pathname.startsWith('/api/hassio_ingress/');
+/** A palette id as stored before 0.6.0 ("default") under its current name. */
+export function migratePalette(id: string | null): string | null {
+  return id === 'default' ? BASE_PALETTE : id;
 }
 
 /**
- * The look before anything is chosen: inside Home Assistant the Home Assistant
- * palette, light or dark as the browser prefers (and following it while
- * nothing is chosen); elsewhere the default dark look. A stored choice wins.
+ * The look before anything is chosen (DECISIONS P12-8): the Home Assistant
+ * palette, light or dark as the system prefers, following it while nothing is
+ * chosen. A stored choice wins; a stored theme without a palette keeps the
+ * base palette it was chosen with.
  */
-export function startLook(pathname: string, prefersDark: boolean, storedTheme: string | null, storedPalette: string | null):
+export function startLook(prefersDark: boolean, storedTheme: string | null, storedPalette: string | null):
   { theme: 'dark' | 'light'; palette: string; follow: boolean } {
-  if (insideHomeAssistant(pathname) && !storedTheme && !storedPalette) {
-    return { theme: prefersDark ? 'dark' : 'light', palette: 'homeassistant', follow: true };
-  }
-  return { theme: storedTheme === 'light' ? 'light' : 'dark', palette: storedPalette || 'default', follow: false };
+  if (!storedTheme && !storedPalette) return { theme: prefersDark ? 'dark' : 'light', palette: START_PALETTE, follow: true };
+  return { theme: storedTheme === 'light' ? 'light' : 'dark', palette: migratePalette(storedPalette) || BASE_PALETTE, follow: false };
 }
 
 let following = false;
@@ -226,7 +235,7 @@ let following = false;
 /** Run before first paint (preflight) and again at startup. */
 export function initAppearance(): void {
   const dark = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
-  const { theme, palette, follow } = startLook(location.pathname, dark ? dark.matches : true, lsGet(KEYS.theme), lsGet(KEYS.palette));
+  const { theme, palette, follow } = startLook(dark ? dark.matches : true, lsGet(KEYS.theme), lsGet(KEYS.palette));
   if (follow && dark && !following) {
     following = true;
     dark.addEventListener('change', () => {
@@ -236,7 +245,8 @@ export function initAppearance(): void {
       }
     });
   }
-  if (palette !== 'default') root().setAttribute('data-palette', palette);
+  if (palette !== BASE_PALETTE) root().setAttribute('data-palette', palette);
+  else root().removeAttribute('data-palette');
   root().setAttribute('data-theme', theme);
   for (const [attr, key] of [['data-contrast', KEYS.contrast], ['data-text-bright', KEYS.textBright], ['data-bg-bright', KEYS.bgBright]] as const) {
     const v = Number.parseInt(lsGet(key) || '', 10);
