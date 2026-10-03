@@ -385,3 +385,17 @@ func TestRescanKeepsDevicesSearching(t *testing.T) {
 		time.Sleep(20 * time.Millisecond)
 	}
 }
+
+func TestUnidentifiedRowLeavesWhenIdentified(t *testing.T) {
+	m, _, ctx := newService(t, nil)
+	d, addr := startSimDev(t, fixtureDir(t, "gen2/Plus1", nil), nil)
+	d.SetDown(true) // not answering when discovered under a name without a MAC
+	m.handle(ctx, addr, "ShellyTestPlug", true)
+	waitDevice(t, m, "addr:"+addr, func(x model.Device) bool { return x.Status == model.StatusError })
+	d.SetDown(false)
+	m.handle(ctx, addr, "ShellyTestPlug", false) // the retry
+	waitDevice(t, m, "AABBCC000001", online)
+	if x, ok := m.Get("addr:" + addr); ok {
+		t.Fatalf("the unidentified row stayed: %+v", x)
+	}
+}

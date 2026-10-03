@@ -452,10 +452,25 @@ func (m *Devices) upsert(e *entry) bool {
 		e.dev.Note, e.dev.Keyword = a.Note, a.Keyword
 	}
 	m.devs[e.dev.ID] = e
+	// A device listed earlier as unidentified under its address (addUnmanaged:
+	// its name held no MAC) is the same device: drop that row, or it would stay
+	// in error next to the identified one until a rescan.
+	var stale []string
+	if e.dev.Managed {
+		for id, o := range m.devs {
+			if strings.HasPrefix(id, "addr:") && !o.dev.Managed && o.dev.Address() == e.dev.Address() {
+				delete(m.devs, id)
+				stale = append(stale, id)
+			}
+		}
+	}
 	m.dirty = true
 	run := m.run
 	m.mu.Unlock()
 
+	for _, id := range stale {
+		m.emit(EventDeviceRemoved, map[string]string{"id": id})
+	}
 	m.emit(EventDeviceUpsert, e.dev)
 	m.updated(e.dev)
 	if e.conn != nil {

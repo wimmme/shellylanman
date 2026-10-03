@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- A device that did not answer when it was discovered under a name without its MAC
+  address (for example a custom name) stayed in the list as an extra row in *error*
+  next to the same device once it was identified, until a rescan. The extra row now
+  goes as soon as the device is identified.
+
 ### Changed
 - One selection for Devices, Checklist and Firmware: devices ticked on one page are
   ticked on the others. Checklist and Firmware show the selected devices, or all
