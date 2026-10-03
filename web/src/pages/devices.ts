@@ -16,6 +16,7 @@ import { openScripts } from '../panels/scripts';
 import { download, toCSV } from '../csv';
 import { toast } from '../toast';
 import { selected } from '../selection';
+import { deviceURL, manyAtOnce, openPages } from '../weblinks';
 import { tooltip, whyDisabled } from '../why';
 import { emptyState, type Page } from './common';
 
@@ -173,8 +174,8 @@ function loginDialog(d: Device): void {
 /** Open the devices' own web UI (confirm for more than one: DECISIONS P12-11). */
 async function openWebUI(list: Device[]): Promise<void> {
   const targets = list.filter((d) => d.status !== 'ghost');
-  if (targets.length > 1 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: targets.length }), t('action.webUI'), false))) return;
-  for (const d of targets) window.open(`http://${d.port === 80 ? d.ip : `${d.ip}:${d.port}`}`, '_blank', 'noopener');
+  if (manyAtOnce() && targets.length > 1 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: targets.length }), t('action.webUI'), false))) return;
+  openPages(targets.map((d) => deviceURL(d.ip, d.port)));
 }
 
 /** Reboot (MainView.rebootAction): stored devices and BLU devices other than the TRV cannot. */
@@ -310,8 +311,8 @@ export const devicesPage: Page = {
       // A button with a tooltip that says what it does and, when disabled, why
       // (P12-4). `has`: the devices it applies to; `oneOnly`: one device at a time.
       // The tooltip sits on a wrapper: browsers show none on a disabled button.
-      const act = (label: Key, enabled: boolean, onClick: () => void, tip: Key, has?: (d: Device) => boolean, oneOnly = false): HTMLElement => {
-        const b = h('button', { class: 'btn', disabled: !enabled, onclick: onClick }, t(label));
+      const act = (label: Key, enabled: boolean, onClick: () => void, tip: Key, has?: (d: Device) => boolean, oneOnly = false, ext = false): HTMLElement => {
+        const b = h('button', { class: ext ? 'btn ext' : 'btn', disabled: !enabled, onclick: onClick }, t(label));
         return h('span', { class: 'tip-wrap', title: tooltip(t(tip), whyDisabled(sel, enabled, has, oneOnly)) }, b);
       };
       const sep = (): HTMLElement => h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' });
@@ -323,7 +324,8 @@ export const devicesPage: Page = {
         act('action.checklist', true, () => { location.hash = '#/checklist'; }, 'action.checklistTip'),
         act('nav.firmware', true, () => { location.hash = '#/firmware'; }, 'action.firmwareTip'),
         sep(),
-        act('action.webUI', noGhost && sel.some((d) => !isBLU(d)), () => void openWebUI(S().filter((d) => !isBLU(d))), 'action.webUITip', (d) => notGhost(d) && !isBLU(d)),
+        act('action.webUI', noGhost && sel.some((d) => !isBLU(d)) && (manyAtOnce() || sel.length === 1), () => void openWebUI(S().filter((d) => !isBLU(d))),
+          'action.webUITip', (d) => notGhost(d) && !isBLU(d), !manyAtOnce(), manyAtOnce()),
         act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(S().map((d) => d.id)), 'action.settingsTip', (d) => d.gen !== 'bth'),
         act('action.charts', sel.length > 0 && sel.every(notGhost), () => { location.hash = '#/charts?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.chartsTip', notGhost),
         act('action.backup', sel.length > 0, () => void backupDevices(S()), 'action.backupTip'),
@@ -450,7 +452,7 @@ export const devicesPage: Page = {
         ]
         : [
           { label: 'action.info', run: () => one && openInfo(one.id), on: !!one },
-          { label: 'action.webUI', run: () => void openWebUI(sel.filter((x) => !isBLU(x))), on: sel.some((x) => !isBLU(x) && x.status !== 'ghost') },
+          { label: 'action.webUI', run: () => void openWebUI(sel.filter((x) => !isBLU(x))), on: sel.some((x) => !isBLU(x) && x.status !== 'ghost') && (manyAtOnce() || sel.length === 1) },
           { label: 'action.settings', run: () => openDeviceSettings(sel.map((x) => x.id)), on: sel.some((x) => x.gen !== 'bth') },
           { label: 'action.backup', run: () => void backupDevices(sel), on: true },
           { label: 'action.restore', run: () => void (one ? restoreDevice(one) : restoreDevices(sel)), on: true },

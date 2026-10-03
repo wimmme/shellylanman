@@ -10,6 +10,7 @@ import { prefs, type DblClick, type TempUnit, type UptimeMode } from '../format'
 import { LANGUAGES, isLang, lang, setLang, t, type Key } from '../i18n';
 import { confirmDialog } from '../modal';
 import { toast } from '../toast';
+import { openMode, setOpenMode } from '../weblinks';
 import { card, type Page } from './common';
 import { mcpSettings } from './settings-mcp';
 import { archive, network } from './settings-network';
@@ -199,6 +200,9 @@ function appearance(body: HTMLElement): void {
     slider('apBgBright', 'appearance.bgBright', 'data-bg-bright'),
     field(t('appearance.font'), select('apFont', FONTS.map((f) => ({ value: f.id, label: f.label })), storedFont(), applyFont)),
     field(t('appearance.fontSize'), select('apFontSize', FONT_SIZES.map((s) => ({ value: s.id, label: t(`size.${s.id}`) })), storedFontSize(), applyFontSize)),
+    field(t('appearance.openPages'), select('apOpen', [{ value: 'tab', label: t('appearance.openTab') }, { value: 'same', label: t('appearance.openSame') }],
+      openMode(), (v) => setOpenMode(v === 'same' ? 'same' : 'tab'))),
+    h('p', { class: 'muted' }, t('appearance.openHelp')),
     h('p', { class: 'muted' }, t('appearance.note')),
     h('button', { class: 'btn', onclick: () => { resetAppearance(); body.replaceChildren(); appearance(body); } }, t('appearance.reset')),
   );

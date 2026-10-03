@@ -8,6 +8,7 @@
 // firmware update, with actions to change them.
 import { configApi, devicesApi, type BLEItem, type ChecklistRow, type Device } from '../api';
 import { cellView, editable, FALSE, HAS, isBLU, isG1, isG2, sameBoolean, sameObject, sameStringOrInt, type Col } from '../checklistlogic';
+import { manyAtOnce, openPages } from '../weblinks';
 import { tooltip, whyDisabled } from '../why';
 import { addressText, allDevices, loadDevices, onDevicesChanged } from '../devices';
 import { h, ICONS, keepOrReplace, patch } from '../dom';
@@ -132,8 +133,8 @@ export const checklistPage: Page = {
       await Promise.all(Array.from({ length: 6 }, worker));
     };
     const webUI = async (list: ChecklistRow[]): Promise<void> => {
-      if (list.length > 1 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: list.length }), t('action.webUI'), false))) return;
-      for (const r of list) window.open(`http://${r.address.replace(/:80$/, '')}`, '_blank', 'noopener');
+      if (manyAtOnce() && list.length > 1 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: list.length }), t('action.webUI'), false))) return;
+      openPages(list.map((r) => 'http://' + r.address.replace(/:80$/, '')));
     };
     const reboot = async (list: ChecklistRow[]): Promise<void> => {
       if (!(await confirmDialog(t('action.reboot'), t('action.rebootConfirm'), t('action.reboot')))) return;
@@ -163,7 +164,7 @@ export const checklistPage: Page = {
           { label: 'chk.act.stable', run: () => void run('autofw', true, 'stable') },
           { label: 'chk.act.beta', run: () => void run('autofw', true, 'beta') },
           { label: 'chk.act.none', run: () => void run('autofw', false, 'none') }] },
-        { key: 'web', label: 'action.webUI', tip: 'action.webUITip', enabled: s.length > 0, run: () => void webUI(s) },
+        { key: 'web', label: 'action.webUI', tip: 'action.webUITip', enabled: s.length > 0 && (manyAtOnce() || s.length === 1), run: () => void webUI(s) },
         { key: 'reboot', label: 'action.reboot', tip: 'action.rebootTip', has: (r) => r.gen !== 'bth' && r.status !== 'ghost', enabled: s.length > 0 && s.every((r) => r.gen !== 'bth' && r.status !== 'ghost'), run: () => void reboot(s) },
       ];
     };
@@ -182,13 +183,13 @@ export const checklistPage: Page = {
     const draw = (): void => {
       const acts = actions();
       const button = (a: (typeof acts)[number]): HTMLElement => {
-        const b = h('button', { class: 'btn', disabled: !a.enabled }, t(a.label), a.menu ? ' ▾' : '');
+        const b = h('button', { class: a.key === 'web' && manyAtOnce() ? 'btn ext' : 'btn', disabled: !a.enabled }, t(a.label), a.menu ? ' ▾' : '');
         b.addEventListener('click', (e) => {
           if (a.menu) { const r = b.getBoundingClientRect(); menu(a.menu.map((m) => ({ label: t(m.label), run: m.run })), r.left, r.bottom); e.stopPropagation(); } else a.run?.();
         });
         // The tooltip says what the button does and, when it is disabled, why
         // (P12-3). It sits on a wrapper: browsers show none on a disabled button.
-        const why = whyDisabled(sel(), a.enabled, a.has ?? (() => true), a.key === 'ble');
+        const why = whyDisabled(sel(), a.enabled, a.has ?? (() => true), a.key === 'ble' || (a.key === 'web' && !manyAtOnce()));
         const tip = tooltip(a.tip ? t(a.tip) : '', why);
         return tip ? h('span', { class: 'tip-wrap', title: tip }, b) : b;
       };

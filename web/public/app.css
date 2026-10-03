@@ -329,3 +329,6 @@ button.linkish{background:none;border:none;padding:0;font:inherit;color:var(--ac
 .about-coffee{color:var(--text-muted);font-style:italic}
 .mcp-snippet{margin:10px 0;max-width:900px}.mcp-snippet .row{justify-content:space-between}.mcp-snippet pre.json{margin-top:6px}
 .tip-wrap{display:inline-flex}.toolbar-sep{width:1px;align-self:stretch;background:var(--border);margin:0 4px}.toolbar-label{font-size:.85em;margin-right:2px}.chk-hint{margin:4px 0 0;font-size:.9em}
+
+/* Links and buttons that open another site or a device's own page (DECISIONS P12-11) */
+a[target="_blank"]::after,.btn.ext::after{content:"↗";margin-left:.25em;font-size:.85em;opacity:.7}

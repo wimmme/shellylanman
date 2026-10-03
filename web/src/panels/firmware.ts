@@ -15,6 +15,7 @@ import { confirmDialog } from '../modal';
 import type { EventSocket } from '../socket';
 import { showResults } from './devsettings';
 import { indexCell } from './localfw';
+import { deviceURL, openPages } from '../weblinks';
 
 const tr = (k: string, v?: Record<string, number>): string => t(k as Key, v);
 
@@ -80,7 +81,7 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
         withIndex ? h('td', {}, indexCell(index.get(r.id), indexLoading)) : null);
       tr_.addEventListener('dblclick', () => { // browseAction
         const d = allDevices().find((x) => x.id === r.id);
-        if (d && d.status !== 'ghost' && d.gen !== 'blu' && d.gen !== 'bth') window.open(`http://${d.port === 80 ? d.ip : `${d.ip}:${d.port}`}`, '_blank', 'noopener');
+        if (d && d.status !== 'ghost' && d.gen !== 'blu' && d.gen !== 'bth') openPages([deviceURL(d.ip, d.port)]);
       });
       return tr_;
     }));
