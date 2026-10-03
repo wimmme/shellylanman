@@ -7,7 +7,7 @@
 // access point, roaming, Wi-Fi, range extender, scripts and automatic
 // firmware update, with actions to change them.
 import { configApi, devicesApi, type BLEItem, type ChecklistRow, type Device } from '../api';
-import { cellView, editable, FALSE, isBLU, isG1, isG2, sameBoolean, sameObject, sameStringOrInt, type Col } from '../checklistlogic';
+import { cellView, editable, FALSE, HAS, isBLU, isG1, isG2, sameBoolean, sameObject, sameStringOrInt, whyDisabled, type Col } from '../checklistlogic';
 import { addressText, allDevices, loadDevices, onDevicesChanged } from '../devices';
 import { h, ICONS, keepOrReplace, patch } from '../dom';
 import { t, type Key } from '../i18n';
@@ -140,30 +140,30 @@ export const checklistPage: Page = {
     };
 
     /** The actions, with their enabled state for the selection. */
-    const actions = (): { key: string; label: Key; tip?: Key; enabled: boolean; run?: () => void; menu?: { label: Key; run: () => void }[] }[] => {
+    const actions = (): { key: string; label: Key; tip?: Key; enabled: boolean; run?: () => void; menu?: { label: Key; run: () => void }[]; has?: (r: ChecklistRow) => boolean }[] => {
       const s = sel();
       const g1Logs = sameBoolean(s, 'logs', isG1);
       const g2Logs = !g1Logs ? sameObject(s, 'logs') : undefined;
       const logsVal = s[0]?.logs;
       return [
-        { key: 'eco', label: 'chk.act.eco', tip: 'chk.act.ecoTip', enabled: sameBoolean(s, 'eco'), run: () => void run('eco', !s[0]!.eco) },
-        { key: 'led', label: 'chk.act.led', tip: 'chk.act.ledTip', enabled: sameBoolean(s, 'led', isG1), run: () => void run('led', !s[0]!.led) },
+        { key: 'eco', label: 'chk.act.eco', tip: 'chk.act.ecoTip', has: HAS.eco, enabled: sameBoolean(s, 'eco'), run: () => void run('eco', !s[0]!.eco) },
+        { key: 'led', label: 'chk.act.led', tip: 'chk.act.ledTip', has: HAS.led, enabled: sameBoolean(s, 'led', isG1), run: () => void run('led', !s[0]!.led) },
         g2Logs !== undefined
-          ? { key: 'logs', label: 'chk.act.logs', tip: 'chk.act.logsTip', enabled: true, menu: [
+          ? { key: 'logs', label: 'chk.act.logs', tip: 'chk.act.logsTip', has: HAS.logs, enabled: true, menu: [
             { label: 'chk.act.socket', run: () => void run('logs', !String(logsVal).includes('socket'), 'socket') },
             { label: 'chk.act.mqtt', run: () => void run('logs', !String(logsVal).includes('mqtt'), 'mqtt') }] }
-          : { key: 'logs', label: 'chk.act.logs', tip: 'chk.act.logsTip', enabled: g1Logs, run: () => void run('logs', !s[0]!.logs) },
-        { key: 'ble', label: 'chk.act.ble', tip: 'chk.act.bleTip', enabled: s.length === 1 && (isG2(s[0]!) || isBLU(s[0]!)) && s[0]!.ble !== null,
+          : { key: 'logs', label: 'chk.act.logs', tip: 'chk.act.logsTip', has: HAS.logs, enabled: g1Logs, run: () => void run('logs', !s[0]!.logs) },
+        { key: 'ble', label: 'chk.act.ble', tip: 'chk.act.bleTip', has: HAS.ble, enabled: s.length === 1 && (isG2(s[0]!) || isBLU(s[0]!)) && s[0]!.ble !== null,
           run: () => bleDialog(s[0]!, devOf(s[0]!.id)) },
-        { key: 'ap', label: 'chk.act.ap', tip: 'chk.act.apTip', enabled: sameBoolean(s, 'ap', isG2), run: () => void run('ap', s[0]!.ap !== true) },
-        { key: 'roaming', label: 'chk.act.roaming', tip: 'chk.act.roamingTip', enabled: sameStringOrInt(s, 'roaming'), run: () => void run('roaming', s[0]!.roaming === FALSE) },
-        { key: 'extender', label: 'chk.act.extender', tip: 'chk.act.extenderTip', enabled: sameStringOrInt(s, 'extender'), run: () => void run('extender', s[0]!.extender === FALSE) },
-        { key: 'autoFW', label: 'chk.act.autoFW', tip: 'chk.act.autoFWTip', enabled: editable(s, 'autoFW'), menu: [
+        { key: 'ap', label: 'chk.act.ap', tip: 'chk.act.apTip', has: HAS.ap, enabled: sameBoolean(s, 'ap', isG2), run: () => void run('ap', s[0]!.ap !== true) },
+        { key: 'roaming', label: 'chk.act.roaming', tip: 'chk.act.roamingTip', has: HAS.roaming, enabled: sameStringOrInt(s, 'roaming'), run: () => void run('roaming', s[0]!.roaming === FALSE) },
+        { key: 'extender', label: 'chk.act.extender', tip: 'chk.act.extenderTip', has: HAS.extender, enabled: sameStringOrInt(s, 'extender'), run: () => void run('extender', s[0]!.extender === FALSE) },
+        { key: 'autoFW', label: 'chk.act.autoFW', tip: 'chk.act.autoFWTip', has: HAS.autoFW, enabled: editable(s, 'autoFW'), menu: [
           { label: 'chk.act.stable', run: () => void run('autofw', true, 'stable') },
           { label: 'chk.act.beta', run: () => void run('autofw', true, 'beta') },
           { label: 'chk.act.none', run: () => void run('autofw', false, 'none') }] },
-        { key: 'web', label: 'action.webUI', enabled: s.length > 0, run: () => void webUI(s) },
-        { key: 'reboot', label: 'action.reboot', enabled: s.length > 0 && s.every((r) => r.gen !== 'bth' && r.status !== 'ghost'), run: () => void reboot(s) },
+        { key: 'web', label: 'action.webUI', tip: 'action.webUITip', enabled: s.length > 0, run: () => void webUI(s) },
+        { key: 'reboot', label: 'action.reboot', tip: 'action.rebootTip', has: (r) => r.gen !== 'bth' && r.status !== 'ghost', enabled: s.length > 0 && s.every((r) => r.gen !== 'bth' && r.status !== 'ghost'), run: () => void reboot(s) },
       ];
     };
 
@@ -185,8 +185,11 @@ export const checklistPage: Page = {
         b.addEventListener('click', (e) => {
           if (a.menu) { const r = b.getBoundingClientRect(); menu(a.menu.map((m) => ({ label: t(m.label), run: m.run })), r.left, r.bottom); e.stopPropagation(); } else a.run?.();
         });
-        // The tooltip sits on a wrapper: browsers show none on a disabled button.
-        return a.tip ? h('span', { class: 'tip-wrap', title: t(a.tip) }, b) : b;
+        // The tooltip says what the button does and, when it is disabled, why
+        // (P12-3). It sits on a wrapper: browsers show none on a disabled button.
+        const why = whyDisabled(sel(), a.enabled, a.has ?? (() => true), a.key === 'ble');
+        const tip = [a.tip ? t(a.tip) : '', why ? t(why.key, why.key === 'why.missing' ? { n: why.n } : undefined) : ''].filter(Boolean).join('\n');
+        return tip ? h('span', { class: 'tip-wrap', title: tip }, b) : b;
       };
       const settings = acts.filter((a) => a.key !== 'web' && a.key !== 'reboot');
       keepOrReplace(toolbar, [

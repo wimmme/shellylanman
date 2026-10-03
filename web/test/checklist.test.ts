@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ChecklistRow } from '../src/api';
-import { cellView, editable, isG1, sameBoolean, sameObject, sameStringOrInt } from '../src/checklistlogic';
+import { cellView, editable, HAS, isG1, sameBoolean, sameObject, sameStringOrInt, whyDisabled } from '../src/checklistlogic';
 
 const row = (id: string, gen: string, extra: Partial<ChecklistRow> = {}): ChecklistRow => ({
   id, host: id, address: '1.2.3.4', status: 'online', gen,
@@ -32,4 +32,14 @@ test('actions are enabled for uniform selections only', () => {
   assert.equal(sameObject([c, row('d', '2', { logs: 'mqtt' })], 'logs'), undefined);
   assert.equal(editable([b, c], 'autoFW'), true);
   assert.equal(editable([a, c], 'autoFW'), false);
+});
+
+test('why a checklist action is disabled', () => {
+  let i = 0;
+  const r = (gen: string, led: boolean | null): ChecklistRow => row(String(i++), gen, { led });
+  assert.equal(whyDisabled([], true, HAS.led!), null);
+  assert.deepEqual(whyDisabled([], false, HAS.led!), { key: 'why.none' });
+  assert.deepEqual(whyDisabled([r('1', true), r('1', true)], false, HAS.ble!, true), { key: 'why.one' });
+  assert.deepEqual(whyDisabled([r('1', true), r('2', null), r('3', null)], false, HAS.led!), { key: 'why.missing', n: 2 });
+  assert.deepEqual(whyDisabled([r('1', true), r('1', false)], false, HAS.led!), { key: 'why.differ' });
 });

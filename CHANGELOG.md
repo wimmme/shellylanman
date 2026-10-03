@@ -14,6 +14,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - *Web UI* asks before opening more than one device, and says it opens one tab per
   device (was: more than eight).
 - *Print* no longer clears the selection.
+- Checklist: a grey button says why in its tooltip (nothing ticked, devices without the
+  setting, different values, one device only); every button says what it does.
 
 ## [0.5.0] - 2026-10-02
 
