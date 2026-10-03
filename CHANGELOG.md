@@ -5,6 +5,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-03
+
+First use made easier: one selection across Devices, Checklist and Firmware, buttons
+that explain themselves, a calmer rescan, the Home Assistant look everywhere, a menu
+for phones, and installable as an app. ShellyLanMan started from ShellyScanner and now
+also goes its own way where the web makes that clearer (`DECISIONS.md` §21).
+
 ### Fixed
 - A device that did not answer when it was discovered under a name without its MAC
   address (for example a custom name) stayed in the list as an extra row in *error*
