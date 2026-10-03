@@ -91,6 +91,20 @@ base of the app), then `shellylanman-ha`.
 **Afterwards:** install it on the Home Assistant test instance (§6) and record what
 was checked in `docs/hardware-tests.md` (append, never rewrite).
 
+**Release notes — one shape everywhere** (they are read in Home Assistant's app
+store, on GitHub and in the About page):
+
+- `CHANGELOG.md` (ShellyLanMan): `## [X.Y.Z] - date`, one or two sentences that say
+  what the release is about, then *Added* / *Changed* / *Fixed* sections with bullets
+  (Keep a Changelog).
+- `shellylanman/CHANGELOG.md` (the app, shown by Home Assistant): `## X.Y.Z`, the line
+  `Runs ShellyLanMan X.Y.Z.`, bullets with what a user notices (one line or two each),
+  and `All changes: [ShellyLanMan changelog](…)`.
+- `CHANGELOG.md` of the integration: `## X.Y.Z`, the line `Works with ShellyLanMan
+  … or newer; Home Assistant … or newer.`, then bullets.
+- Bullets, not paragraphs; user's words, not code names (except setting names in
+  *italics* and API values in `code`).
+
 ## 6. Home Assistant test instance
 
 A Home Assistant OS VM with the app and the integration; reached over SSH (an
