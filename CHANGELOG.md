@@ -41,6 +41,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   the end of the IP scan, or 30 s in the mDNS modes. New status `searching` in the API
   and MCP.
 - A device in error says in its status tooltip how to read it again (*Reload*).
+- About page and README: ShellyLanMan started from ShellyScanner, is built on its basis
+  and has been developed further as a web application of its own.
 - English writes *online* / *offline* (was *on line* / *off line*), Italian too.
 
 ### Added

@@ -26,10 +26,11 @@ available from the toolbar. Firmware management is built in, with a QR code for 
 quick download of the firmware, so you can update a device through the Shelly's
 own access point.
 
-It grew from [ShellyScanner](https://github.com/usnasoft/shellyscanner) by usnasoft —
-its features, terminology and Shelly know-how — and went further: an MCP server for AI
-assistants, a Home Assistant app and integration, eight languages. No desktop, no VNC,
-no Java, no cloud.
+It started from [ShellyScanner](https://github.com/usnasoft/shellyscanner) by usnasoft
+and is built on its basis — its features, terminology and Shelly know-how — then
+developed further as a web application of its own: pages that work together for a
+first-time user, an MCP server for AI assistants, a Home Assistant app and integration,
+eight languages. No desktop, no VNC, no Java, no cloud.
 
 [Why](#-why-shellylanman) · [Quick start](#-quick-start) · [Features](#-features) ·
 [Pages](#-pages) · [Screenshots](#-screenshots) · [AI assistants (MCP)](#-ai-assistants-mcp) · [Home Assistant](#-home-assistant) · [Security](#-security) ·
@@ -303,8 +304,9 @@ Bugs and ideas: [open an issue](https://github.com/wimmme/shellylanman/issues/ne
 ## 🙏 Credits
 
 - **[ShellyScanner](https://github.com/usnasoft/shellyscanner)** by Antonio
-  Flaccomio (usnasoft) — the functional and code reference for everything
-  ShellyLanMan does: every feature, the terminology and the Shelly know-how. More at
+  Flaccomio (usnasoft) — the starting point and the basis of ShellyLanMan: its
+  features, the terminology and the Shelly know-how, and code ported from it
+  (GPL-3.0). ShellyLanMan has since been developed further on its own. More at
   https://www.usna.it/shellyscanner/. Beyond the credits, he deserves a coffee too.
 - **[MikroDash](https://github.com/SecOps-7/MikroDash)** by SecOps-7 — the idea, the
   inspiration and the basis of the look and feel: design tokens, palettes and
@@ -319,9 +321,9 @@ Bugs and ideas: [open an issue](https://github.com/wimmme/shellylanman/issues/ne
 
 ## ⚖️ Disclaimer
 
-ShellyLanMan is an independent project. It is heavily based on ShellyScanner but
-not affiliated with it, and not affiliated with or endorsed by usnasoft or Shelly
-Group. Shelly is a trademark
+ShellyLanMan is an independent project. It started from ShellyScanner and is built
+on its basis, developed further on its own; it is not affiliated with ShellyScanner,
+and not affiliated with or endorsed by usnasoft or Shelly Group. Shelly is a trademark
 of its owner.
 
 ## 📄 Licence
