@@ -82,7 +82,10 @@ internal/fixture   fixture naming + scrubbing (public repo!)
   header and a `docs/PROVENANCE.md` row, in the same commit.
 - **Frontend:** plain TypeScript, no framework. Text via `textContent` only
   (`h()` in `web/src/dom.ts`), never `innerHTML` with device data. No inline
-  styles/scripts (CSP). Every UI string in every catalogue in `web/src/i18n/`
+  styles/scripts (CSP); a library that injects a `<style>` needs the per-load nonce
+  (`<meta name="csp-nonce">`, as CodeMirror's `EditorView.cspNonce`). A UI change
+  that the unit tests cannot see is checked in a browser under the real CSP
+  (`tools/screenshots/`, e.g. `check-editor.py`). Every UI string in every catalogue in `web/src/i18n/`
   (en, nl, de, fr, es, it, bg, zh; a test enforces equal keys and placeholders).
 
 ## Workflow

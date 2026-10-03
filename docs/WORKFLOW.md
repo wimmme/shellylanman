@@ -57,6 +57,13 @@ and a name, `tools/screenshots/sims.sh`) and takes the pictures with Playwright
 (`tools/screenshots/shoot.py`). It touches no real device and removes its containers.
 Copy the PNGs to `docs/images/` and check them before committing.
 
+`SCRIPT=<file> sh tools/screenshots/run.sh` runs another script from that directory
+against the same setup. `check-editor.py` is such a browser test: it opens a long
+script (`tools/screenshots/script/`, served by the "Heat pump" simulator) in the
+script editor, light and dark, and fails when CodeMirror's stylesheet was blocked by
+the Content-Security-Policy. Run it after changes to the CSP, the editor or its
+libraries; unit tests do not render under the real CSP.
+
 ## 4. Translations
 
 Every UI string is in all eight catalogues `web/src/i18n/*.json` (a test checks equal

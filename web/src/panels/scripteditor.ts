@@ -43,8 +43,15 @@ export async function pickBackupScript(buf: Uint8Array): Promise<string | null> 
 
 /** Open the editor; resolves when it is closed. onRun reports the running state. */
 export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running: boolean) => void): Promise<void> {
+  // A device on weak Wi-Fi can take seconds to send its code: say so meanwhile.
+  let waiting = true, cancelled = false;
+  const closeWait = openModal(s.name, h('div', { class: 'state' }, h('div', { class: 'spinner', role: 'status' }), t('scr.loadingCode')),
+    [{ label: t('common.cancel') }], () => { if (waiting) cancelled = true; });
   let code: string;
-  try { code = await scriptsApi.code(d.id, s.id); } catch (e) { toast(msg(e)); return; }
+  try { code = await scriptsApi.code(d.id, s.id); } catch (e) { waiting = false; closeWait(); if (!cancelled) toast(msg(e)); return; }
+  waiting = false;
+  closeWait();
+  if (cancelled) return;
   const { createEditor } = await import('../editor/codemirror');
   const prefs = ideprefs();
   const host = h('div', { class: 'ide-editor' + (prefs.dark ? ' dark' : '') });

@@ -33,9 +33,17 @@ const changeCase = (upper: boolean) => (view: EditorView): boolean => {
   return true;
 };
 
+/** The CSP nonce of this page load (index.html, <meta name="csp-nonce">). */
+function cspNonce(): string {
+  return document.querySelector('meta[name="csp-nonce"]')?.getAttribute('content') ?? '';
+}
+
 export function createEditor(parent: HTMLElement, doc: string, p: IDEPrefs, onCursor: (line: number, col: number) => void): Editor {
   const enter = p.indent === 'NO' ? insertNewline : p.indent === 'STD' ? insertNewlineKeepIndent : null;
   const ext: Extension[] = [
+    // CodeMirror injects its stylesheet as a <style> element: the page's CSP
+    // allows it only with the nonce the server put into index.html.
+    EditorView.cspNonce.of(cspNonce()),
     lineNumbers(), highlightActiveLineGutter(), highlightSpecialChars(), history(), foldGutter(), drawSelection(),
     EditorState.allowMultipleSelections.of(true), bracketMatching(), highlightActiveLine(), highlightSelectionMatches(),
     javascript(), syntaxHighlighting(defaultHighlightStyle, { fallback: true }),

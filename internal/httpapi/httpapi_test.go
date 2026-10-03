@@ -178,3 +178,30 @@ func TestFrontendNotBuilt(t *testing.T) {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
 }
+
+func TestCSPNonceInHeaderAndPage(t *testing.T) {
+	srv, _ := newTestServer(t, fstest.MapFS{
+		"index.html": {Data: []byte(`<meta name="csp-nonce" content="__CSP_NONCE__"><title>ShellyLanMan</title>`)},
+	})
+	nonceOf := func() (header, page string) {
+		resp := do(t, "GET", srv.URL+"/", "", nil)
+		b, _ := io.ReadAll(resp.Body)
+		csp := resp.Header.Get("Content-Security-Policy")
+		_, after, ok := strings.Cut(csp, "style-src 'self' 'nonce-")
+		if !ok {
+			t.Fatalf("no style nonce in %q", csp)
+		}
+		header, _, _ = strings.Cut(after, "'")
+		_, after, _ = strings.Cut(string(b), `content="`)
+		page, _, _ = strings.Cut(after, `"`)
+		return header, page
+	}
+	h1, p1 := nonceOf()
+	h2, _ := nonceOf()
+	if h1 == "" || h1 != p1 || h1 == h2 {
+		t.Fatalf("nonce: header %q, page %q, next request %q", h1, p1, h2)
+	}
+	if !strings.Contains(do(t, "GET", srv.URL+"/", "", nil).Header.Get("Content-Security-Policy"), "default-src 'self'") {
+		t.Fatal("default-src changed")
+	}
+}

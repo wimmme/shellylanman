@@ -7,6 +7,10 @@
 package httpapi
 
 import (
+	"bytes"
+	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -177,6 +181,10 @@ func (s *server) static(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, "ShellyLanMan: the frontend is not built into this binary. The API is available under /api/v1.\n")
 		return
 	}
+	if name == "index.html" {
+		nonce, _ := r.Context().Value(nonceKey{}).(string)
+		b = bytes.ReplaceAll(b, []byte(noncePlaceholder), []byte(nonce))
+	}
 	if ct := mime.TypeByExtension(path.Ext(name)); ct != "" {
 		w.Header().Set("Content-Type", ct)
 	}
@@ -216,15 +224,35 @@ func (s *server) originAllowed(origin, host string) bool {
 	return false
 }
 
+// nonceKey carries the request's CSP nonce to static(), which writes it into
+// index.html.
+type nonceKey struct{}
+
+// noncePlaceholder in index.html is replaced by the request's nonce.
+const noncePlaceholder = "__CSP_NONCE__"
+
+// cspNonce: 16 random bytes, base64.
+func cspNonce() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return base64.StdEncoding.EncodeToString(b)
+}
+
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
+		// Inline styles only with this response's nonce: the script editor
+		// (CodeMirror) injects its stylesheet as a <style> element carrying it.
+		// Everything else stays blocked; style attributes are set through the
+		// CSSOM, which the policy does not restrict.
+		nonce := cspNonce()
+		r = r.WithContext(context.WithValue(r.Context(), nonceKey{}, nonce))
 		// Home Assistant shows ingress apps in an iframe of its own (same) origin.
 		frame, xfo := "'none'", "DENY"
 		if viaIngress(r) {
 			frame, xfo = "'self'", "SAMEORIGIN"
 		}
-		h.Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors "+frame+"; base-uri 'none'; form-action 'self'")
+		h.Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'nonce-"+nonce+"'; img-src 'self' data:; connect-src 'self'; frame-ancestors "+frame+"; base-uri 'none'; form-action 'self'")
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "same-origin")
 		h.Set("X-Frame-Options", xfo)

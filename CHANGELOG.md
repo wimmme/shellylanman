@@ -5,6 +5,16 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Script editor: the code was not shown (only line numbers, the text far below the
+  editor) because the Content-Security-Policy blocked the editor's stylesheet. Inline
+  styles are now allowed only with a nonce that is new for every page load, and the
+  editor uses it.
+
+### Added
+- Script editor: a "Reading the script from the device…" dialog while a slow device
+  sends its code.
+
 ## [0.6.1] - 2026-10-03
 
 Charts follow the shared selection, like Checklist and Firmware.

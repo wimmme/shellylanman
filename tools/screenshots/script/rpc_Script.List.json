@@ -1,0 +1,10 @@
+{
+  "scripts": [
+    {
+      "id": 1,
+      "name": "power-limit",
+      "enable": true,
+      "running": true
+    }
+  ]
+}

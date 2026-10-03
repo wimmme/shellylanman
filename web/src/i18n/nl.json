@@ -544,6 +544,7 @@
   "scr.upload": "Uploaden",
   "scr.uploadTip": "De code uit een bestand laden (.js, of een script uit een .sbk-back-up)",
   "scr.edit": "Bewerken",
+  "scr.loadingCode": "Het script wordt van het toestel gelezen…",
   "scr.run": "Starten",
   "scr.stop": "Stoppen",
   "scr.deleteConfirm": "Het geselecteerde item verwijderen?",

@@ -12,6 +12,8 @@ while read -r dir name; do
   nl=$(echo "$n" | tr A-F a-f)
   mkdir -p "/tmp/fx/$i"
   cp -r "testdata/$dir/." "/tmp/fx/$i/"
+  # One device has a long script, for the script editor (screenshots, check-editor.py).
+  if [ "$dir" = gen3/MiniPMG3 ]; then cp tools/screenshots/script/*.json "/tmp/fx/$i/"; fi
   sed -i -e "s/AABBCC000001/AABBCC0000$n/g" -e "s/aabbcc000001/aabbcc0000$nl/g" \
     -e "s/AA:BB:CC:00:00:01/AA:BB:CC:00:00:$n/g" -e "s/\"Test\"/\"$name\"/g" "/tmp/fx/$i/"*
   /tmp/sim -addr "127.0.0.$i" -port 80 "/tmp/fx/$i" &

@@ -22,7 +22,8 @@ ShellyLanMan is a LAN tool. It talks to your Shelly devices over plain HTTP
   refused when the browser's `Origin` does not match the host. Behind a reverse
   proxy with a different public name, list that name in `SHELLYLANMAN_ORIGINS`.
 - **Content Security Policy:** the UI loads nothing from other origins; no CDN,
-  no telemetry.
+  no telemetry. No inline scripts; inline styles only with a nonce that is new for
+  every page load (the script editor's stylesheet carries it).
 
 ## Secrets at rest
 
