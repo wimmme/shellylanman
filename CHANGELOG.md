@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-10-03
+
+The script editor shows the code again.
+
 ### Fixed
 - Script editor: the code was not shown (only line numbers, the text far below the
   editor) because the Content-Security-Policy blocked the editor's stylesheet. Inline
