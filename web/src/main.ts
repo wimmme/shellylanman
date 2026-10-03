@@ -51,12 +51,21 @@ function renderShell(): void {
     h('li', {}, h('a', { href: '#/' + p.id, class: p === page ? 'active' : undefined, 'aria-current': p === page ? 'page' : undefined, title: t(p.title) },
       icon(p.icon), h('span', { class: 'label' }, t(p.title)), p.id === 'deferred' ? sidebarBadge() : null))));
   const main = h('main', { class: 'main', id: 'main' });
+  // Below 900px the sidebar is a drawer behind the ☰ button (P12-9). A page change
+  // rebuilds the shell, which closes it.
+  const setOpen = (open: boolean): void => {
+    shell.classList.toggle('nav-open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+  };
+  const menuBtn = h('button', { class: 'menu-btn', 'aria-label': t('nav.menu'), title: t('nav.menu'), 'aria-controls': 'sidebar', 'aria-expanded': 'false',
+    onclick: () => setOpen(!shell.classList.contains('nav-open')) }, icon(ICONS.menu, 22));
   const shell = h('div', { class: 'shell' },
-    h('aside', { class: 'sidebar' },
+    h('div', { class: 'nav-back', onclick: () => setOpen(false) }),
+    h('aside', { class: 'sidebar', id: 'sidebar', onkeydown: (e: Event) => { if ((e as KeyboardEvent).key === 'Escape') { setOpen(false); menuBtn.focus(); } } },
       h('div', { class: 'brand' }, h('img', { src: 'logo.png', alt: '', width: 28, height: 28 }), h('span', { class: 'label' }, t('app.name'))),
-      h('nav', { 'aria-label': 'Main' }, nav),
+      h('nav', { 'aria-label': 'Main', onclick: () => setOpen(false) }, nav),
       h('div', { class: 'nav-foot' }, version && (version === 'dev' ? 'dev' : `v${version}`))),
-    h('header', { class: 'topbar' }, h('h1', {}, t(page.title)), h('div', { class: 'spacer' }), connLabel()),
+    h('header', { class: 'topbar' }, menuBtn, h('h1', {}, t(page.title)), h('div', { class: 'spacer' }), connLabel()),
     main);
   app.replaceChildren(shell);
   document.title = `${t(page.title)} · ${t('app.name')}`;

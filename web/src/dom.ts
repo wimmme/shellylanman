@@ -87,6 +87,7 @@ export function icon(path: string, size = 18): SVGSVGElement {
 
 export const ICONS = {
   logo: 'M13 2 4 14h7l-1 8 9-12h-7z',
+  menu: 'M4 6h16M4 12h16M4 18h16',
   devices: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   checklist: 'M9 11l2 2 4-4M5 4h14v16H5z',
   charts: 'M4 20V10M10 20V4M16 20v-7M22 20H2',

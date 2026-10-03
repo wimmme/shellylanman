@@ -7,6 +7,7 @@
   "nav.deferred": "Deferred",
   "nav.settings": "Settings",
   "nav.about": "About",
+  "nav.menu": "Menu",
   "conn.ok": "Live",
   "conn.connecting": "Connecting…",
   "conn.down": "Disconnected – retrying",

@@ -26,6 +26,9 @@ versions follow [Semantic Versioning](https://semver.org/).
 - The Home Assistant palette is now the start look everywhere, light or dark as your
   system prefers, until you choose another. A look you already chose stays. The
   former *Default* palette is called *Midnight*.
+- On narrow screens (phones, either way round, and small tablets) the navigation is a
+  ☰ menu in the top bar instead of a bottom bar or an icon rail, so pages get the full
+  width.
 
 ## [0.5.0] - 2026-10-02
 

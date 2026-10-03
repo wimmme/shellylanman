@@ -7,6 +7,7 @@
   "nav.deferred": "Différé",
   "nav.settings": "Paramètres",
   "nav.about": "À propos",
+  "nav.menu": "Menu",
   "conn.ok": "En direct",
   "conn.connecting": "Connexion…",
   "conn.down": "Déconnecté – nouvelle tentative",

@@ -183,22 +183,22 @@ dl.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin:0}
 dl.kv dt{color:var(--text-muted)}
 dl.kv dd{margin:0}
 
-/* Responsive: icon rail below 900px, bottom bar below 560px */
+/* Responsive: below 900px the navigation is a drawer behind the ☰ button (DECISIONS P12-9) */
+.menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;margin-left:-8px;padding:0;border:0;border-radius:8px;background:none;color:var(--text-main);cursor:pointer}
+.menu-btn:hover{background:rgba(99,130,190,.09)}
+.nav-back{display:none}
 @media (max-width:900px){
-  .shell{grid-template-columns:var(--nav-w) 1fr}
-  .nav .label,.brand .label,.nav-foot{display:none}
-}
-@media (max-width:560px){
-  .shell{grid-template-columns:1fr;grid-template-rows:var(--topbar-h) 1fr auto}
-  .sidebar{grid-row:3;flex-direction:row;border-right:none;border-top:1px solid var(--border)}
-  .brand{display:none}
-  .nav{display:flex;margin:0;justify-content:space-around;width:100%}
-  .nav a{padding:12px;border-left:none;border-top:3px solid transparent}
-  .nav a.active{border-top-color:var(--accent-rx)}
+  .shell{grid-template-columns:1fr}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(260px,80vw);z-index:45;transform:translateX(-100%);transition:transform .2s ease;visibility:hidden}
+  .shell.nav-open .sidebar{transform:none;visibility:visible;box-shadow:0 0 24px rgba(0,0,0,.45)}
+  .shell.nav-open .nav-back{display:block;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.4)}
+  .menu-btn{display:inline-flex}
+  .topbar{padding:0 12px}
   .main{padding:12px}
 }
+@media (prefers-reduced-motion:reduce){.sidebar{transition:none}}
 @media print{
-  .sidebar,.topbar,.banner{display:none}
+  .sidebar,.topbar,.banner,.nav-back{display:none}
   .shell{display:block}
   body{background:#fff;color:#000}
 }
