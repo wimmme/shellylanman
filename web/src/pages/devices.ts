@@ -15,6 +15,7 @@ import { openScheduler, schedulerKind } from '../panels/scheduler';
 import { openScripts } from '../panels/scripts';
 import { download, toCSV } from '../csv';
 import { toast } from '../toast';
+import { selected } from '../selection';
 import { emptyState, type Page } from './common';
 
 type ColKey = 'status' | 'type' | 'device' | 'name' | 'keyword' | 'mac' | 'ip' | 'ssid' | 'rssi' | 'cloud' | 'mqtt'
@@ -113,7 +114,7 @@ let sortKey: ColKey = 'ip';
 let sortAsc = true;
 let filterText = '';
 let filterCol = prefs.defaultFilter();
-const selected = new Set<string>();
+// The selection is shared with Checklist and Firmware (selection.ts).
 let anchor: string | null = null;
 // The rows and columns as last drawn. Handlers read these rather than values
 // captured when they were made: a redraw keeps unchanged buttons, rows and
@@ -165,10 +166,10 @@ function loginDialog(d: Device): void {
   ]);
 }
 
-/** Open the devices' own web UI (confirm for more than 8, like ShellyScanner). */
+/** Open the devices' own web UI (confirm for more than one: DECISIONS P12-11). */
 async function openWebUI(list: Device[]): Promise<void> {
   const targets = list.filter((d) => d.status !== 'ghost');
-  if (targets.length > 8 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: targets.length }), t('action.webUI'), false))) return;
+  if (targets.length > 1 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: targets.length }), t('action.webUI'), false))) return;
   for (const d of targets) window.open(`http://${d.port === 80 ? d.ip : `${d.ip}:${d.port}`}`, '_blank', 'noopener');
 }
 
@@ -290,7 +291,6 @@ export const devicesPage: Page = {
     const draw = (): void => {
       if (interacting()) { whenIdle(draw); return; } // a slider is being dragged: redraw when it is released
       const all = allDevices();
-      for (const id of [...selected]) if (!all.some((d) => d.id === id)) selected.delete(id);
       const rows = visibleRows(all);
       const hidden = hiddenCols();
       const cols = COLUMNS.filter((c) => !hidden.has(c.key));
@@ -306,13 +306,13 @@ export const devicesPage: Page = {
       const act = (label: Key, enabled: boolean, onClick: () => void, tip?: Key): HTMLElement =>
         h('button', { class: 'btn', disabled: !enabled, onclick: onClick, title: tip ? t(tip) : undefined }, t(label));
       keepOrReplace(actionsBox, [
-        dropdown(t('select.menu'), SELECTORS.map((s) => ({ label: t(s.label), onClick: () => { selected.clear(); for (const d of allDevices()) if (s.f(d)) selected.add(d.id); redraw(); } }))),
+        dropdown(t('select.menu'), SELECTORS.map((s) => ({ label: t(s.label), onClick: () => { selected.replace(allDevices().filter(s.f).map((d) => d.id)); redraw(); } }))),
         act('action.info', !!one, () => openInfo(O().id), 'action.infoTip'),
         act('action.logs', !!one && one.status !== 'ghost' && one.gen !== '-', () => openLogs(O().id)),
         act('action.webUI', noGhost && sel.some((d) => !isBLU(d)), () => void openWebUI(S().filter((d) => !isBLU(d))), 'action.webUITip'),
         act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(S())),
         act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(S()), 'action.rebootTip'),
-        act('action.checklist', sel.length > 0, () => { location.hash = '#/checklist?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.checklistTip'),
+        act('action.checklist', true, () => { location.hash = '#/checklist'; }, 'action.checklistTip'),
         act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(S().map((d) => d.id)), 'action.settingsTip'),
         act('action.charts', sel.length > 0 && sel.every((d) => d.status !== 'ghost'), () => { location.hash = '#/charts?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.chartsTip'),
         act('action.scheduler', !!one && schedulerKind(one) !== null, () => openScheduler(O()), 'action.schedulerTip'),
@@ -331,7 +331,7 @@ export const devicesPage: Page = {
           onclick: () => { view = view === 'detailed' ? 'default' : 'detailed'; lsSet('sl_view', view); redraw(); } },
         t(view === 'detailed' ? 'action.viewDetailed' : 'action.viewDefault')),
         h('button', { class: 'btn', onclick: () => exportCSV(shown, shownCols), title: t('action.csvTip') }, t('action.csv')),
-        h('button', { class: 'btn', onclick: () => { selected.clear(); redraw(); window.print(); }, title: t('action.printTip') }, t('action.print')),
+        h('button', { class: 'btn', onclick: () => window.print(), title: t('action.printTip') }, t('action.print')),
         h('button', { class: 'btn', onclick: () => devicesApi.refresh(), title: t('action.refreshTip') }, icon(ICONS.refresh, 16), t('action.refresh')),
         h('button', { class: 'btn', onclick: () => devicesApi.rescan(), title: t('action.rescanTip') }, icon(ICONS.radar, 16), t('action.rescan'))]);
 

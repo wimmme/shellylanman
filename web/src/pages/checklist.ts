@@ -14,7 +14,8 @@ import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
 import { openDeviceSettings } from '../panels/devsettings';
 import { toast } from '../toast';
-import { card, emptyState, type Page } from './common';
+import { openingScope, selected, takeHashIds } from '../selection';
+import { card, emptyState, scopeBanner, type Page } from './common';
 
 const COLS: { key: Col; label: Key; tip: Key; good?: boolean }[] = [
   { key: 'eco', label: 'chk.col.eco', tip: 'chk.tip.eco', good: true },
@@ -67,23 +68,21 @@ function bleDialog(row: ChecklistRow, dev: Device | undefined): void {
 
 // ---- page -----------------------------------------------------------------------------------
 
-function wantedIds(): string[] {
-  const m = /[?&]ids=([^&]*)/.exec(location.hash);
-  return m ? decodeURIComponent(m[1]!).split(',').filter(Boolean) : [];
-}
-
 export const checklistPage: Page = {
   id: 'checklist',
   title: 'nav.checklist',
   icon: ICONS.checklist,
   async render(main) {
-    const ids = wantedIds();
+    // An address with ids (a link) sets the shared selection; the page then shows
+    // the selection as it is now, or everything (DECISIONS P12-2).
+    takeHashIds('checklist');
+    let scope: string[] | null = null; // null: taken from the selection once the devices are known
     let rows: ChecklistRow[] = [];
-    const selected = new Set<string>();
     let anchor: string | null = null;
     let filter = '';
     let shown: ChecklistRow[] = []; // the rows the table shows (filtered)
     const status = h('div', { class: 'muted status-line' });
+    const scopeBox = h('div', { style: 'display:contents' });
     const toolbar = h('div', { class: 'row' });
     const hint = h('p', { class: 'muted chk-hint' }, t('chk.actionsHint'));
     const body = h('div');
@@ -109,7 +108,8 @@ export const checklistPage: Page = {
     const reload = async (): Promise<void> => {
       const my = ++gen;
       if (!allDevices().length) await loadDevices().catch(() => {}); // page opened directly: the list is still loading
-      const devs = (ids.length ? ids.map((id) => devOf(id)).filter((d): d is Device => !!d) : allDevices())
+      scope ??= openingScope(selected, (id) => !!devOf(id));
+      const devs = (scope.length ? scope.map((id) => devOf(id)).filter((d): d is Device => !!d) : allDevices())
         .sort((a, b) => a.ip.localeCompare(b.ip, undefined, { numeric: true }));
       rows = devs.map((d) => ({ id: d.id, host: d.name && d.name !== d.hostname ? d.name + ' (' + d.hostname + ')' : d.hostname, address: addressText(d),
         status: d.status, gen: d.gen, eco: null, led: null, logs: null, ble: null, ap: null, roaming: null, wifi1: null, wifi2: null,
@@ -131,7 +131,7 @@ export const checklistPage: Page = {
       await Promise.all(Array.from({ length: 6 }, worker));
     };
     const webUI = async (list: ChecklistRow[]): Promise<void> => {
-      if (list.length > 8 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: list.length }), t('action.webUI'), false))) return;
+      if (list.length > 1 && !(await confirmDialog(t('action.webUI'), t('action.webConfirm', { n: list.length }), t('action.webUI'), false))) return;
       for (const r of list) window.open(`http://${r.address.replace(/:80$/, '')}`, '_blank', 'noopener');
     };
     const reboot = async (list: ChecklistRow[]): Promise<void> => {
@@ -196,13 +196,21 @@ export const checklistPage: Page = {
         ...settings.map(button),
         h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' }),
         ...acts.filter((a) => a.key === 'web' || a.key === 'reboot').map(button)]);
-      hint.hidden = selected.size > 0;
+      hint.hidden = sel().length > 0;
+      const banner = scope === null ? null : scopeBanner(scope.length > 0, scope.length > 0 ? scope.length : sel().length, () => {
+        scope = scope?.length ? [] : openingScope(selected, (id) => !!devOf(id));
+        void reload();
+      });
+      scopeBox.replaceChildren(...(banner ? [banner] : []));
       shown = rows.filter((r) => !filter || `${r.host} ${r.address}`.toLowerCase().includes(filter));
-      status.textContent = t('status.listed', { total: rows.length, selected: selected.size });
+      status.textContent = t('status.listed', { total: rows.length, selected: sel().length });
       if (!rows.length) { body.replaceChildren(emptyState(t('devices.empty.title'), t('devices.empty.text'), ICONS.checklist)); return; }
       const tbody = h('tbody');
       for (const r of shown) {
-        const tr = h('tr', { 'data-id': r.id, class: selected.has(r.id) ? 'selected' : '' },
+        const tr = h('tr', { 'data-id': r.id, class: selected.has(r.id) ? 'selected' : '', 'aria-selected': String(selected.has(r.id)) },
+          h('td', { class: 'sel' }, h('input', { type: 'checkbox', 'aria-label': r.host, checked: selected.has(r.id),
+            onclick: (e: Event) => e.stopPropagation(),
+            onchange: () => { if (selected.has(r.id)) selected.delete(r.id); else selected.add(r.id); anchor = r.id; draw(); } })),
           h('td', {}, h('span', { class: 'pill ' + r.status }, t(('status.' + r.status) as Key))),
           h('td', {}, r.host, (r as { loading?: boolean }).loading ? h('span', { class: 'spinner small', 'aria-label': t('state.loading') }) : null),
           h('td', { class: 'mono' }, r.address.replace(/:80$/, '')),
@@ -210,7 +218,13 @@ export const checklistPage: Page = {
         tbody.append(tr);
       }
       const table = h('table', { class: 'data checklist' },
-        h('thead', {}, h('tr', {}, h('th', {}, ''), h('th', {}, t('col.device')), h('th', {}, t('col.ip')),
+        h('thead', {}, h('tr', {},
+          h('th', { class: 'sel' }, h('input', { type: 'checkbox', 'aria-label': t('select.all'), checked: shown.length > 0 && shown.every((r) => selected.has(r.id)),
+            onchange: () => {
+              if (shown.every((r) => selected.has(r.id))) shown.forEach((r) => selected.delete(r.id)); else shown.forEach((r) => selected.add(r.id));
+              draw();
+            } })),
+          h('th', {}, ''), h('th', {}, t('col.device')), h('th', {}, t('col.ip')),
           ...COLS.map((c) => h('th', { title: t(c.tip) }, t(c.label))))), tbody);
       // Update in place: the row under the mouse stays the same element, so it
       // keeps its hover colour (and the scroll position stays).
@@ -234,7 +248,7 @@ export const checklistPage: Page = {
       } else if (e.ctrlKey || e.metaKey) {
         if (selected.has(r.id)) selected.delete(r.id); else selected.add(r.id);
         anchor = r.id;
-      } else { selected.clear(); selected.add(r.id); anchor = r.id; }
+      } else { selected.replace([r.id]); anchor = r.id; }
       draw();
     });
     body.addEventListener('dblclick', (e) => { const r = rowOf(e); if (r) void webUI([r]); });
@@ -242,9 +256,9 @@ export const checklistPage: Page = {
       const r = rowOf(e);
       if (!r) return;
       e.preventDefault();
-      if (!selected.has(r.id)) { selected.clear(); selected.add(r.id); draw(); }
+      if (!selected.has(r.id)) { selected.replace([r.id]); draw(); }
       const td = (e.target as HTMLElement).closest('td');
-      const idx = td ? [...td.parentElement!.children].indexOf(td) - 3 : -1;
+      const idx = td ? [...td.parentElement!.children].indexOf(td) - 4 : -1;
       const col = COLS[idx]?.key;
       const all = actions();
       const items: { label: string; run: () => void }[] = [];
@@ -276,7 +290,7 @@ export const checklistPage: Page = {
       else if (changed) draw();
     });
     disposeFn = off;
-    main.append(card(t('chk.title'), null, h('div', { class: 'toolbar' }, toolbar, h('div', { class: 'spacer' }), filterInput), hint, status, body));
+    main.append(card(t('chk.title'), null, scopeBox, h('div', { class: 'toolbar' }, toolbar, h('div', { class: 'spacer' }), filterInput), hint, status, body));
     void reload();
   },
   dispose() { disposeFn(); document.querySelectorAll('.ctx-menu').forEach((m) => m.remove()); },

@@ -5,6 +5,16 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- One selection for Devices, Checklist and Firmware: devices ticked on one page are
+  ticked on the others. Checklist and Firmware show the selected devices, or all
+  devices when none is selected, with a button to switch between the two.
+- Checklist has checkboxes, like Devices. The *Checklist* button on Devices is always
+  available.
+- *Web UI* asks before opening more than one device, and says it opens one tab per
+  device (was: more than eight).
+- *Print* no longer clears the selection.
+
 ## [0.5.0] - 2026-10-02
 
 ShellyLanMan and Home Assistant work together: the app announces itself, a new

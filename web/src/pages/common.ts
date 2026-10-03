@@ -28,6 +28,18 @@ export function errorState(err: unknown): HTMLElement {
   return h('div', { class: 'state' }, h('div', { class: 'title' }, t('state.error', { msg: err instanceof Error ? err.message : String(err) })));
 }
 
+/**
+ * The line above Checklist and Firmware that says which devices they show (the
+ * selected ones or all) and switches between the two (DECISIONS P12-2).
+ * Nothing when all devices are shown and none is selected.
+ */
+export function scopeBanner(showingSelected: boolean, count: number, toggle: () => void): HTMLElement | null {
+  if (!showingSelected && count === 0) return null;
+  return h('div', { class: 'banner scope', role: 'status', title: t('scope.tip') },
+    h('span', {}, t(showingSelected ? 'scope.selected' : 'scope.all', { n: count })),
+    h('button', { class: 'btn', onclick: toggle }, t(showingSelected ? 'scope.showAll' : 'scope.showSelected')));
+}
+
 /** A page whose features arrive in a later phase. */
 export function placeholder(id: string, title: Key, iconPath: string, text: Key): Page {
   return {

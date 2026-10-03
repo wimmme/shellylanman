@@ -105,6 +105,7 @@ code,.mono{font-family:var(--font-mono);font-size:.88em}
 .banner{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg-card);font-size:.88rem}
 .banner.warn{border-color:color-mix(in srgb,var(--accent-warn) 45%,transparent);background:color-mix(in srgb,var(--accent-warn) 10%,var(--bg-card))}
 .banner .close{margin-left:auto}
+.banner.scope{align-items:center;margin-bottom:10px;flex-wrap:wrap}
 
 /* Cards */
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
