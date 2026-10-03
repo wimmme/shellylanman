@@ -14,6 +14,10 @@ internal/web/dist/*
 /record
 *.exe
 
+# tools/screenshots/run.sh output, and machine-specific notes for Claude Code
+/screenshots-out/
+CLAUDE.local.md
+
 # Editors and OS
 .idea/
 .vscode/

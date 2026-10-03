@@ -244,3 +244,12 @@ fresh instance returns the new token in the API answer; on the test instance it 
 rotated afterwards.
 | Release 0.5.0 on `ha-test` | the store offered the app update 0.4.0 → 0.5.0; after it ShellyLanMan v0.5.0 with the local MCP listener; integration (released code) installed; after a Core restart `shellylanman` (one click) and `mcp` (URL, HA 2026.9) are offered as discovered |
 | `shellylanman-ha` CI | tests on HA 2026.9.4 and the newest release, `hassfest` (after sorting the manifest keys) and HACS validation (after adding repository topics) green |
+
+## Phase 12 and release 0.6.0 (2026-10-03)
+
+| Check | Result |
+|---|---|
+| Pages with 11 simulated devices (`tools/screenshots/run.sh`, headless Chromium) | shared selection Devices → Checklist → Firmware with *Show all devices*; tooltips of grey buttons give the reason (read from the page); Firmware rows filled per device; ☰ menu on a 390 px phone (made opaque after the first look) |
+| `ha-test` device registry (read only, before the release) | ShellyTestPlug also listed as `addr:192.168.0.150:80` (unidentified, error) → fixed in `acd978a`; BrandstofcelSwitch twice (ShellyLanMan and Shelly integration, same MAC, not merged): Home Assistant 2026.8+ keeps one config entry per device |
+| Release 0.6.0 on `ha-test` | app 0.5.0 → 0.6.0 through the Supervisor (store reload, update); log shows `announced to Home Assistant` for `shellylanman` and `mcp`; integration 0.6.0 copied, Core restarted: 27 ShellyLanMan devices, the `addr:` device removed, no `shellylanman` entries in the system log |
+| CI | `shellylanman` Test and Publish image green; `shellylanman-ha` App and Integration green on `main` and `v0.6.0` |

@@ -15,6 +15,8 @@ server + plain TypeScript frontend, one Docker image, one `/data` volume.
 | Every feature, where it is in the Java code, the Shelly API it uses, status | `FEATURE_PARITY.md` |
 | Decisions already taken (technology, networking, QR scope, …) | `DECISIONS.md` §8 — it overrides earlier proposals |
 | Where code came from | `docs/PROVENANCE.md` |
+| How we work: checks, simulator and screenshots, releases, the HA test instance | `docs/WORKFLOW.md` |
+| Wim's own hosts, accounts and test systems (git-ignored, local only) | `CLAUDE.local.md` |
 | ShellyScanner source | https://github.com/usnasoft/shellyscanner (clone it; the code is the truth) |
 | Shelly API | the `shelly-api-docs` MCP server, or https://shelly-api-docs.shelly.cloud |
 
@@ -30,9 +32,10 @@ go run ./cmd/shellysim testdata/gen1/SHPLG-S testdata/gen2/Plus1   # simulated d
 go run ./cmd/record -host <ip> -out testdata/<gen>/<model>        # record a fixture (GET only)
 ```
 
-No Docker on the dev machine: `REMOTE=wim@192.168.0.12 SSH_OPTS="-i ~/.ssh/id_ed25519_dockerhostvm" sh tools/remote.sh sh tools/verify.sh`
-(copies the tree to `~/build/shellylanman` on dockerhostvm and runs there;
-generated files must be fetched back explicitly).
+No Docker on the dev machine: run the same commands on a Docker host with
+`tools/remote.sh` (`REMOTE_DIR=build/sll-dev`; hosts and keys in `CLAUDE.local.md`).
+It copies the tree and runs there; generated files must be fetched back explicitly.
+Screenshots with simulated devices: `sh tools/screenshots/run.sh`.
 
 ## Architecture in one screen
 

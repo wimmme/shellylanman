@@ -55,12 +55,14 @@ eight languages. No desktop, no VNC, no Java, no cloud.
   Claude Desktop or a local model can read your devices and, if you allow it, switch,
   configure and script them. Locally, with confirmation for anything destructive.
 - **At home in Home Assistant** — [an app](#-home-assistant) in the sidebar behind Home
-  Assistant's login, in Home Assistant's own colours, and an integration that adds
-  ShellyLanMan's status, configuration backups and settings checklist to the Shelly
-  devices Home Assistant already has, plus its tools for Assist.
-- **More than ShellyScanner** — on top of all of ShellyScanner's functions: the MCP
-  server and Home Assistant support above, scenes, eight languages, a choice of colour
-  palettes (including a Home Assistant look), release notes in the app.
+  Assistant's login, in Home Assistant's own colours, and an integration that puts
+  ShellyLanMan's status, configuration backups and settings checklist next to your
+  Shelly devices in Home Assistant, plus its tools for Assist.
+- **More than ShellyScanner** — on top of all of ShellyScanner's functions: pages that
+  work together (one selection for Devices, Checklist and Firmware, buttons that say
+  why they are not available), the MCP server and Home Assistant support above, scenes,
+  eight languages, colour palettes (the Home Assistant look by default), installable as
+  an app, release notes in the app.
 
 ## 🚀 Quick start
 
@@ -119,7 +121,7 @@ volume content.
 
 ### Why host networking
 
-ShellyScanner finds devices with mDNS, which uses multicast on your LAN.
+ShellyLanMan finds devices with mDNS, which uses multicast on your LAN.
 Docker's default bridge network does not pass that multicast into the
 container, so discovery by mDNS only works with `network_mode: host` (Linux).
 In bridge mode (`-p 3082:3082`) everything else works and devices can be found
@@ -160,7 +162,11 @@ own LAN. See [`SECURITY.md`](SECURITY.md).
 
 ## 🧭 Features
 
-Everything ShellyScanner does, in the browser:
+Everything ShellyScanner does, in the browser, and pages that work together:
+
+- **One selection** for Devices, Checklist and Firmware: tick devices on one page and
+  the others show those devices (or all, with one click). Every button says what it
+  does and, when it is grey, why.
 
 - **Discovery** by mDNS (all interfaces or one), IP-range scan or offline, Gen1 to
   Gen4, Pro, BLU devices through their gateways, range-extender clients, protected
@@ -187,12 +193,12 @@ if you switch it on (off by default). No telemetry.
 
 | Page | What it is for |
 |---|---|
-| **Devices** | The live table of every device: status, type, name, IP, RSSI, cloud, MQTT, uptime, temperature, measurements and controls. The toolbar works on the selected devices: info, logs, web UI, reload, reboot, checklist, settings, charts, scheduler, scripts, notes, backup, restore. |
-| **Checklist** | One row per device with the settings worth checking — eco mode, LED, logs, Bluetooth, access point, roaming, Wi-Fi, range extender, scripts, automatic firmware update — and right-click actions to fix them. |
+| **Devices** | The live table of every device: status, type, name, IP, RSSI, cloud, MQTT, uptime, temperature, measurements and controls. Tick devices, then use the toolbar: Checklist and Firmware for the selection; web UI, settings, charts, backup, restore, reload and reboot for one or more devices; info, logs, scheduler, scripts and notes for one device. Refresh reads the devices' status, Rescan searches the network again. |
+| **Checklist** | One row per device with the settings worth checking — eco mode, LED, logs, Bluetooth, access point, roaming, Wi-Fi, range extender, scripts, automatic firmware update. Tick devices and switch a setting with the buttons (or right-click a cell). |
 | **Charts** | Power, energy, voltage, temperature, RSSI and more for the selected devices, with 24 hours of history, zoom, pause and CSV export. |
-| **Firmware** | Current, stable and beta firmware per device, update with live progress, and the QR code for the local download. |
+| **Firmware** | Current, stable and beta firmware of the selected devices (or all), update with live progress, and the QR code for the local download. |
 | **Deferred** | Actions for offline devices, run when the device comes back. |
-| **Settings** | Scan mode and IP ranges, archive, device credentials, backups, web server port, script editor, appearance and language. |
+| **Settings** | Scan mode and IP ranges, archive, device credentials, backups, web server port, script editor, appearance (palette, font, how device pages open) and language. |
 | **About** | What is running (version, runtime, uptime), release notes, dependencies with their licences, credits and help. |
 
 ## 📸 Screenshots
@@ -200,11 +206,19 @@ if you switch it on (off by default). No telemetry.
 | | |
 |---|---|
 | ![Devices](docs/images/screenshot-devices.png) | ![Checklist](docs/images/screenshot-checklist.png) |
-| **Devices** — the live table with controls | **Checklist** — settings worth checking |
+| **Devices** (dark) — the live table; three devices ticked | **Checklist** (light) — the same selection, with *Show all devices* |
 | ![Firmware](docs/images/screenshot-firmware.png) | ![About](docs/images/screenshot-about.png) |
-| **Firmware** — check, update and the Shelly index | **About** — version, system information and support |
+| **Firmware** (light) — check, update and the Shelly index | **About** (dark) — version, system information and support |
 
-The screenshots show simulated devices (`cmd/shellysim`).
+On a phone the pages get the full width; the navigation is behind ☰:
+
+<p>
+  <img src="docs/images/screenshot-phone.png" alt="Checklist on a phone" width="240">
+  <img src="docs/images/screenshot-phone-menu.png" alt="The menu on a phone" width="240">
+</p>
+
+The screenshots show simulated devices in the Home Assistant palette, which is the
+start look; `sh tools/screenshots/run.sh` makes them again.
 
 ## 🤖 AI assistants (MCP)
 
