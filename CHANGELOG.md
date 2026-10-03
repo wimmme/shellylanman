@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Charts follow the shared selection too: devices ticked on Devices, Checklist or
+  Firmware are charted when you open Charts from the menu (it only worked with the
+  *Charts* button).
+
 ## [0.6.0] - 2026-10-03
 
 First use made easier: one selection across Devices, Checklist and Firmware, buttons

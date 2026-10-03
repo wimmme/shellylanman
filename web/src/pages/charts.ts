@@ -2,7 +2,8 @@
 // Copyright (C) Antonio Flaccomio / usnasoft, licensed under GPL-3.0:
 // view/chart/MeasuresChart and TimeChartsExporter.
 //
-// Charts of the devices chosen on the devices page (#/charts?ids=a,b). The
+// Charts of the selected devices (the selection shared with Devices, Checklist
+// and Firmware — DECISIONS P12-2; #/charts?ids=a,b sets it). The
 // server keeps the readings, so a chart starts with history; new readings
 // arrive with the device updates. Range, graph type, series, markers, pause,
 // zoom (drag, wheel while paused, Ctrl+R / Ctrl+P), CSV export, image copy.
@@ -16,15 +17,11 @@ import { h, ICONS } from '../dom';
 import { prefs } from '../format';
 import { t, type Key } from '../i18n';
 import { toast } from '../toast';
+import { openingScope, selected, takeHashIds } from '../selection';
 import { card, emptyState, type Page } from './common';
 
 const RANGES = [0, 1, 5, 15, 30, 60]; // minutes; 0 = auto
 const PALETTE = ['#38bdf8', '#f472b6', '#4ade80', '#f59f00', '#a78bfa', '#f87171', '#34d399', '#fbbf24', '#60a5fa', '#e879f9'];
-
-function wantedIds(): string[] {
-  const m = /[?&]ids=([^&]*)/.exec(location.hash);
-  return m ? decodeURIComponent(m[1]!).split(',').filter(Boolean) : [];
-}
 
 const hms = (ms: number): string => new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -35,8 +32,11 @@ export const chartsPage: Page = {
   title: 'nav.charts',
   icon: ICONS.charts,
   async render(main) {
-    const ids = wantedIds();
+    takeHashIds('charts');
     if (!allDevices().length) await loadDevices().catch(() => {});
+    // Unlike Checklist and Firmware, no selection does not mean all devices: a
+    // chart of every device cannot be read, so the page explains what to do.
+    const ids = openingScope(selected, (id) => allDevices().some((d) => d.id === id));
     const devs = (): Device[] => ids.map((id) => allDevices().find((d) => d.id === id)).filter((d): d is Device => !!d && d.status !== 'ghost');
     if (!ids.length || !devs().length) {
       main.append(card(t('nav.charts'), null, emptyState(t('chart.none.title'), t('chart.none.text'), ICONS.charts)));

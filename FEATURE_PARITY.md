@@ -359,7 +359,7 @@ not its page logic where that came from the desktop client (P12-1). The rows mar
 
 | Row | Original | ShellyLanMan from Phase 12 | Decision |
 |---|---|---|---|
-| T7, S6, F1 | Each dialog (main table, checklist, FW update) has its own row selection | One selection shared by Devices, Checklist and Firmware; Checklist and Firmware show the selected devices with *Show all*; Checklist has checkboxes | P12-2 |
+| T7, S6, F1, G1 | Each dialog (main table, checklist, FW update, charts) has its own row selection | One selection shared by Devices, Checklist, Firmware and Charts; Checklist and Firmware show the selected devices with *Show all*, Charts the selected devices only; Checklist has checkboxes | P12-2 |
 | S6 | Disabled action buttons say nothing | The tooltip says why the button is disabled | P12-3, P12-4 |
 | T20 | Confirm only for more than 8 devices; always a new browser window | Confirm for more than one device; ↗ on the button; per-browser setting new tab / this tab | P12-11 |
 | D11 | Rescan shows archived devices as ghosts at once | Known devices show *searching* and are probed at once; archived only after the search window | P12-7 |

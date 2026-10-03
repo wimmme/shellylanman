@@ -327,7 +327,7 @@ export const devicesPage: Page = {
         act('action.webUI', noGhost && sel.some((d) => !isBLU(d)) && (manyAtOnce() || sel.length === 1), () => void openWebUI(S().filter((d) => !isBLU(d))),
           'action.webUITip', (d) => notGhost(d) && !isBLU(d), !manyAtOnce(), manyAtOnce()),
         act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(S().map((d) => d.id)), 'action.settingsTip', (d) => d.gen !== 'bth'),
-        act('action.charts', sel.length > 0 && sel.every(notGhost), () => { location.hash = '#/charts?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.chartsTip', notGhost),
+        act('action.charts', sel.length > 0 && sel.every(notGhost), () => { location.hash = '#/charts'; }, 'action.chartsTip', notGhost),
         act('action.backup', sel.length > 0, () => void backupDevices(S()), 'action.backupTip'),
         act('action.restore', sel.length > 0, () => { const s = S(); void (s.length === 1 ? restoreDevice(s[0]!) : restoreDevices(s)); }, 'action.restoreTip'),
         act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(S()),

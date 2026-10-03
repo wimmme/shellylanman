@@ -3,6 +3,7 @@
 # repository root (on a machine without Docker: through tools/remote.sh):
 #
 #   sh tools/screenshots/run.sh            # PNGs in ./screenshots-out
+#   SCRIPT=other.py sh tools/screenshots/run.sh   # another script in this directory
 #
 # Builds the current tree as slm-shots:latest, starts it on port 3199 (not the
 # usual 3082) with an IP scan of 127.0.0.2–14, starts tools/screenshots/sims.sh
@@ -31,5 +32,5 @@ until [ "$(docker logs slm-shots-sim 2>&1 | grep -c ' on http')" -ge 11 ]; do sl
 curl -fsS -o /dev/null -X POST http://127.0.0.1:3199/api/v1/scan
 sleep 20
 docker run --rm --network container:slm-shots -v "$PWD/tools/screenshots":/tools -v "$OUT":/shots $PW \
-  sh -c 'pip install -q --break-system-packages playwright==1.55.0 >/dev/null 2>&1; python3 /tools/shoot.py'
+  sh -c 'pip install -q --break-system-packages playwright==1.55.0 >/dev/null 2>&1; python3 /tools/'"${SCRIPT:-shoot.py}"
 ls "$OUT"
