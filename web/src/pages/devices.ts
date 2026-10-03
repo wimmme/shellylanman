@@ -16,6 +16,7 @@ import { openScripts } from '../panels/scripts';
 import { download, toCSV } from '../csv';
 import { toast } from '../toast';
 import { selected } from '../selection';
+import { tooltip, whyDisabled } from '../why';
 import { emptyState, type Page } from './common';
 
 type ColKey = 'status' | 'type' | 'device' | 'name' | 'keyword' | 'mac' | 'ip' | 'ssid' | 'rssi' | 'cloud' | 'mqtt'
@@ -303,24 +304,38 @@ export const devicesPage: Page = {
       const openMenu = document.querySelector('.menu:not(.hidden)') !== null;
       if (openMenu && host.isConnected) return; // do not close a menu the user is using
 
-      const act = (label: Key, enabled: boolean, onClick: () => void, tip?: Key): HTMLElement =>
-        h('button', { class: 'btn', disabled: !enabled, onclick: onClick, title: tip ? t(tip) : undefined }, t(label));
+      // A button with a tooltip that says what it does and, when disabled, why
+      // (P12-4). `has`: the devices it applies to; `oneOnly`: one device at a time.
+      // The tooltip sits on a wrapper: browsers show none on a disabled button.
+      const act = (label: Key, enabled: boolean, onClick: () => void, tip: Key, has?: (d: Device) => boolean, oneOnly = false): HTMLElement => {
+        const b = h('button', { class: 'btn', disabled: !enabled, onclick: onClick }, t(label));
+        return h('span', { class: 'tip-wrap', title: tooltip(t(tip), whyDisabled(sel, enabled, has, oneOnly)) }, b);
+      };
+      const sep = (): HTMLElement => h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' });
+      const notGhost = (d: Device): boolean => d.status !== 'ghost';
+      // Order (P12-5): selection and the pages that use it; actions for several
+      // devices; actions for one device.
       keepOrReplace(actionsBox, [
         dropdown(t('select.menu'), SELECTORS.map((s) => ({ label: t(s.label), onClick: () => { selected.replace(allDevices().filter(s.f).map((d) => d.id)); redraw(); } }))),
-        act('action.info', !!one, () => openInfo(O().id), 'action.infoTip'),
-        act('action.logs', !!one && one.status !== 'ghost' && one.gen !== '-', () => openLogs(O().id)),
-        act('action.webUI', noGhost && sel.some((d) => !isBLU(d)), () => void openWebUI(S().filter((d) => !isBLU(d))), 'action.webUITip'),
-        act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(S())),
-        act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(S()), 'action.rebootTip'),
         act('action.checklist', true, () => { location.hash = '#/checklist'; }, 'action.checklistTip'),
-        act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(S().map((d) => d.id)), 'action.settingsTip'),
-        act('action.charts', sel.length > 0 && sel.every((d) => d.status !== 'ghost'), () => { location.hash = '#/charts?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.chartsTip'),
-        act('action.scheduler', !!one && schedulerKind(one) !== null, () => openScheduler(O()), 'action.schedulerTip'),
-        act('action.scripts', !!one && one.status !== 'ghost' && ['2', '3', '4'].includes(one.gen), () => void openScripts(O()), 'action.scriptsTip'),
-        act('action.notes', !!one && archiveInUse(), () => openNotes(O()), 'action.notesTip'),
+        act('nav.firmware', true, () => { location.hash = '#/firmware'; }, 'action.firmwareTip'),
+        sep(),
+        act('action.webUI', noGhost && sel.some((d) => !isBLU(d)), () => void openWebUI(S().filter((d) => !isBLU(d))), 'action.webUITip', (d) => notGhost(d) && !isBLU(d)),
+        act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(S().map((d) => d.id)), 'action.settingsTip', (d) => d.gen !== 'bth'),
+        act('action.charts', sel.length > 0 && sel.every(notGhost), () => { location.hash = '#/charts?ids=' + encodeURIComponent(S().map((d) => d.id).join(',')); }, 'action.chartsTip', notGhost),
         act('action.backup', sel.length > 0, () => void backupDevices(S()), 'action.backupTip'),
         act('action.restore', sel.length > 0, () => { const s = S(); void (s.length === 1 ? restoreDevice(s[0]!) : restoreDevices(s)); }, 'action.restoreTip'),
-        sel.length > 0 && sel.every((d) => d.status === 'ghost') ? act('action.removeGhost', true, () => void removeGhosts(S())) : null,
+        act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(S()),
+          sel.length === 1 && one?.status === 'login' ? 'action.loginTip' : 'action.reloadTip'),
+        act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(S()), 'action.rebootTip', rebootable),
+        sel.length > 0 && sel.every((d) => d.status === 'ghost') ? act('action.removeGhost', true, () => void removeGhosts(S()), 'action.removeGhostTip') : null,
+        sep(),
+        act('action.info', !!one, () => openInfo(O().id), 'action.infoTip', undefined, true),
+        act('action.logs', !!one && notGhost(one) && one.gen !== '-', () => openLogs(O().id), 'action.logsTip', (d) => notGhost(d) && d.gen !== '-', true),
+        act('action.scheduler', !!one && schedulerKind(one) !== null, () => openScheduler(O()), 'action.schedulerTip', (d) => schedulerKind(d) !== null, true),
+        act('action.scripts', !!one && notGhost(one) && ['2', '3', '4'].includes(one.gen), () => void openScripts(O()), 'action.scriptsTip',
+          (d) => notGhost(d) && ['2', '3', '4'].includes(d.gen), true),
+        act('action.notes', !!one && archiveInUse(), () => openNotes(O()), archiveInUse() ? 'action.notesTip' : 'action.notesOff', undefined, true),
       ].filter((x): x is HTMLElement => x !== null));
       keepOrReplace(controlsBox, [
         dropdown(t('columns.menu'), COLUMNS.filter((c) => c.key !== 'status').map((c) => ({
@@ -332,7 +347,9 @@ export const devicesPage: Page = {
         t(view === 'detailed' ? 'action.viewDetailed' : 'action.viewDefault')),
         h('button', { class: 'btn', onclick: () => exportCSV(shown, shownCols), title: t('action.csvTip') }, t('action.csv')),
         h('button', { class: 'btn', onclick: () => window.print(), title: t('action.printTip') }, t('action.print')),
-        h('button', { class: 'btn', onclick: () => devicesApi.refresh(), title: t('action.refreshTip') }, icon(ICONS.refresh, 16), t('action.refresh')),
+        // Refresh follows the selection, Rescan is always the whole network (P12-6).
+        h('button', { class: 'btn', onclick: () => { const s = S(); void devicesApi.refresh(s.length ? s.map((d) => d.id) : undefined); }, title: t('action.refreshTip') },
+          icon(ICONS.refresh, 16), sel.length ? t('action.refreshN', { n: sel.length }) : t('action.refresh')),
         h('button', { class: 'btn', onclick: () => devicesApi.rescan(), title: t('action.rescanTip') }, icon(ICONS.radar, 16), t('action.rescan'))]);
 
       badge.textContent = String(all.length);

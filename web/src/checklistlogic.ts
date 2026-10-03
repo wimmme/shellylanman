@@ -60,27 +60,11 @@ export function sameObject(rows: ChecklistRow[], col: Col): Cell | undefined {
 
 export const editable = (rows: ChecklistRow[], col: Col): boolean => rows.length > 0 && rows.every((r) => r[col] !== null && r[col] !== NA);
 
-// ---- why a button is disabled (DECISIONS P12-3, ShellyLanMan's own) --------------------------
-
-/** Why an action is not available for these rows, or null when it is. */
-export type Why = { key: 'why.none' } | { key: 'why.one' } | { key: 'why.missing'; n: number } | { key: 'why.differ' };
-
-/**
- * The reason for a disabled action: nothing ticked, more than one where one is
- * needed, devices without the setting (`has`), else values that differ.
- */
-export function whyDisabled(rows: ChecklistRow[], enabled: boolean, has: (r: ChecklistRow) => boolean, oneOnly = false): Why | null {
-  if (enabled) return null;
-  if (!rows.length) return { key: 'why.none' };
-  if (oneOnly && rows.length !== 1) return { key: 'why.one' };
-  const n = rows.filter((r) => !has(r)).length;
-  if (n) return { key: 'why.missing', n };
-  return { key: 'why.differ' };
-}
+// ---- what a device has, for why.ts (DECISIONS P12-3, ShellyLanMan's own) ------------------
 
 const known = (v: Cell): boolean => v !== null && v !== undefined && v !== NA;
 
-/** Whether a device has the setting an action switches (the `has` of whyDisabled). */
+/** Whether a device has the setting an action switches (the `has` of whyDisabled in why.ts). */
 export const HAS: Record<string, (r: ChecklistRow) => boolean> = {
   eco: (r) => typeof r.eco === 'boolean',
   led: (r) => isG1(r) && typeof r.led === 'boolean',

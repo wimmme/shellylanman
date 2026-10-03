@@ -7,7 +7,8 @@
 // access point, roaming, Wi-Fi, range extender, scripts and automatic
 // firmware update, with actions to change them.
 import { configApi, devicesApi, type BLEItem, type ChecklistRow, type Device } from '../api';
-import { cellView, editable, FALSE, HAS, isBLU, isG1, isG2, sameBoolean, sameObject, sameStringOrInt, whyDisabled, type Col } from '../checklistlogic';
+import { cellView, editable, FALSE, HAS, isBLU, isG1, isG2, sameBoolean, sameObject, sameStringOrInt, type Col } from '../checklistlogic';
+import { tooltip, whyDisabled } from '../why';
 import { addressText, allDevices, loadDevices, onDevicesChanged } from '../devices';
 import { h, ICONS, keepOrReplace, patch } from '../dom';
 import { t, type Key } from '../i18n';
@@ -188,7 +189,7 @@ export const checklistPage: Page = {
         // The tooltip says what the button does and, when it is disabled, why
         // (P12-3). It sits on a wrapper: browsers show none on a disabled button.
         const why = whyDisabled(sel(), a.enabled, a.has ?? (() => true), a.key === 'ble');
-        const tip = [a.tip ? t(a.tip) : '', why ? t(why.key, why.key === 'why.missing' ? { n: why.n } : undefined) : ''].filter(Boolean).join('\n');
+        const tip = tooltip(a.tip ? t(a.tip) : '', why);
         return tip ? h('span', { class: 'tip-wrap', title: tip }, b) : b;
       };
       const settings = acts.filter((a) => a.key !== 'web' && a.key !== 'reboot');

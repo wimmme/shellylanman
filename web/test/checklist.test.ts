@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ChecklistRow } from '../src/api';
-import { cellView, editable, HAS, isG1, sameBoolean, sameObject, sameStringOrInt, whyDisabled } from '../src/checklistlogic';
+import { cellView, editable, HAS, isG1, sameBoolean, sameObject, sameStringOrInt } from '../src/checklistlogic';
+import { whyDisabled } from '../src/why';
 
 const row = (id: string, gen: string, extra: Partial<ChecklistRow> = {}): ChecklistRow => ({
   id, host: id, address: '1.2.3.4', status: 'online', gen,

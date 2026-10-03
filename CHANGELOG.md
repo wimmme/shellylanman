@@ -16,6 +16,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 - *Print* no longer clears the selection.
 - Checklist: a grey button says why in its tooltip (nothing ticked, devices without the
   setting, different values, one device only); every button says what it does.
+- Devices toolbar in groups: selection with *Checklist* and *Firmware* (new button);
+  actions for several devices; actions for one device. Every button has a tooltip
+  that says what it does and, when it is grey, why.
+- *Refresh* reads only the selected devices when some are selected (*Refresh (3)*),
+  else all. Clearer tooltips for *Refresh*, *Rescan* and *Reload*.
 
 ## [0.5.0] - 2026-10-02
 
