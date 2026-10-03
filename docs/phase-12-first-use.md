@@ -307,3 +307,32 @@ whole app is *enough explanation in the tooltip*. 11. Agreed.
 Plan changes: 12.5 keeps the name *Reload*; 12.8 becomes a ☰ menu; 12.10 adds the
 discovery log line (main repo) next to the integration fix; 12.11 can start any time;
 a tooltip pass over every page is part of each step (P12-4).
+
+## 8. Progress (2026-10-03)
+
+| Step | Commit | Notes |
+|---|---|---|
+| 12.1 | `ddfaa36` | `FEATURE_PARITY.md` §6 and "P12 §6" on the rows |
+| 12.2, 12.3 | `f60cdfb` | `web/src/selection.ts` (sessionStorage per tab); scope banner; Checklist checkboxes; Web UI confirm > 1 |
+| 12.4 | `bce11c8` | `web/src/why.ts`: tooltip says why a button is grey |
+| 12.5 | `318b4c9` | Devices toolbar groups, Firmware button, Refresh follows the selection |
+| 12.6 | `9400b8e` | Firmware rows at once, six devices at a time |
+| 12.7 | `7c9ed62` | HA palette start look everywhere; *Default* → *Midnight* (stored `default` migrated) |
+| 12.8 | `ab83014` | ☰ drawer below 900 px |
+| 12.9 | `51cd1a4` | `manifest.json`, icons 192/512 from `docs/images/ShellyLanManLogoSmall.png` |
+| 12.10a | `020a377` | status `searching`; probes after 3 s; end of search: IP scan end + probe time, mDNS 30 s |
+| 12.10b | `acd978a` | **cause of item 20 found on `ha-test`**: ShellyTestPlug was listed as `addr:192.168.0.150:80` (unidentified, error) next to the identified device; that row now goes when the device is identified |
+| 12.10c | `cbe2c0c` | `web/src/weblinks.ts`; ↗ via CSS on `a[target=_blank]` and `.btn.ext` |
+| 12.10 | `20c2a3a`, `99b32f1`; `shellylanman-ha` `b44633c` | discovery success logged; integration: `name`/`manufacturer`/`model` (all `default_*` deprecated), no device for `addr:` ids (0.5.0 leftovers removed), status `searching` |
+| 12.11 | `a71a626`; `shellylanman-ha` `58da6a9` | wording on About (8 languages) and READMEs |
+
+**Item 12 explained (checked on `ha-test`, HA 2026.9.4, source `helpers/device_registry.py`):**
+since Home Assistant 2026.8 a device belongs to one config entry ("Version 3 restricts a
+device to a single config entry"); devices of different integrations with the same MAC
+are no longer merged but shown as linked. ShellyLanMan's device for BrandstofcelSwitch
+and the Shelly integration's are therefore two linked devices — by design of Home
+Assistant, not a bug in the integration.
+
+Open: screenshots / text review (phase 11 §7 items 3–4); `shellylanman-ha` GitHub
+description still says "(and later integration)" — change only with Wim's go; release
+0.6.0 of both on Wim's go.
