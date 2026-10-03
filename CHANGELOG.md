@@ -47,6 +47,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Settings → Appearance: open device web pages *in a new tab* (default) or *in this
   tab*, per browser — for kiosk browsers such as Fully Kiosk that allow no new tabs.
   Links and buttons that open another page show ↗.
+- As a Home Assistant app, the log says when ShellyLanMan announced itself to Home
+  Assistant (it only said so when that failed).
 - ShellyLanMan can be installed as an app (PWA) when it is served over HTTPS or on
   `localhost`: a web app manifest and icons, no offline cache.
 

@@ -96,12 +96,19 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		// Home Assistant Core runs on the host network: the loopback address reaches us.
-		if err := sup.Announce(ctx, supervisor.ServiceShellyLanMan, map[string]any{"url": fmt.Sprintf("http://127.0.0.1:%d", port)}); err != nil {
+		// Success is logged too, so the app's log shows that Home Assistant was told (P12-12).
+		url := fmt.Sprintf("http://127.0.0.1:%d", port)
+		if err := sup.Announce(ctx, supervisor.ServiceShellyLanMan, map[string]any{"url": url}); err != nil {
 			log.Warn("Home Assistant discovery", "service", supervisor.ServiceShellyLanMan, "err", err)
+		} else {
+			log.Info("announced to Home Assistant", "service", supervisor.ServiceShellyLanMan, "url", url)
 		}
 		if mcpLocal != "" {
-			if err := sup.Announce(ctx, supervisor.ServiceMCP, map[string]any{"url": "http://" + mcpLocal + "/mcp"}); err != nil {
+			url := "http://" + mcpLocal + "/mcp"
+			if err := sup.Announce(ctx, supervisor.ServiceMCP, map[string]any{"url": url}); err != nil {
 				log.Warn("Home Assistant discovery", "service", supervisor.ServiceMCP, "err", err)
+			} else {
+				log.Info("announced to Home Assistant", "service", supervisor.ServiceMCP, "url", url)
 			}
 		}
 	}
