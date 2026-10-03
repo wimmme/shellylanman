@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { FirmwareRow } from '../src/api';
-import { betaCell, count, initialChoice, matches, requests, selectAll, stableCell, toggle, type Choice } from '../src/firmwarelogic';
+import type { Device, FirmwareRow } from '../src/api';
+import { betaCell, count, initialChoice, matches, placeholderRows, requests, selectAll, stableCell, toggle, type Choice } from '../src/firmwarelogic';
 
 const row = (id: string, extra: Partial<FirmwareRow> = {}): FirmwareRow => ({ id, name: id, status: 'online', gen: '2', known: true, valid: true, progress: -1, ...extra });
 const tr = (k: string, v?: Record<string, number>): string => (v ? `${k}:${v.n}` : k);
@@ -36,4 +36,18 @@ test('ticks, select buttons, count and requests', () => {
   assert.deepEqual(requests([a, b, c], ch, ''), [{ id: 'a', stage: 'beta' }, { id: 'b', stage: 'stable' }, { id: 'c', stage: 'any' }]);
   assert.equal(matches(row('x', { name: 'Kitchen', current: '1.7.5' }), '1.7'), true);
   assert.equal(matches(row('x', { name: 'Kitchen' }), 'hall'), false);
+});
+
+test('rows appear before the devices answer, without BTHome devices', () => {
+  const d = (id: string, gen: string, name: string, hostname: string): Device => ({
+    id, mac: id, gen, typeId: '', typeName: '', hostname, name, ip: '1.2.3.4', port: 80,
+    status: 'online', managed: true, battery: false, lastSeen: 0, rebootRequired: false,
+    rssi: 0, cloudEnabled: false, cloudConnected: false, mqttEnabled: false, mqttConnected: false, uptime: 0, logMode: 'NONE',
+  });
+  const devs = [d('b', '2', 'Pump', 'shellyplus1-b'), d('a', '1', '', 'shellyplug-s-a'), d('t', 'bth', 'Door', 'sbdw-t')];
+  const all = placeholderRows(devs, []);
+  assert.deepEqual(all.map((r) => r.name), ['Pump (shellyplus1-b)', 'shellyplug-s-a']);
+  assert.ok(all.every((r) => r.known && !r.valid && initialChoice(r) === null));
+  assert.equal(stableCell(all[0]!, (k) => k).type, 'empty'); // no "any" tick while loading
+  assert.deepEqual(placeholderRows(devs, ['a', 'gone']).map((r) => r.id), ['a']);
 });

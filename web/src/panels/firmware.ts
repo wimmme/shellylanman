@@ -9,7 +9,7 @@
 import { ApiError, firmwareApi, localFwApi, type FirmwareRow, type IndexRow } from '../api';
 import { allDevices } from '../devices';
 import { h } from '../dom';
-import { betaCell, count, initialChoice, matches, requests, selectAll, stableCell, toggle, type Cell, type Choice } from '../firmwarelogic';
+import { betaCell, count, initialChoice, matches, placeholderRows, requests, selectAll, stableCell, toggle, type Cell, type Choice } from '../firmwarelogic';
 import { t, type Key } from '../i18n';
 import { confirmDialog } from '../modal';
 import type { EventSocket } from '../socket';
@@ -93,22 +93,39 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
     draw();
   };
 
+  // The rows appear at once from the device list and are filled in as each
+  // device answers, six at a time, like the Checklist (DECISIONS P12-1).
+  let gen = 0;
   const load = async (): Promise<void> => {
+    const my = ++gen;
     checkBtn.disabled = true;
-    try {
-      rows = await firmwareApi.rows(ids);
-      rows.sort((a, b) => a.name.localeCompare(b.name));
-      choice.clear();
-      for (const r of rows) choice.set(r.id, initialChoice(r));
-      body.replaceChildren(h('div', { class: 'table-wrap' }, h('table', { class: 'data fw' },
-        h('thead', {}, h('tr', {}, ...(['col.status', 'col.device', 'fw.col.current', 'fw.col.stable', 'fw.col.beta', ...(withIndex ? ['lfw.col'] : [])] as Key[]).map((k) => h('th', { scope: 'col', title: k === 'lfw.col' ? t('lfw.colTip') : undefined }, t(k))))),
-        tbody)));
-      draw();
-      if (withIndex) void loadIndex();
-    } catch (e) {
-      body.replaceChildren(h('p', { class: 'banner warn' }, e instanceof ApiError ? e.message : String(e)));
-    } finally {
-      checkBtn.disabled = false;
+    rows = placeholderRows(allDevices(), ids);
+    choice.clear();
+    rows.forEach((r) => checking.add(r.id));
+    body.replaceChildren(h('div', { class: 'table-wrap' }, h('table', { class: 'data fw' },
+      h('thead', {}, h('tr', {}, ...(['col.status', 'col.device', 'fw.col.current', 'fw.col.stable', 'fw.col.beta', ...(withIndex ? ['lfw.col'] : [])] as Key[]).map((k) => h('th', { scope: 'col', title: k === 'lfw.col' ? t('lfw.colTip') : undefined }, t(k))))),
+      tbody)));
+    draw();
+    if (withIndex) void loadIndex();
+    const queue = rows.map((r) => r.id);
+    let failed: unknown = null;
+    const worker = async (): Promise<void> => {
+      for (let id = queue.shift(); id !== undefined && my === gen; id = queue.shift()) {
+        try {
+          const [fresh] = await firmwareApi.rows([id]);
+          if (my !== gen) return;
+          if (fresh) setRow(fresh, true);
+          else rows = rows.filter((r) => r.id !== id); // not a device with firmware
+        } catch (e) { failed = e; }
+        checking.delete(id);
+        draw();
+      }
+    };
+    await Promise.all(Array.from({ length: 6 }, worker));
+    if (my !== gen) return;
+    checkBtn.disabled = false;
+    if (failed && rows.every((r) => !r.valid && !r.known)) {
+      body.replaceChildren(h('p', { class: 'banner warn' }, failed instanceof ApiError ? failed.message : String(failed)));
     }
   };
 
@@ -177,6 +194,6 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
       draw();
       return true;
     },
-    dispose() { rowListeners.delete(onRow); },
+    dispose() { rowListeners.delete(onRow); gen++; },
   };
 }

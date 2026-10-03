@@ -4,7 +4,7 @@
 // and FWUpdateTable (cells, editingStopped, row filter).
 //
 // The FW Update table without DOM, so it can be tested.
-import type { FirmwareRow } from './api';
+import type { Device, FirmwareRow } from './api';
 
 export type Choice = 'stable' | 'beta' | null;
 
@@ -67,4 +67,17 @@ export function count(rows: FirmwareRow[], choice: Map<string, Choice>, q: strin
 /** The update requests of the rows shown: "any" for devices without firmware information. */
 export function requests(rows: FirmwareRow[], choice: Map<string, Choice>, q: string): { id: string; stage: 'stable' | 'beta' | 'any' }[] {
   return rows.filter((r) => matches(r, q) && choice.get(r.id)).map((r) => ({ id: r.id, stage: r.known ? choice.get(r.id)! : 'any' }));
+}
+
+/**
+ * The rows shown before the devices answer (ShellyLanMan's own, DECISIONS P12-1):
+ * the given devices, or all, without BTHome devices (no firmware, as on the
+ * server), sorted by name. Versions are filled in per device.
+ */
+export function placeholderRows(devices: Device[], ids: string[]): FirmwareRow[] {
+  const list = ids.length ? ids.map((id) => devices.find((d) => d.id === id)).filter((d): d is Device => !!d) : devices;
+  return list.filter((d) => d.gen !== 'bth')
+    .map((d): FirmwareRow => ({ id: d.id, name: d.name && d.name !== d.hostname ? `${d.name} (${d.hostname})` : d.hostname,
+      status: d.status, gen: d.gen, known: true, valid: false, progress: -1 }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }

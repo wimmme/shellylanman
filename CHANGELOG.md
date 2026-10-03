@@ -21,6 +21,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   that says what it does and, when it is grey, why.
 - *Refresh* reads only the selected devices when some are selected (*Refresh (3)*),
   else all. Clearer tooltips for *Refresh*, *Rescan* and *Reload*.
+- Firmware shows its rows at once and fills them in as each device answers, like the
+  Checklist (was: a spinner until every device had answered).
 
 ## [0.5.0] - 2026-10-02
 
