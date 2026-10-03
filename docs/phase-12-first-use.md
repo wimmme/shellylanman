@@ -336,3 +336,14 @@ Assistant, not a bug in the integration.
 Open: screenshots / text review (phase 11 §7 items 3–4); `shellylanman-ha` GitHub
 description still says "(and later integration)" — change only with Wim's go; release
 0.6.0 of both on Wim's go.
+
+## 9. Next (Wim, 2026-10-03)
+
+Order agreed for going public:
+
+1. **Option B** — add the Shellys found by ShellyLanMan to Home Assistant (the discovery
+   handoff to the official Shelly integration). Its own phase, starting with a
+   thorough, documented analysis of what the Shelly config flow allows (P11-15),
+   before anything is built.
+2. Then the **HACS default list** submission and a **Home Assistant forum post**.
+3. When Wim sees no more bugs: go more public.
