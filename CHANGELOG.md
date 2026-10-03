@@ -30,6 +30,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   ☰ menu in the top bar instead of a bottom bar or an icon rail, so pages get the full
   width.
 
+### Added
+- ShellyLanMan can be installed as an app (PWA) when it is served over HTTPS or on
+  `localhost`: a web app manifest and icons, no offline cache.
+
 ## [0.5.0] - 2026-10-02
 
 ShellyLanMan and Home Assistant work together: the app announces itself, a new

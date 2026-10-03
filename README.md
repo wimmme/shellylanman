@@ -174,6 +174,9 @@ Everything ShellyScanner does, in the browser:
 - **Scripts** (with a code editor) and KVS, **schedulers** (Gen2+, Wall Display
   thermostat, BLU TRV) and **charts** with 24 hours of history.
 - **Appearance**: dark and light themes, colour palettes, fonts and sizes, per browser.
+- **Installable app** (PWA) on phones, tablets and desktops when ShellyLanMan is served
+  over HTTPS (for example behind a reverse proxy) or on `localhost`; on a plain
+  `http://<ip>:3082` browsers offer only a home-screen shortcut.
 
 What leaves your LAN: the devices' own firmware checks (as with ShellyScanner); Shelly's
 firmware index when you open the Firmware page; the ShellyLanMan release check only
