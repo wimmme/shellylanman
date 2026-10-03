@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-03
+
+Charts follow the shared selection, like Checklist and Firmware.
+
 ### Fixed
 - Charts follow the shared selection too: devices ticked on Devices, Checklist or
   Firmware are charted when you open Charts from the menu (it only worked with the
