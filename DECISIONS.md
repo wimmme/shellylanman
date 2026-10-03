@@ -545,3 +545,22 @@ Technical choices made while building discovery, within the scope agreed above.
 | P11-14 | 11c as in `docs/phase-11-ha-mcp.md` §6: checklist entities **read-only** (Q7); enabled by default: ShellyLanMan status, last backup and the backup button, the checklist items disabled by default (Q8); a "ShellyLanMan" device with counters, version and a Rescan button (Q9) | Wim, 2026-10-01 |
 | P11-15 | The discovery handoff to the official Shelly integration (option B) is **not** part of 11c. If it is ever started it gets its own phase, beginning with a thorough, documented analysis of what the Shelly config flow allows (which steps can be pre-filled, credentials, confirmation per device) before anything is built | Wim: "als we ooit B starten moet dat héél goed gedocumenteerd worden" |
 | P11-16 | 11c details: the integration polls ShellyLanMan (devices, backups every 30 s from its cache; checklist every 30 min) instead of keeping `/ws` open, which would count as a viewer and make ShellyLanMan poll every device every 2 s; entities use only `default_*` device info so they never rename the Shelly integration's device; the app's token-less MCP listens on `127.0.0.1:8097` (app option `mcp_local`, default on); Home Assistant 2026.9's MCP integration has no `async_step_hassio` (it shows the discovery but asks for the URL), 2026.10 confirms with one click; the instance id is a hash of the secret key (no new state) | Phase 11c, tested on `ha-test` (HA 2026.9.4) |
+
+## 21. Phase 12 — First use (2026-10-03, Wim's answers to `docs/phase-12-first-use.md` §5)
+
+| # | Decision | Source |
+|---|---|---|
+| P12-1 | ShellyLanMan **deliberately leaves ShellyScanner's page logic** where it came from a fat client that grew organically. ShellyScanner stays the reference for what a feature does and which Shelly API it uses; how the pages work together is ShellyLanMan's own. Affected `FEATURE_PARITY.md` rows get a "deliberately different (P12-x)" note | Wim, 2026-10-03 |
+| P12-2 | **One shared selection** for Devices, Checklist and Firmware (per browser tab). A page opened with a selection shows those devices with a *Show all* banner, without a selection all devices; the scope is taken when the page opens, unticking does not hide a row. Checklist gets checkboxes like Devices. Firmware's version checkboxes stay update choices. `?ids=` keeps working | Q1 |
+| P12-3 | Checklist buttons keep ShellyScanner's enable rules; a disabled button says **why** in its tooltip | Q2 (option a) |
+| P12-4 | **Tooltips explain enough, throughout the app**: every button says what it does and, when disabled, why. Preferred over renaming or dimming | Q4, Q10 |
+| P12-5 | Devices toolbar: selection ▾, Checklist, Firmware (if there is room), then actions for several devices, then actions for one device; Refresh and Rescan on the right. *Reload* keeps its name with a clear tooltip | Q3, Q4 |
+| P12-6 | *Refresh* follows the selection (all when nothing is selected); *Rescan* stays global and enabled | Q10 |
+| P12-7 | Rescan: known devices keep their row as **searching**, are probed at their last address at once, and become archived (or removed without archive) only after the search window — the end of the IP scan, 30 s for mDNS | Q9 |
+| P12-8 | Start look everywhere: palette *Home Assistant*, light or dark following the system until the user chooses; stored choices are kept. Today's *Default* palette is renamed **Midnight** (MikroDash calls it "Default"), with a one-time migration of the stored id | Q5 |
+| P12-9 | Phone: a **☰ menu** instead of the bottom bar / icon rail at narrow widths | Q8 |
+| P12-10 | PWA: web app manifest and icons, no caching service worker; installable over HTTPS or localhost, a home-screen shortcut otherwise | §3.8 |
+| P12-11 | External links show ↗; per-browser setting *open device pages in a new tab / in this tab*, default new tab | Q11 |
+| P12-12 | As a Home Assistant app, ShellyLanMan **logs a successful discovery announcement** at info level (today only failures are logged) | Q6 |
+| P12-13 | Positioning, from now on: "started from ShellyScanner and built on its basis, then developed further as a web application" on the About page, READMEs and GitHub; replaces the planned "Inspired by". GPL attributions unchanged | Q7 |
+| P12-14 | English writes *online* / *offline* | item 21 |

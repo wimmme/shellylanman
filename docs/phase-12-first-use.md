@@ -292,3 +292,18 @@ Each step its own commits, with tests and `CHANGELOG.md`; all strings in 8 langu
 Verification: `sh tools/verify.sh` (remote on dockerhostvm), the simulator for the
 pages, no device writes needed except a Checklist action on Grondwaterpomp /
 ShellyTestPlug to show the buttons work (asked first).
+
+## 7. Answers (2026-10-03) — DECISIONS §21, P12-1…P12-14
+
+1. Agreed. 2. Option **a**: keep the rules, explain in the tooltip. 3. Firmware button
+if there is room. 4. Keep *Reload*; a clear tooltip is enough. 5. **Midnight**
+(MikroDash names it plainly "Default Dark / Default Light"). 6. It was a line from
+another app's log; ShellyLanMan should log its successful Home Assistant discovery
+announcement too (`cmd/shellylanman/main.go` logs only failures today). 7. Go ahead
+now — it makes it easier to present to ShellyScanner's developer. 8. **☰ menu**: there
+is too little horizontal room for a rail. 9. Agreed. 10. Agreed; the principle for the
+whole app is *enough explanation in the tooltip*. 11. Agreed.
+
+Plan changes: 12.5 keeps the name *Reload*; 12.8 becomes a ☰ menu; 12.10 adds the
+discovery log line (main repo) next to the integration fix; 12.11 can start any time;
+a tooltip pass over every page is part of each step (P12-4).
