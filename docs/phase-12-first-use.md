@@ -57,6 +57,18 @@ tasks on many devices.
     Better vertical, and fixed.
 18. Is the site installable as a PWA? No — can it be?
 
+**Added later the same day**
+
+19. After *Rescan*, almost every device shows *archived* at once. An in-between status
+    (*searching*) first, and *archived* only later?
+20. ShellyTestPlug stood in *error* while it was certainly on line. Unclear how to fix
+    it: select and *Reload*? *Refresh*? *Rescan* fixed it, but rescans every device —
+    with one device selected, should *Rescan* be dimmed?
+21. Write *online* instead of *on line*.
+22. *Web UI* opens a new tab: show the usual ↗ arrow, and make new tab / same tab a
+    setting. Fully Kiosk Browser (HA frontend on a wall tablet) does not allow new
+    tabs by default.
+
 ## 2. What the code does today (checked 2026-10-03)
 
 | # | Finding | Where |
@@ -74,6 +86,11 @@ tasks on many devices.
 | 16 | Palette `default` = no `data-palette` attribute (the base CSS rules). The HA palette is the start look only under `/api/hassio_ingress/` (P11-13). | `appearance.ts:216`, `app.css:12,39` |
 | 17 | `app.css`: < 900 px an icon rail at the left, < 560 px a bottom bar. A phone in portrait is < 560 px, in landscape wider. | `app.css:186–197` |
 | 18 | No manifest, no service worker. The CSP (`default-src 'self'`) already allows a same-origin manifest. Browsers install a PWA only in a **secure context**: HTTPS (e.g. via HAProxy, `*.wimmme.net`) or `localhost` — not on `http://192.168.x.x:3082`; there it can only be a home-screen shortcut. Inside Home Assistant the HA app is already the PWA. | `web/public/index.html` |
+
+| 19 | `Devices.Rescan` empties the list and puts every archived device back as *ghost* (label *archived*) at once; a found device replaces its ghost when it answers. mDNS has no "end"; only the IP scan has one (`scan.Scanning`). Archived devices are probed at their last address after 45 s (`retryGhosts`, only with *auto reload*). | `internal/service/devices.go:169–245,468` |
+| 20 | *Error* has two causes. (a) A device that could not be identified (unmanaged, type "Generic"): retried every 2 min (`retryErrors`), and by *Reload* and *Refresh*. (b) A known device whose last poll failed with something other than "offline" or "password" (`statusOf`): its own poll loop retries it, *Refresh* triggers that at once, *Reload* identifies it again. So *Reload* on the selected device was the intended fix; that it stayed in error suggests a call that keeps failing on that device (its scripts? flaky Wi-Fi?) — the error text is in the status tooltip. To check on ShellyTestPlug. `Refresh(ids)` already accepts ids on the server; the UI always sends none. | `devices.go:443–464,524,554,646` |
+| 21 | English uses ShellyScanner's *on line* / *off line* (`status.online`, `status.offline`, `deferred.intro`); the other languages already write it as one word. | `i18n/en.json:70,71,356` |
+| 22 | Four `window.open(…, '_blank')`: Devices, Checklist, the Firmware panel, double-click. No icon. In Home Assistant's panel (HTTPS) a device page (`http://`) cannot load *inside* the frame (mixed content); "same tab" there means leaving Home Assistant for the device page (back button to return). | `pages/devices.ts:172`, `pages/checklist.ts:135`, `panels/firmware.ts:83` |
 
 ## 3. Analysis and proposals
 
@@ -171,7 +188,44 @@ a service worker to install). Works where the page is served over HTTPS or on
 localhost; on plain `http://<ip>:3082` only as a home-screen shortcut — the docs must
 say so. Inside Home Assistant not needed. Small.
 
-### 3.9 Documentation and positioning
+### 3.10 Rescan without the "everything archived" moment (item 19)
+
+New status **searching** (grey, spinner): on *Rescan* the devices that were in the list
+keep their row with that status. Each is probed at once at its last address (what
+`retryGhosts` does after 45 s, now immediately and for every known device), while
+mDNS / the IP scan runs. Found → online as now. Not found after a search window (IP
+scan: when the scan ends; mDNS: 30 s) → *archived* (or removed when the archive is
+off). Server change in `Devices.Rescan` with tests; the UI gets one status more.
+Deviation from ShellyScanner (which shows the ghosts at once).
+
+### 3.11 Refresh, Rescan and a device in error (item 20)
+
+- **Refresh follows the selection:** with devices selected, *Refresh* reads only those
+  and says so (*Refresh 1*); without, all. The server supports it already.
+- **Rescan stays global** and is not dimmed (dimming because of a selection is hard to
+  understand: "why can't I rescan?"). Its label and tooltip say *Scan the network again*.
+- **Error is explained in place:** the status tooltip shows the error text already;
+  add one line *"Select the device and press Read again"*. A device in error is also
+  read again on *Refresh* (as now).
+- **Investigate** why ShellyTestPlug stayed in error (read-only: log of the live
+  container, the device's answers with `cmd/record`). If one optional call (scripts,
+  a component) puts a whole device in error, that is a bug to fix: the device is
+  online, the failing part is shown as missing.
+
+### 3.12 "online" and Web UI links (items 21, 22)
+
+- English: *online* / *offline* (also `deferred.intro`). Trivial.
+- Every link that leaves ShellyLanMan gets the ↗ icon (Web UI buttons, the menu item,
+  release notes, About links).
+- New per-browser setting (Settings → Appearance, stored like the theme, because a
+  wall tablet and a desktop differ): **Open device pages — in a new tab / in this
+  tab**. Default: new tab. "This tab" replaces ShellyLanMan (inside Home Assistant:
+  the whole HA window) with the device page. With more than one device "this tab" can
+  open only one, so the multi-device Web UI is then disabled with that reason. Fully
+  Kiosk users may alternatively allow pop-ups in Fully's own settings — the help text
+  says so.
+
+### 3.13 Documentation and positioning
 
 - `docs/brief.md` rule "nothing beyond ShellyScanner without approval" stays; this
   phase is that approval for the page logic (new decision P12-1).
@@ -184,7 +238,7 @@ say so. Inside Home Assistant not needed. Small.
 ## 4. Open work carried over (phase 11 §7)
 
 1. Push of local commits — still to be asked.
-2. Wording about ShellyScanner — now §3.9; Q7.
+2. Wording about ShellyScanner — now §3.13; Q7.
 3. Screenshots — after this phase.
 4. Text review — after this phase.
 5. HACS default list, forum post — later.
@@ -207,6 +261,11 @@ say so. Inside Home Assistant not needed. Small.
 7. **ShellyScanner wording:** "started from / based on, developed further" — can that
    go ahead now, or still wait for the developer's answer?
 8. **Phone (3.7):** fixed icon rail at the left, or a ☰ menu?
+9. **Rescan (3.10):** *searching* first, archived after the search window — agreed,
+   and is 30 s for mDNS right?
+10. **Refresh/Rescan (3.11):** Refresh follows the selection, Rescan stays global and
+    active — agreed (instead of dimming Rescan)?
+11. **Web UI (3.12):** per-browser setting new tab / this tab, default new tab?
 
 ## 6. Plan
 
@@ -224,7 +283,10 @@ Each step its own commits, with tests and `CHANGELOG.md`; all strings in 8 langu
 | 12.8 | Phone navigation | S | Q8 |
 | 12.9 | PWA manifest and icons; docs on HTTPS | S | — |
 | 12.10 | `shellylanman-ha`: `manufacturer`, ha-test check of item 12, README first screen (two install ways, Shelly integration first); patch release on Wim's go | S | Q6 |
-| 12.11 | Wording About/READMEs (§3.9), then screenshots and text review (phase 11 §7 items 2–4) | M | Q7 |
+| 12.10a | Rescan with *searching* (server + UI) | M | Q9 |
+| 12.10b | Refresh follows selection; error hint; investigate ShellyTestPlug's error (read-only) and fix if it is a bug | S–M | Q10 |
+| 12.10c | *online*; ↗ on external links; setting new tab / this tab | S | Q11 |
+| 12.11 | Wording About/READMEs (§3.13), then screenshots and text review (phase 11 §7 items 2–4) | M | Q7 |
 | 12.12 | Release 0.6.0 on Wim's go; Wim tests on phone, desktop and `ha-test` | — | — |
 
 Verification: `sh tools/verify.sh` (remote on dockerhostvm), the simulator for the
