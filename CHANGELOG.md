@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-10-04
+
+The script editor gives feedback at once and never opens blind.
+
 ### Changed
 - Script editor: the window opens at once and says it is reading the script, instead
   of nothing happening for seconds on a device with weak Wi-Fi. A second click or
