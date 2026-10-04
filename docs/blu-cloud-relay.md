@@ -48,7 +48,13 @@ RC Button 4).
    through the merged scan — `ListInfos` should show `name` and `model` while it runs.
    A script with `BLE.Scanner.Start({active: true})` would do the same, but needs a
    script on the device.
-   **To verify on a real gateway** (not done: it is a command to a device).
+   **Tried on a Dimmer G3 (Wim's go, 2026-10-04):** `StartDeviceDiscovery` with 30 s
+   answered `null`, `ListInfos` stayed `name: null, model: 0` throughout, and
+   `discovery_done` reported `device_count: 0`. The reason: the BLU device did not
+   advertise during those 30 s (`last_seen` unchanged) — a BLU button only sends when
+   pressed (and its 6-hourly packet); ten seconds after the scan a press arrived. So
+   an active scan finds a button only if it is pressed while the scan runs. Next try:
+   the same, with the button pressed during the scan.
 2. **Passively, from the BTHome data in `sdata`**: BLU devices send object `0xF0`
    (device type id = the same model id) and `0xF1` (firmware) at power-on and every
    6 hours. `ListInfos` keeps only the last advertisement, so it shows up only now and
