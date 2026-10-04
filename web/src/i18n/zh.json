@@ -524,6 +524,7 @@
   "notes.title": "备注 - {device}",
   "notes.note": "备注",
   "notes.keyword": "关键词",
+  "notes.name": "名称",
   "action.csv": "导出 CSV",
   "action.csvTip": "将表格（显示的列和行）保存为 CSV 文件",
   "action.print": "打印",

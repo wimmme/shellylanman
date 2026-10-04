@@ -524,6 +524,7 @@
   "notes.title": "Notities - {device}",
   "notes.note": "Notities",
   "notes.keyword": "Trefwoord",
+  "notes.name": "Naam",
   "action.csv": "CSV exporteren",
   "action.csvTip": "De tabel (getoonde kolommen en rijen) opslaan als CSV-bestand",
   "action.print": "Afdrukken",

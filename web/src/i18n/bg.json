@@ -524,6 +524,7 @@
   "notes.title": "Бележки - {device}",
   "notes.note": "Бележки",
   "notes.keyword": "Ключова дума",
+  "notes.name": "Име",
   "action.csv": "Експорт в CSV",
   "action.csvTip": "Запази таблицата (показаните колони и редове) като CSV файл",
   "action.print": "Печат",

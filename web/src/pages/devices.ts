@@ -317,6 +317,7 @@ export const devicesPage: Page = {
       };
       const sep = (): HTMLElement => h('span', { class: 'toolbar-sep', 'aria-hidden': 'true' });
       const notGhost = (d: Device): boolean => d.status !== 'ghost';
+      const notRelay = (d: Device): boolean => !d.relay;
       // Order (P12-5): selection and the pages that use it; actions for several
       // devices; actions for one device.
       keepOrReplace(actionsBox, [
@@ -328,15 +329,15 @@ export const devicesPage: Page = {
           'action.webUITip', (d) => notGhost(d) && !isBLU(d), !manyAtOnce(), manyAtOnce()),
         act('action.settings', sel.length > 0 && sel.some((d) => d.gen !== 'bth'), () => openDeviceSettings(S().map((d) => d.id)), 'action.settingsTip', (d) => d.gen !== 'bth'),
         act('action.charts', sel.length > 0 && sel.every(notGhost), () => { location.hash = '#/charts'; }, 'action.chartsTip', notGhost),
-        act('action.backup', sel.length > 0, () => void backupDevices(S()), 'action.backupTip'),
-        act('action.restore', sel.length > 0, () => { const s = S(); void (s.length === 1 ? restoreDevice(s[0]!) : restoreDevices(s)); }, 'action.restoreTip'),
+        act('action.backup', sel.length > 0 && sel.every(notRelay), () => void backupDevices(S()), 'action.backupTip', notRelay),
+        act('action.restore', sel.length > 0 && sel.every(notRelay), () => { const s = S(); void (s.length === 1 ? restoreDevice(s[0]!) : restoreDevices(s)); }, 'action.restoreTip', notRelay),
         act(sel.length === 1 && one?.status === 'login' ? 'action.login' : 'action.reload', sel.length > 0, () => reload(S()),
           sel.length === 1 && one?.status === 'login' ? 'action.loginTip' : 'action.reloadTip'),
         act('action.reboot', sel.length > 0 && sel.every(rebootable), () => void reboot(S()), 'action.rebootTip', rebootable),
         sel.length > 0 && sel.every((d) => d.status === 'ghost') ? act('action.removeGhost', true, () => void removeGhosts(S()), 'action.removeGhostTip') : null,
         sep(),
         act('action.info', !!one, () => openInfo(O().id), 'action.infoTip', undefined, true),
-        act('action.logs', !!one && notGhost(one) && one.gen !== '-', () => openLogs(O().id), 'action.logsTip', (d) => notGhost(d) && d.gen !== '-', true),
+        act('action.logs', !!one && notGhost(one) && one.gen !== '-' && !one.relay, () => openLogs(O().id), 'action.logsTip', (d) => notGhost(d) && d.gen !== '-' && !d.relay, true),
         act('action.scheduler', !!one && schedulerKind(one) !== null, () => openScheduler(O()), 'action.schedulerTip', (d) => schedulerKind(d) !== null, true),
         act('action.scripts', !!one && notGhost(one) && ['2', '3', '4'].includes(one.gen), () => void openScripts(O()), 'action.scriptsTip',
           (d) => notGhost(d) && ['2', '3', '4'].includes(d.gen), true),
@@ -454,8 +455,8 @@ export const devicesPage: Page = {
           { label: 'action.info', run: () => one && openInfo(one.id), on: !!one },
           { label: 'action.webUI', run: () => void openWebUI(sel.filter((x) => !isBLU(x))), on: sel.some((x) => !isBLU(x) && x.status !== 'ghost') && (manyAtOnce() || sel.length === 1) },
           { label: 'action.settings', run: () => openDeviceSettings(sel.map((x) => x.id)), on: sel.some((x) => x.gen !== 'bth') },
-          { label: 'action.backup', run: () => void backupDevices(sel), on: true },
-          { label: 'action.restore', run: () => void (one ? restoreDevice(one) : restoreDevices(sel)), on: true },
+          { label: 'action.backup', run: () => void backupDevices(sel), on: sel.every((x) => !x.relay) },
+          { label: 'action.restore', run: () => void (one ? restoreDevice(one) : restoreDevices(sel)), on: sel.every((x) => !x.relay) },
           { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
           { label: 'action.reload', run: () => reload(sel), on: true },
         ];

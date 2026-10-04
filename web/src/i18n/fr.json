@@ -524,6 +524,7 @@
   "notes.title": "Notes - {device}",
   "notes.note": "Notes",
   "notes.keyword": "Mot-clé",
+  "notes.name": "Nom",
   "action.csv": "Exporter CSV",
   "action.csvTip": "Enregistrer le tableau (colonnes et lignes affichées) en fichier CSV",
   "action.print": "Imprimer",

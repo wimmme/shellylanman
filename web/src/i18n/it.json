@@ -524,6 +524,7 @@
   "notes.title": "Note - {device}",
   "notes.note": "Note",
   "notes.keyword": "Parola chiave",
+  "notes.name": "Nome",
   "action.csv": "Esporta CSV",
   "action.csvTip": "Salva la tabella (colonne e righe mostrate) come file CSV",
   "action.print": "Stampa",

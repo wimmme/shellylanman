@@ -62,6 +62,8 @@ export interface Device {
   hostname: string; name: string; ip: string; port: number; status: DeviceStatus;
   managed: boolean; battery: boolean; error?: string; lastSeen: number; ssid?: string;
   rebootRequired: boolean; parent?: string; parents?: string[]; note?: string; keyword?: string;
+  /** A BLU device a gateway only relays to the Shelly Cloud: read only (DECISIONS P14-1). */
+  relay?: boolean; protected?: boolean;
   rssi: number; cloudEnabled: boolean; cloudConnected: boolean; mqttEnabled: boolean; mqttConnected: boolean;
   uptime: number; logMode: string; internalTemp?: number; meters?: MeterSet[]; modules?: Module[]; paused?: boolean;
   layout?: Layout;
@@ -115,7 +117,8 @@ export const devicesApi = {
   clearArchive: () => request<unknown>('DELETE', '/archive'),
   infoRequests: (id: string) => request<InfoRequest[]>('GET', `/devices/${encodeURIComponent(id)}/info`),
   info: (id: string, index: number) => request<InfoResult>('GET', `/devices/${encodeURIComponent(id)}/info/${index}`),
-  setNote: (id: string, note: string, keyword: string) => request<unknown>('PUT', `/devices/${encodeURIComponent(id)}/note`, { note, keyword }),
+  setNote: (id: string, note: string, keyword: string, name?: string) =>
+    request<unknown>('PUT', `/devices/${encodeURIComponent(id)}/note`, name === undefined ? { note, keyword } : { note, keyword, name }),
   pause: (id: string, paused: boolean) => request<unknown>('PUT', `/devices/${encodeURIComponent(id)}/pause`, { paused }),
   command: (id: string, cmd: Command) => request<unknown>('POST', `/devices/${encodeURIComponent(id)}/command`, cmd),
   reboot: (ids: string[]) => request<unknown>('POST', '/devices/reboot', { ids, confirm: true }),

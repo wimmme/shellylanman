@@ -338,13 +338,18 @@ func (s *server) logStream(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) putNote(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Note    string `json:"note"`
-		Keyword string `json:"keyword"`
+		Note    string  `json:"note"`
+		Keyword string  `json:"keyword"`
+		Name    *string `json:"name"` // relayed BLU devices only (DECISIONS P14-3)
 	}
 	if !readJSON(w, r, &body) {
 		return
 	}
-	if err := s.Devices.SetNote(r.PathValue("id"), body.Note, body.Keyword); err != nil {
+	err := s.Devices.SetNote(r.PathValue("id"), body.Note, body.Keyword)
+	if err == nil && body.Name != nil {
+		err = s.Devices.SetBLUName(r.PathValue("id"), *body.Name)
+	}
+	if err != nil {
 		code := deviceErrorCode(err)
 		if errors.Is(err, service.ErrNoArchive) {
 			code = http.StatusConflict
