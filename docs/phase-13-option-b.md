@@ -145,3 +145,39 @@ the app it can link to the integration.
 | 13.6 | Repair issue (if agreed) |
 | 13.7 | Tests with the real Shelly flow and mocked devices, on both Home Assistant versions; on `ha-test` with Wim: add a few Shellys, check entities, remove again |
 | 13.8 | Docs (README of both repos, COMPATIBILITY), release on Wim's go |
+
+## 8. Answers and design (2026-10-04) — DECISIONS §22
+
+Q1 both, Q2 B (manual flow), Q3 pass passwords on, Q4 Configure + repair issue,
+Q5 find out why six were missed.
+
+**Passwords on a trusted path only.** ShellyLanMan's REST API has no login on the LAN,
+so `GET /api/v1/devices/{id}/credentials` answers only
+
+- on the LAN port with `Authorization: Bearer <MCP token>`, MCP on, access level
+  *configure* (the token is the one secret ShellyLanMan already shares with Home
+  Assistant; *configure* already allows setting device passwords), or
+- on the Home Assistant app's loopback listener (`127.0.0.1:8097`, app option
+  `mcp_local`), which exists only in the app and is reachable only on its host —
+  the same trust as the token-less MCP there.
+
+The integration tries the token first, then — when its own URL is a loopback
+address (the app) — the loopback listener; otherwise the user types the password in
+Home Assistant. Gen2+ credentials always use the user `admin`.
+
+## 9. Progress and findings (2026-10-04)
+
+| Step | Commit | Notes |
+|---|---|---|
+| 13.2 | `98f214e` | `protected` in the device list; the credentials endpoint (Go tests: no token, wrong token, access *control*, *configure*, unknown device, loopback listener) |
+| 13.3–13.6 | `shellylanman-ha` `251ac8b` | `shelly_add.py` (states, adding through the Shelly flows), `add_flow.py` (list + result, options flow), `repairs.py` (fixable issue), strings en/nl; tests against Home Assistant's real Shelly flow on 2026.9.4 and 2026.10 |
+
+**Q5, first look** (Shelly + zeroconf debug logging on `ha-test` since 02:5x, read
+only): within an hour three of the six (LampenHallBovenSwitch, LedKeuken,
+ShellyTestPlug) were announced by mDNS and Home Assistant offered them. They had not
+been heard before; ShellyTestPlug even disappeared from mDNS for a while (03:30,
+weak Wi-Fi). The three Dimmer G3s are still missing; logging continues. So "missed"
+is mostly "not heard yet" — exactly what the list now shows and fixes.
+
+Open: 13.7 on `ha-test` with real devices (needs Wim's go: the Shelly integration
+connects to the devices it adds), docs of the main README, release 0.7.0.
