@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-05
+
+BLU devices that a gateway only relays get a row of their own, and a wizard tells
+you which model they are.
+
 ### Added
 - Rows for BLU devices that a gateway only relays (BLE.CloudRelay): readings,
   buttons and sensors from their BTHome messages; read only — no backup, restore
@@ -14,6 +19,12 @@ versions follow [Semantic Versioning](https://semver.org/).
   device in pairing mode, and shows the model of every device that answers. The
   model is stored in ShellyLanMan's archive; nothing changes on the device or the
   gateway. On the Devices page (Identify) and in the checklist's BLE dialog.
+- API: `relay` in the device list, `GET /api/v1/blu/gateways`,
+  `POST /api/v1/blu/identify` (events `blu.identify`, `blu.discovered`), and an
+  optional `name` when saving the notes of a relayed BLU device.
+
+### Changed
+- README: screenshots with a relayed BLU device and the Identify wizard.
 
 ## [0.7.0] - 2026-10-04
 
