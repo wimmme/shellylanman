@@ -545,6 +545,8 @@
   "scr.uploadTip": "Carica il codice da un file (.js, o uno script da un backup .sbk)",
   "scr.edit": "Modifica",
   "scr.loadingCode": "Lettura dello script dal dispositivo…",
+  "scr.loadFailed": "Impossibile leggere lo script dal dispositivo.",
+  "scr.retry": "Riprova",
   "scr.run": "Avvia",
   "scr.stop": "Ferma",
   "scr.deleteConfirm": "Eliminare l'elemento selezionato?",

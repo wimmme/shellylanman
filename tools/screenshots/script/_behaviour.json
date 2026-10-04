@@ -1,0 +1,8 @@
+{
+  "/rpc/Script.GetCode?id=2": {
+    "delayMs": 4000
+  },
+  "/rpc/Script.GetCode?id=3": {
+    "status": 500
+  }
+}

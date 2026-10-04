@@ -545,6 +545,8 @@
   "scr.uploadTip": "从文件加载代码（.js，或 .sbk 备份中的脚本）",
   "scr.edit": "编辑",
   "scr.loadingCode": "正在从设备读取脚本…",
+  "scr.loadFailed": "无法从设备读取脚本。",
+  "scr.retry": "重试",
   "scr.run": "运行",
   "scr.stop": "停止",
   "scr.deleteConfirm": "删除所选项目？",

@@ -545,6 +545,8 @@
   "scr.uploadTip": "De code uit een bestand laden (.js, of een script uit een .sbk-back-up)",
   "scr.edit": "Bewerken",
   "scr.loadingCode": "Het script wordt van het toestel gelezen…",
+  "scr.loadFailed": "Het script kon niet van het toestel gelezen worden.",
+  "scr.retry": "Opnieuw proberen",
   "scr.run": "Starten",
   "scr.stop": "Stoppen",
   "scr.deleteConfirm": "Het geselecteerde item verwijderen?",

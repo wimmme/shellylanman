@@ -5,6 +5,17 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Script editor: the window opens at once and says it is reading the script, instead
+  of nothing happening for seconds on a device with weak Wi-Fi. A second click or
+  double-click does not open a second editor.
+
+### Fixed
+- Script editor: when the device could not send the code (busy, HTTP error), an empty
+  editor opened, and *Upload* would have wiped the script on the device. It now shows
+  the error with *Retry*, and *Upload* / *Upload and run* stay off until the code was
+  read. The API and MCP report the error too (`Script.GetCode`).
+
 ## [0.6.3] - 2026-10-04
 
 The script editor follows the app's light or dark look.

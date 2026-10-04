@@ -5,6 +5,18 @@
       "name": "power-limit",
       "enable": true,
       "running": true
+    },
+    {
+      "id": 2,
+      "name": "slow-device",
+      "enable": false,
+      "running": false
+    },
+    {
+      "id": 3,
+      "name": "broken-read",
+      "enable": false,
+      "running": false
     }
   ]
 }

@@ -77,7 +77,8 @@ function scriptsTab(d: Device, initial: ScriptInfo[]): HTMLElement {
       return tr;
     }));
     const none = sel === null || !current();
-    btns.del.disabled = btns.down.disabled = btns.up.disabled = btns.edit.disabled = none;
+    btns.del.disabled = btns.down.disabled = btns.up.disabled = none;
+    btns.edit.disabled = none || editing.has(sel!); // already open: one editor per script
   };
 
   const edit = async (): Promise<void> => {

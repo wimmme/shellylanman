@@ -332,3 +332,7 @@ button.linkish{background:none;border:none;padding:0;font:inherit;color:var(--ac
 
 /* Links and buttons that open another site or a device's own page (DECISIONS P12-11) */
 a[target="_blank"]::after,.btn.ext::after{content:"↗";margin-left:.25em;font-size:.85em;opacity:.7}
+
+/* Script editor while its code is read, or when reading failed */
+.ide-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;min-height:160px;padding:16px;text-align:center}
+.ide-state.error strong{color:var(--accent-err)}

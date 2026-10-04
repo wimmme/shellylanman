@@ -7,6 +7,11 @@
 // Since Phase 4 every request is logged (Calls) and relay commands change the
 // served status (Gen1 /relay/N?turn=, Gen2+ Switch.Set / Switch.Toggle);
 // other commands are accepted and answered with an empty result.
+//
+// An optional _behaviour.json in the fixture directory makes GET requests slow
+// or failing, for tests of weak devices: {"/rpc/Script.GetCode?id=2":
+// {"delayMs": 4000}, "/rpc/Script.GetCode?id=3": {"status": 500}} (keys are the
+// request URI, path and query as sent).
 package sim
 
 import (
@@ -21,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/coder/websocket"
 
@@ -41,11 +47,20 @@ type Device struct {
 	// the older challenge in the JSON body.
 	FW2Auth bool
 
+	behave map[string]Behaviour // _behaviour.json, by request URI
+
 	mu     sync.Mutex
 	calls  []string                 // "GET /relay/0?turn=on", "RPC Switch.Set {"id":0,"on":true}"
 	status map[string]any           // served status, changed by relay commands
 	down   bool                     // drop every connection: the device looks off line
 	rpcWS  map[chan []byte]struct{} // RPC WebSocket clients (notifications)
+}
+
+// Behaviour of one request URI (_behaviour.json): wait, then answer normally,
+// or with Status and a Gen2+ style error body.
+type Behaviour struct {
+	DelayMs int `json:"delayMs"`
+	Status  int `json:"status"`
 }
 
 // SetDown makes the device unreachable (connections are closed unanswered).
@@ -82,7 +97,13 @@ func New(dir string) (*Device, error) {
 		Gen int    `json:"gen"`
 	}
 	_ = json.Unmarshal(b, &info)
-	return &Device{dir: dir, id: info.ID, gen1: info.Gen == 0}, nil
+	d := &Device{dir: dir, id: info.ID, gen1: info.Gen == 0}
+	if b, err := os.ReadFile(filepath.Join(dir, "_behaviour.json")); err == nil {
+		if err := json.Unmarshal(b, &d.behave); err != nil {
+			return nil, fmt.Errorf("%s: %w", filepath.Join(dir, "_behaviour.json"), err)
+		}
+	}
+	return d, nil
 }
 
 func (d *Device) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -97,6 +118,20 @@ func (d *Device) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		panic(http.ErrAbortHandler)
+	}
+	if b, ok := d.behave[r.URL.RequestURI()]; ok && r.Method == http.MethodGet {
+		select {
+		case <-time.After(time.Duration(b.DelayMs) * time.Millisecond):
+		case <-r.Context().Done():
+			return
+		}
+		if b.Status != 0 {
+			d.logCall("GET " + r.URL.RequestURI())
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(b.Status)
+			fmt.Fprintf(w, `{"code":-1,"message":"simulated failure (HTTP %d)"}`, b.Status)
+			return
+		}
 	}
 	rpcPost := r.Method == http.MethodPost && r.URL.Path == "/rpc"
 	var body []byte

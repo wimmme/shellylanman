@@ -206,7 +206,11 @@ func (m *Devices) ScriptLogOn(ctx context.Context, id string) error {
 
 var crlfRe = regexp.MustCompile(`\r+\n`)
 
-// ScriptCode: Script.GetCode ("" when the device has none, an error only when off line).
+// ScriptCode: Script.GetCode; "" only when the device answers with no code.
+// Every failure is an error (FEATURE_PARITY O34): ShellyScanner's Script.getCode
+// returns "" for any error but "offline", so a device that answered with an
+// error (busy, HTTP 5xx) opened an empty editor whose upload would wipe the
+// script on the device.
 func (m *Devices) ScriptCode(ctx context.Context, id string, sid int) (string, error) {
 	c, _, err := m.g2conn(id)
 	if err != nil {
@@ -214,10 +218,7 @@ func (m *Devices) ScriptCode(ctx context.Context, id string, sid int) (string, e
 	}
 	v, err := m.rpcGet(ctx, c, "/rpc/Script.GetCode?id="+strconv.Itoa(sid))
 	if err != nil {
-		if shelly.IsOffline(err) {
-			return "", err
-		}
-		return "", nil
+		return "", err
 	}
 	return crlfRe.ReplaceAllString(v.Get("data").Text(), "\n"), nil
 }

@@ -11,6 +11,7 @@ import { download } from '../csv';
 import { h } from '../dom';
 import { t } from '../i18n';
 import { currentTheme } from '../appearance';
+import type { Editor } from '../editor/codemirror';
 import { editorDark, ideprefs } from '../ideprefs';
 import { openModal } from '../modal';
 import { toast } from '../toast';
@@ -44,22 +45,37 @@ export async function pickBackupScript(buf: Uint8Array): Promise<string | null> 
 
 /** Open the editor; resolves when it is closed. onRun reports the running state. */
 export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running: boolean) => void): Promise<void> {
-  // A device on weak Wi-Fi can take seconds to send its code: say so meanwhile.
-  let waiting = true, cancelled = false;
-  const closeWait = openModal(s.name, h('div', { class: 'state' }, h('div', { class: 'spinner', role: 'status' }), t('scr.loadingCode')),
-    [{ label: t('common.cancel') }], () => { if (waiting) cancelled = true; });
-  let code: string;
-  try { code = await scriptsApi.code(d.id, s.id); } catch (e) { waiting = false; closeWait(); if (!cancelled) toast(msg(e)); return; }
-  waiting = false;
-  closeWait();
-  if (cancelled) return;
-  const { createEditor } = await import('../editor/codemirror');
+  // The editor window opens at once and says it is reading: a device on weak
+  // Wi-Fi can take seconds to send its code. Everything that needs the code
+  // (and above all the uploads) stays off until it has arrived; when reading
+  // fails the window says so and offers Retry, never an empty editor whose
+  // upload would wipe the script on the device.
   const prefs = ideprefs();
   const dark = editorDark(prefs, currentTheme());
   const host = h('div', { class: 'ide-editor' + (dark ? ' dark' : '') });
   const caret = h('span', { class: 'muted ide-caret' }, '1 : 1');
   const logs = h('pre', { class: 'ide-log' + (dark ? ' dark' : ''), 'aria-live': 'polite' });
-  const editor = createEditor(host, code, prefs, dark, (l, c) => { caret.textContent = `${l} : ${c}`; });
+  let editor: Editor | null = null;
+  let closed = false;
+  const needCode: HTMLButtonElement[] = [];
+  const load = async (): Promise<void> => {
+    host.replaceChildren(h('div', { class: 'ide-state', role: 'status' }, h('div', { class: 'spinner' }), t('scr.loadingCode')));
+    try {
+      const [code, { createEditor }] = await Promise.all([scriptsApi.code(d.id, s.id), import('../editor/codemirror')]);
+      if (closed) return;
+      host.replaceChildren();
+      editor = createEditor(host, code, prefs, dark, (l, c) => { caret.textContent = `${l} : ${c}`; });
+      for (const b of needCode) b.disabled = false;
+      status(running); // the uploads also depend on the running state
+      editor.focus();
+    } catch (e) {
+      if (closed) return;
+      host.replaceChildren(h('div', { class: 'ide-state error', role: 'alert' },
+        h('strong', {}, t('scr.loadFailed')), h('span', { class: 'muted' }, msg(e)),
+        h('button', { class: 'btn', onclick: () => void load() }, t('scr.retry'))));
+      toast(t('scr.loadFailed'));
+    }
+  };
   let fileName = s.name.endsWith('.js') ? s.name : s.name + '.js';
   let running = s.running;
   let ws: WebSocket | null = null;
@@ -91,11 +107,12 @@ export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running
     running = r;
     runBtn.textContent = r ? '■ ' + t('scr.stop') : '▶ ' + t('scr.run');
     runBtn.title = t(r ? 'scr.runningTip' : 'scr.stoppedTip');
-    upBtn.disabled = upRunBtn.disabled = r;
+    upBtn.disabled = upRunBtn.disabled = r || !editor;
     if (r) void connectLog(); else disconnectLog();
     onRun(r);
   };
   const upload = async (): Promise<boolean> => {
+    if (!editor) return false; // the code was not read: never upload over the device's script
     try { await scriptsApi.putCode(d.id, s.id, editor.text()); return true; } catch (e) { toast(msg(e)); return false; }
   };
   const toggleRun = async (): Promise<void> => {
@@ -117,7 +134,7 @@ export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running
     if (!f) return;
     const buf = new Uint8Array(await f.arrayBuffer());
     const text = buf[0] === 0x50 && buf[1] === 0x4b ? await pickBackupScript(buf) : readFileText(buf);
-    if (text === null) return;
+    if (text === null || !editor) return;
     editor.setText(text);
     editor.focus();
     if (!f.name.endsWith('.sbk')) fileName = f.name;
@@ -126,37 +143,46 @@ export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running
     const input = h('input', { id: 'ideLine', type: 'number', min: 1, size: 8 });
     openModal(t('scr.gotoTitle'), h('div', { class: 'field' }, h('label', { for: 'ideLine' }, t('scr.gotoLabel')), input), [
       { label: t('common.cancel') },
-      { label: t('common.ok'), kind: 'primary', onClick: () => { const n = parseInt(input.value, 10); if (n > 0) editor.gotoLine(n); } },
+      { label: t('common.ok'), kind: 'primary', onClick: () => { const n = parseInt(input.value, 10); if (n > 0) editor?.gotoLine(n); } },
     ]);
   };
   const help = (): void => {
     openModal(t('scr.editorTitle'), h('div', { class: 'ide-help' }, ...t('scr.help').split('\n').map((l) => h('p', {}, l))), [{ label: t('common.close') }]);
   };
+  // Buttons that need the code: off until it has been read (load()).
+  const codeBtn = (label: string, onclick: () => void, title?: string): HTMLButtonElement => {
+    const b = h('button', { class: 'btn', disabled: true, onclick, title });
+    b.append(label);
+    needCode.push(b);
+    return b;
+  };
+  const save = (): void => { if (editor) download(fileName, editor.text(), 'text/javascript'); };
   const body = h('div', { class: 'ide' },
     h('div', { class: 'toolbar ide-toolbar' },
-      h('button', { class: 'btn', onclick: () => file.click() }, t('scr.open')),
-      h('button', { class: 'btn', title: t('scr.saveTip'), onclick: () => download(fileName, editor.text(), 'text/javascript') }, t('scr.save')),
+      codeBtn(t('scr.open'), () => file.click()),
+      codeBtn(t('scr.save'), save, t('scr.saveTip')),
       upBtn, runBtn, upRunBtn,
-      h('button', { class: 'btn', onclick: () => editor.undo(), title: 'Ctrl+Z' }, t('scr.undo')),
-      h('button', { class: 'btn', onclick: () => editor.redo(), title: 'Ctrl+Y' }, t('scr.redo')),
-      h('button', { class: 'btn', onclick: () => editor.find(), title: 'Ctrl+F' }, t('scr.find')),
-      h('button', { class: 'btn', onclick: gotoLine, title: 'Ctrl+G' }, t('scr.goto')),
+      codeBtn(t('scr.undo'), () => editor?.undo(), 'Ctrl+Z'),
+      codeBtn(t('scr.redo'), () => editor?.redo(), 'Ctrl+Y'),
+      codeBtn(t('scr.find'), () => editor?.find(), 'Ctrl+F'),
+      codeBtn(t('scr.goto'), gotoLine, 'Ctrl+G'),
       h('div', { class: 'spacer' }), caret,
       h('button', { class: 'btn', onclick: help, title: t('scr.helpTip') }, '?'), file),
     host,
     h('div', { class: 'ide-logbar' }, h('span', { class: 'muted' }, t('scr.log')), h('button', { class: 'btn small', onclick: () => { logs.textContent = ''; } }, t('scr.clear'))),
     logs);
   body.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g') { e.preventDefault(); gotoLine(); }
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); download(fileName, editor.text(), 'text/javascript'); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g' && editor) { e.preventDefault(); gotoLine(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(); }
   });
   status(running);
   await new Promise<void>((resolve) => {
     openModal(`${t('scr.editorTitle')} - ${s.name}`, body, [{ label: t('common.close') }], () => {
+      closed = true;
       disconnectLog();
-      editor.destroy();
+      editor?.destroy();
       resolve();
     }, 'full');
-    editor.focus();
+    void load();
   });
 }

@@ -15,6 +15,7 @@ func TestScriptsAndKVS(t *testing.T) {
 		"rpc_Script.GetConfig.json": `{"id":3,"name":"script_3","enable":false}`,
 		"rpc_Script.Create.json":    `{"id":3}`,
 		"rpc_Script.GetCode.json":   `{"data":"let a = 1;\r\nprint(a);"}`,
+		"_behaviour.json":           `{"/rpc/Script.GetCode?id=2":{"status":500}}`,
 		"rpc_KVS.GetMany.json":      `{"items":[{"key":"k1","etag":"e1","value":"v1"},{"key":"k2","etag":"e2","value":"v2"}],"offset":0,"total":2}`,
 		"rpc_KVS.Set.json":          `{"etag":"new","rev":7}`,
 	}, nil)
@@ -37,6 +38,11 @@ func TestScriptsAndKVS(t *testing.T) {
 	}
 	if code, err := m.ScriptCode(ctx, id, 1); err != nil || code != "let a = 1;\nprint(a);" {
 		t.Fatalf("code %q %v", code, err)
+	}
+	// A device that answers with an error: an error, not "" (an empty editor
+	// whose upload would wipe the script — FEATURE_PARITY O34).
+	if code, err := m.ScriptCode(ctx, id, 2); err == nil || code != "" {
+		t.Fatalf("failing Script.GetCode: %q %v", code, err)
 	}
 	long := strings.Repeat("x", 2500)
 	if err := m.ScriptPutCode(ctx, id, 1, long); err != nil {
