@@ -262,7 +262,11 @@ for Home Assistant:
   with the Docker container.
 
 The Shellys themselves — relays, lights, meters — come from Home Assistant's own Shelly
-integration: add them there first.
+integration. The ShellyLanMan integration helps there: *Configure → Add Shellys to Home
+Assistant* lists the Shellys ShellyLanMan knows that the Shelly integration does not
+have yet (also the ones Home Assistant did not discover) and adds the ticked ones
+through the Shelly integration's own steps, passwords included when ShellyLanMan may
+hand them out.
 
 [![Add the ShellyLanMan app repository to your Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fwimmme%2Fshellylanman-ha)
 [![Open the ShellyLanMan integration in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=wimmme&repository=shellylanman-ha&category=integration)

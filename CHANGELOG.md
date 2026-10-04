@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-04
+
+Your Shellys into Home Assistant in one go: the Home Assistant integration adds the
+Shellys ShellyLanMan knows to Home Assistant's Shelly integration.
+
 ### Added
 - API for the Home Assistant integration (adding Shellys to Home Assistant's Shelly
   integration): `protected` in the device list, and

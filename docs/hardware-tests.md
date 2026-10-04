@@ -258,3 +258,12 @@ rotated afterwards.
 | Release 0.6.3 on `ha-test` | app 0.6.2 → 0.6.3; integration files 0.6.3 (no code change, no Core restart). Editor colours checked with `check-editor.py`: light editor in the light app, dark in the dark app, without any setting |
 | `Script.GetCode` of an empty script (ShellyTestPlug, Plug S Gen3, fw 2.0.1; Wim's go, 2026-10-04) | `Script.Create` → id 3; `GET /rpc/Script.GetCode?id=3` → HTTP 200 `{"data":"", "left":0}` (POST the same); `Script.Delete` → `null`; scripts 1 and 2 untouched. So "empty" is an answer, not an error: 0.6.4's error handling does not block new scripts |
 | Release 0.6.4 on `ha-test` | app 0.6.3 → 0.6.4; integration files 0.6.4 (no code change, no Core restart). Editor behaviour checked with `check-editor.py` (simulator): loading after 0.04 s, one window for two double-clicks, uploads off while loading, code after 4.5 s, failing read → error + Retry, no editor |
+
+## Phase 13 — adding Shellys to Home Assistant (2026-10-04, `ha-test`, Wim's go)
+
+| Check | Result |
+|---|---|
+| The list (Configure → Add Shellys) | 23 Shellys with the reason: 17 discovered by Home Assistant, 6 not offered; right after a Core restart two online ones showed "not answering" from the last 30-second poll → the list now refreshes first (`shellylanman-ha` `67c9ff6`), after which none did |
+| Three first (2 discovered, 1 missed) | Grondwaterpomp (Gen1) and LedBerging (Gen2) through Home Assistant's discovery, LampKeuken (Dimmer G3, not offered) through the manual flow: 3/3 added in 34 s, entries loaded with their own entities |
+| The rest | 21/21 added in 33 s (ShellyTestPlug left out: Wim debugs it); 25 Shelly entries in total (19 zeroconf, 6 user), all loaded; no integration errors in the log; the repair issue stays at 1 (ShellyTestPlug) |
+| Why six were missed (Q5) | with Shelly/zeroconf debug logging, three of them were announced and offered within the hour; ShellyTestPlug left mDNS for a while (weak Wi-Fi). "Missed" = not heard yet. (Debug logging ended with the Core restarts.) |

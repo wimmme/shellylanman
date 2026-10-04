@@ -179,5 +179,6 @@ been heard before; ShellyTestPlug even disappeared from mDNS for a while (03:30,
 weak Wi-Fi). The three Dimmer G3s are still missing; logging continues. So "missed"
 is mostly "not heard yet" — exactly what the list now shows and fixes.
 
-Open: 13.7 on `ha-test` with real devices (needs Wim's go: the Shelly integration
-connects to the devices it adds), docs of the main README, release 0.7.0.
+13.7 done on `ha-test` (Wim's go): 3, then 21 Shellys added, 25 Shelly entries all
+loaded — see `docs/hardware-tests.md` "Phase 13". 13.8: README of both repositories,
+COMPATIBILITY, release 0.7.0.
