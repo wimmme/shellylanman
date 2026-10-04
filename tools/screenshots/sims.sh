@@ -16,6 +16,11 @@ while read -r dir name; do
   if [ "$dir" = gen3/MiniPMG3 ]; then cp tools/screenshots/script/*.json "/tmp/fx/$i/"; fi
   # And one a live log (the Logs window).
   if [ "$dir" = gen2/Plus1 ]; then cp tools/screenshots/log/_log.jsonl "/tmp/fx/$i/"; fi
+  # And one is a gateway that relays a BLU device and answers Identify (_discovery.json).
+  if [ "$dir" = gen3/DimmerG3 ]; then
+    cp tools/screenshots/blu/*.json "/tmp/fx/$i/"
+    sed -i "s/__NOW__/$(date +%s)/g" "/tmp/fx/$i/rpc_BLE.CloudRelay.ListInfos.json"
+  fi
   sed -i -e "s/AABBCC000001/AABBCC0000$n/g" -e "s/aabbcc000001/aabbcc0000$nl/g" \
     -e "s/AA:BB:CC:00:00:01/AA:BB:CC:00:00:$n/g" -e "s/\"Test\"/\"$name\"/g" "/tmp/fx/$i/"*
   /tmp/sim -addr "127.0.0.$i" -port 80 "/tmp/fx/$i" &

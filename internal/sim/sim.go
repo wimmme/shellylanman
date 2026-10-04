@@ -209,6 +209,11 @@ func (d *Device) serveGet(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, d.setRelay(idx, turn))
 	case isCommand(r):
 		writeJSON(w, http.StatusOK, map[string]any{})
+	case r.URL.Path == "/rpc/Shelly.GetComponents" && q.Get("offset") != "" && q.Get("offset") != "0":
+		// A fixture holds only the first page: the next page is empty, so
+		// readers that page through stop instead of reading page one forever.
+		off, _ := strconv.Atoi(q.Get("offset"))
+		writeJSON(w, http.StatusOK, map[string]any{"components": []any{}, "offset": off, "total": off})
 	default:
 		d.serveFile(w, fixture.FileName(r.URL.Path))
 	}

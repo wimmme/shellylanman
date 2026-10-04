@@ -84,3 +84,14 @@ func TestGen2Plus1GetAndPost(t *testing.T) {
 		t.Fatalf("unknown method = %d", resp2.StatusCode)
 	}
 }
+
+func TestGetComponentsNextPageEmpty(t *testing.T) {
+	srv := start(t, "gen3/DimmerG3")
+	if _, v := getJSON(t, srv.URL+"/rpc/Shelly.GetComponents"); len(v["components"].([]any)) == 0 {
+		t.Fatalf("first page %v", v)
+	}
+	_, v := getJSON(t, srv.URL+"/rpc/Shelly.GetComponents?offset=10")
+	if len(v["components"].([]any)) != 0 || v["offset"] != 10.0 {
+		t.Fatalf("next page %v", v)
+	}
+}
