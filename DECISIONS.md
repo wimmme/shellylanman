@@ -564,3 +564,13 @@ Technical choices made while building discovery, within the scope agreed above.
 | P12-12 | As a Home Assistant app, ShellyLanMan **logs a successful discovery announcement** at info level (today only failures are logged) | Q6 |
 | P12-13 | Positioning, from now on: "started from ShellyScanner and built on its basis, then developed further as a web application" on the About page, READMEs and GitHub; replaces the planned "Inspired by". GPL attributions unchanged | Q7 |
 | P12-14 | English writes *online* / *offline* | item 21 |
+
+## 22. Phase 13 — Option B (2026-10-04, Wim's answers to `docs/phase-13-option-b.md` §6)
+
+| # | Decision | Source |
+|---|---|---|
+| P13-1 | Both: confirm Home Assistant's own Shelly discoveries in one go (§4.1) and offer the Shellys Home Assistant missed (§4.2) | Q1 |
+| P13-2 | Missed Shellys are added through the Shelly integration's **manual** flow (user → manual → host/port → credentials), after the user's choice in our dialog (§4.2-B); no synthetic zeroconf discoveries | Q2 |
+| P13-3 | **Passwords are passed on**: for a protected Shelly the integration answers the Shelly credentials step with the credentials ShellyLanMan stores. ShellyLanMan hands them out only on a trusted path (see the phase document §8), never on its open LAN port | Q3 |
+| P13-4 | In the integration's **Configure** (options flow): *Add Shellys to Home Assistant*, a list with the reason per device and a result step; plus a repair issue while Shellys are missing | Q4 |
+| P13-5 | First find out why Home Assistant did not offer six Shellys on `ha-test`: Shelly/zeroconf debug logging there for a while, read only | Q5 |
