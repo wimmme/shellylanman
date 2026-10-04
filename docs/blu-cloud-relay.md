@@ -86,6 +86,8 @@ RC Button 4).
    throughout (firmware 2.0.1 on a Dimmer G3): the Cloud Relay did not keep the scan
    response even while the shared scan was active and the device answered it.
 
+
+
 **Conclusion for battery BLU devices behind the Cloud Relay (firmware 2.0.1):**
 
 - `ListInfos` gives the address, the last BTHome data and `last_seen`, but in
