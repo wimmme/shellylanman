@@ -268,3 +268,10 @@ rotated afterwards.
 | The rest | 21/21 added in 33 s (ShellyTestPlug left out: Wim debugs it); 25 Shelly entries in total (19 zeroconf, 6 user), all loaded; no integration errors in the log; the repair issue stays at 1 (ShellyTestPlug) |
 | Why six were missed (Q5) | with Shelly/zeroconf debug logging, three of them were announced and offered within the hour; ShellyTestPlug left mDNS for a while (weak Wi-Fi). "Missed" = not heard yet. (Debug logging ended with the Core restarts.) |
 | Release 0.7.0 on `ha-test` | app 0.6.4 → 0.7.0, integration files 0.7.0. Credentials paths on the real app: loopback listener `127.0.0.1:8097` answers (404 "no credentials stored" — this installation has none); LAN port without token 403, also from another machine; port 8097 not reachable from the LAN (connection refused). CI of both repositories green, including hassfest and HACS validation |
+
+## Phase 14 — relayed BLU devices and Identify (2026-10-05, dev build on a test port, Wim's go)
+
+| Check | Result |
+|---|---|
+| Relayed row | IP scan of the gateway only (LampKeukenTafel, Dimmer G3, 192.168.0.117): the RC Button 4 it relays appears as its own row, *BLU online*, "Blu Wall Switch 4 / RC Button 4 ?", battery 100 %, buttons 1–4; Backup, Restore, Logs grey |
+| Identify | Wizard from the row: gateway preselected, two-button hint; Wim held two buttons > 10 s → "Blu RC Button 4 · SBBT-004CUS · 7c:c6:b6:a5:c9:3d · −53 dBm · in the list: yes"; the row is "Blu RC Button 4" afterwards. Nothing written to device or gateway |

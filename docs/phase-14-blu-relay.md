@@ -120,7 +120,6 @@ device (read only); the wizard itself stays in the UI.
 
 ## 6. Status
 
-14.1–14.7 done in code, tests and simulator: unit tests (decoder, relayed rows,
-identify with authentication), `tools/screenshots/check-blu.py` (relayed row and
-wizard end to end in the browser, all ok). Open: hardware test with Wim (RC Button 4
-via a Gen3 gateway, pairing mode = two buttons > 10 s), then the release.
+14.1–14.7 done in code, tests, simulator and hardware (2026-10-05, see
+`docs/hardware-tests.md`): unit tests (decoder, relayed rows, identify with authentication), `tools/screenshots/check-blu.py` (browser, all ok).
+Open: the release.
