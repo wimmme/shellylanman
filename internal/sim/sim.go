@@ -8,7 +8,9 @@
 // served status (Gen1 /relay/N?turn=, Gen2+ Switch.Set / Switch.Toggle);
 // other commands are accepted and answered with an empty result.
 //
-// An optional _log.jsonl replaces the /debug/log messages (Gen2+).
+// An optional _log.jsonl replaces the /debug/log messages (Gen2+); an
+// optional _discovery.json answers BTHome.StartDeviceDiscovery on the RPC
+// WebSocket with device_discovered events.
 //
 // An optional _behaviour.json in the fixture directory makes GET requests slow
 // or failing, for tests of weak devices: {"/rpc/Script.GetCode?id=2":
@@ -467,10 +469,37 @@ func (d *Device) serveRPCWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.CloseNow()
-	if _, _, err := c.Read(r.Context()); err != nil {
+	_, first, err := c.Read(r.Context())
+	if err != nil {
 		return
 	}
 	ch := make(chan []byte, 16)
+	// BTHome.StartDeviceDiscovery: answer, then play the device_discovered events
+	// of an optional _discovery.json (a list of "device" objects) and discovery_done.
+	var req struct {
+		ID     int    `json:"id"`
+		Method string `json:"method"`
+	}
+	if json.Unmarshal(first, &req) == nil && req.Method == "BTHome.StartDeviceDiscovery" {
+		b, _ := json.Marshal(map[string]any{"id": req.ID, "src": d.id, "result": nil})
+		ch <- b
+		var found []map[string]any
+		if raw, err := os.ReadFile(filepath.Join(d.dir, "_discovery.json")); err == nil {
+			_ = json.Unmarshal(raw, &found)
+		}
+		go func() {
+			for _, dev := range found {
+				time.Sleep(100 * time.Millisecond)
+				b, _ := json.Marshal(map[string]any{"src": d.id, "dst": "shellylanman", "method": "NotifyEvent", "params": map[string]any{
+					"events": []map[string]any{{"component": "bthome", "event": "device_discovered", "device": dev}}}})
+				ch <- b
+			}
+			time.Sleep(100 * time.Millisecond)
+			b, _ := json.Marshal(map[string]any{"src": d.id, "dst": "shellylanman", "method": "NotifyEvent", "params": map[string]any{
+				"events": []map[string]any{{"component": "bthome", "event": "discovery_done", "device_count": len(found)}}}})
+			ch <- b
+		}()
+	}
 	d.mu.Lock()
 	if d.rpcWS == nil {
 		d.rpcWS = map[chan []byte]struct{}{}

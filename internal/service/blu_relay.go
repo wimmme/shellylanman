@@ -7,6 +7,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -191,4 +192,120 @@ func (m *Devices) setBLUModel(mac string, modelID int) bool {
 	m.mu.Unlock()
 	m.emit(EventDeviceUpsert, d)
 	return true
+}
+
+// Events of an identification (P14-4).
+const (
+	EventBLUIdentify   = "blu.identify"   // {state: started|done|error, gateway, duration, found, error}
+	EventBLUDiscovered = "blu.discovered" // a device that answered the active scan
+)
+
+// ErrIdentifyBusy: one identification at a time.
+var ErrIdentifyBusy = errors.New("an identification is already running")
+
+// ErrNotBLUGateway: the device cannot run a BTHome discovery.
+var ErrNotBLUGateway = errors.New("not a gateway that can look for BLU devices (Gen2 Pro, Gen3 or Gen4, on line)")
+
+// BLUDiscovered is one device that answered an identification.
+type BLUDiscovered struct {
+	ID        string `json:"id"` // its row, if ShellyLanMan lists it
+	MAC       string `json:"mac"`
+	LocalName string `json:"localName"`
+	ModelID   int    `json:"modelId"`
+	Model     string `json:"model"`
+	RSSI      int    `json:"rssi"`
+	Listed    bool   `json:"listed"` // the row got the model
+}
+
+// BLUGateways are the on-line devices that can run an identification.
+func (m *Devices) BLUGateways() []model.Device {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	var out []model.Device
+	for _, e := range m.devs {
+		if relayCapable(e) && e.dev.Status == model.StatusOnline {
+			out = append(out, e.dev)
+		}
+	}
+	return out
+}
+
+// IdentifyBLU runs BTHome.StartDeviceDiscovery (an active scan, nothing added)
+// on a gateway for seconds and reports each BLU device that answers — one in
+// pairing mode tells its model — as EventBLUDiscovered; a listed device gets
+// the model on its row (kept in the archive). DECISIONS P14-4.
+func (m *Devices) IdentifyBLU(gwID string, seconds int) error {
+	if seconds < 10 || seconds > 180 {
+		seconds = 90
+	}
+	m.mu.Lock()
+	gw, ok := m.devs[gwID]
+	switch {
+	case m.identifying:
+		m.mu.Unlock()
+		return ErrIdentifyBusy
+	case !ok:
+		m.mu.Unlock()
+		return ErrNotFound
+	case !relayCapable(gw) || gw.dev.Status != model.StatusOnline:
+		m.mu.Unlock()
+		return ErrNotBLUGateway
+	}
+	m.identifying = true
+	run, conn := m.run, gw.conn
+	m.mu.Unlock()
+	m.emit(EventBLUIdentify, map[string]any{"state": "started", "gateway": gwID, "duration": seconds})
+
+	go func() {
+		defer func() {
+			m.mu.Lock()
+			m.identifying = false
+			m.mu.Unlock()
+		}()
+		ctx, cancel := context.WithTimeout(run, time.Duration(seconds+15)*time.Second)
+		defer cancel()
+		found := 0
+		err := conn.Notifications(ctx, "BTHome.StartDeviceDiscovery", map[string]any{"duration": seconds}, func(method string, params json.RawMessage) {
+			if method != "NotifyEvent" {
+				return
+			}
+			var p struct {
+				Events []struct {
+					Component string `json:"component"`
+					Event     string `json:"event"`
+					Device    struct {
+						Addr      string `json:"addr"`
+						LocalName string `json:"local_name"`
+						RSSI      int    `json:"rssi"`
+						MF        struct {
+							ModelID int `json:"model_id"`
+						} `json:"shelly_mfdata"`
+					} `json:"device"`
+				} `json:"events"`
+			}
+			if json.Unmarshal(params, &p) != nil {
+				return
+			}
+			for _, ev := range p.Events {
+				if ev.Component != "bthome" {
+					continue
+				}
+				switch ev.Event {
+				case "device_discovered":
+					found++
+					d := ev.Device
+					m.emit(EventBLUDiscovered, BLUDiscovered{ID: model.NormalizeMAC(d.Addr), MAC: d.Addr, LocalName: d.LocalName,
+						ModelID: d.MF.ModelID, Model: model.BLUTypeName(d.MF.ModelID), RSSI: d.RSSI, Listed: m.setBLUModel(d.Addr, d.MF.ModelID)})
+				case "discovery_done":
+					cancel()
+				}
+			}
+		})
+		ev := map[string]any{"state": "done", "gateway": gwID, "found": found}
+		if err != nil {
+			ev["state"], ev["error"] = "error", err.Error()
+		}
+		m.emit(EventBLUIdentify, ev)
+	}()
+	return nil
 }

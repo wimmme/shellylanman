@@ -31,6 +31,29 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 	}
 	mux.HandleFunc("GET /api/v1/devices", h(s.listDevices))
 	mux.HandleFunc("GET /api/v1/devices/{id}", h(s.getDevice))
+	// BLU identification (DECISIONS P14-4): the gateways that can run it, and the run.
+	mux.HandleFunc("GET /api/v1/blu/gateways", h(func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(w, http.StatusOK, s.Devices.BLUGateways())
+	}))
+	mux.HandleFunc("POST /api/v1/blu/identify", h(func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Gateway  string `json:"gateway"`
+			Duration int    `json:"duration"`
+		}
+		if !readJSON(w, r, &body) {
+			return
+		}
+		switch err := s.Devices.IdentifyBLU(body.Gateway, body.Duration); {
+		case errors.Is(err, service.ErrIdentifyBusy):
+			writeError(w, http.StatusConflict, err.Error())
+		case errors.Is(err, service.ErrNotFound):
+			writeError(w, http.StatusNotFound, err.Error())
+		case err != nil:
+			writeError(w, http.StatusBadRequest, err.Error())
+		default:
+			w.WriteHeader(http.StatusAccepted)
+		}
+	}))
 	mux.HandleFunc("GET /api/v1/devices/{id}/credentials", h(func(w http.ResponseWriter, r *http.Request) {
 		// The LAN port has no login: device passwords only with the MCP token
 		// at access level "configure" (DECISIONS P13-3).

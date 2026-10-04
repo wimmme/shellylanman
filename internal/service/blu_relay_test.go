@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/wimmme/shellylanman/internal/model"
 )
@@ -91,5 +93,65 @@ func TestRelayedBLURows(t *testing.T) {
 	m.mu.Unlock()
 	if a.Name != "Keuken knoppen" || a.TypeID != "BLU7" {
 		t.Fatalf("archive %+v", a)
+	}
+}
+
+func TestIdentifyBLU(t *testing.T) {
+	ev := &recorder{}
+	m, _, ctx := newService(t, nil)
+	m.emit = func(typ string, data any) {
+		ev.mu.Lock()
+		ev.events = append(ev.events, fmt.Sprintf("%s %+v", typ, data))
+		ev.mu.Unlock()
+	}
+	host := "shellydimmerg3-aabbcc0000d1"
+	_, addr := startSimDev(t, fixtureDir(t, "gen3/DimmerG3", map[string]string{
+		"shelly.json": fmt.Sprintf(`{"id":%q,"mac":"AABBCC0000D1","model":"S3DM-0A101WWL","gen":3,"app":"DimmerG3","auth_en":false}`, host),
+		"rpc_BLE.CloudRelay.ListInfos.json": `{"ts":1791148010,"offset":0,"count":1,"total":1,"devices":[{"7c:c6:b6:a5:c9:3d":{"name":null,"model":0,` +
+			`"sdata":{"fcd2":"RAC8AWQ6ADoAOgA6AQ=="},"mdata":{},"last_seen":1791148000}}]}`,
+		"rpc_Shelly.GetComponents.json": `{"components":[],"offset":0,"total":0}`,
+		// What the RC Button 4 answered in pairing mode on 2026-10-04, and one BLU not relayed.
+		"_discovery.json": `[{"addr":"7c:c6:b6:a5:c9:3d","local_name":"SBBT-004CUS","rssi":-61,"encrypted":false,"shelly_mfdata":{"flags":17,"model_id":7,"mac":"7c:c6:b6:a5:c9:3d"}},` +
+			`{"addr":"aa:bb:cc:00:00:99","local_name":"SBHT-003C","rssi":-70,"encrypted":false,"shelly_mfdata":{"flags":17,"model_id":3,"mac":"aa:bb:cc:00:00:99"}}]`,
+	}), nil)
+	m.handle(ctx, addr, host, true)
+	waitDevice(t, m, "AABBCC0000D1", online)
+	waitDevice(t, m, relayID, func(d model.Device) bool { return d.Relay })
+
+	if gws := m.BLUGateways(); len(gws) != 1 || gws[0].ID != "AABBCC0000D1" {
+		t.Fatalf("gateways %+v", gws)
+	}
+	if err := m.IdentifyBLU(relayID, 30); err != ErrNotBLUGateway {
+		t.Fatalf("a BLU row as gateway: %v", err)
+	}
+	if err := m.IdentifyBLU("AABBCC0000D1", 30); err != nil {
+		t.Fatal(err)
+	}
+	if err := m.IdentifyBLU("AABBCC0000D1", 30); err != ErrIdentifyBusy {
+		t.Fatalf("second run: %v", err)
+	}
+	d := waitDevice(t, m, relayID, func(d model.Device) bool { return d.TypeID == "BLU7" })
+	if d.TypeName != "Blu RC Button 4" {
+		t.Fatalf("model %q", d.TypeName)
+	}
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		ev.mu.Lock()
+		all := strings.Join(ev.events, "\n")
+		ev.mu.Unlock()
+		if strings.Contains(all, "state:done") {
+			if !strings.Contains(all, "blu.discovered {ID:7CC6B6A5C93D") || !strings.Contains(all, "Listed:true") ||
+				!strings.Contains(all, "MAC:aa:bb:cc:00:00:99") || !strings.Contains(all, "found:2") {
+				t.Fatalf("events:\n%s", all)
+			}
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("no end event:\n%s", all)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if err := m.IdentifyBLU("AABBCC0000D1", 30); err != nil { // free again
+		t.Fatalf("after the run: %v", err)
 	}
 }

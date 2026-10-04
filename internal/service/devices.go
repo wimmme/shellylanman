@@ -102,6 +102,8 @@ type Devices struct {
 	samplesOnce sync.Once
 
 	scenes sceneStore // named action lists, run on request (Phase 11, MCP)
+
+	identifying bool // a BLU identification runs (blu_relay.go)
 }
 
 type entry struct {
