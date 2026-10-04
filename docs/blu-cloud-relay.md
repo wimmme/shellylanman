@@ -53,8 +53,24 @@ RC Button 4).
    `discovery_done` reported `device_count: 0`. The reason: the BLU device did not
    advertise during those 30 s (`last_seen` unchanged) — a BLU button only sends when
    pressed (and its 6-hourly packet); ten seconds after the scan a press arrived. So
-   an active scan finds a button only if it is pressed while the scan runs. Next try:
-   the same, with the button pressed during the scan.
+   an active scan finds a button only if it is pressed while the scan runs.
+   **Second try, 60 s, Wim pressing the buttons:** five presses arrived during the
+   active scan (packet ids 0xD3…0xE3, different buttons in the BTHome data), yet
+   `ListInfos` kept `name: null, model: 0, mdata: {}` and the BTHome discovery
+   reported `device_count: 0`. So the button-press advertisements of this 4-button
+   BLU are **not scannable**: there is no scan response to ask for, and a normal
+   press does not reveal name or model even to an active scan. The scan response
+   (local name, Shelly manufacturer data with the model id, the "discoverable" flag)
+   is only there while the device is discoverable — in pairing mode (button held
+   > 10 s, docs-ble/common.md "Pairing") and, for some models, shortly after power-on.
+
+**Conclusion for battery BLU devices behind the Cloud Relay:** name and model can be
+read with an active scan only while the device is in pairing mode (ask the user to
+hold its button during a short `StartDeviceDiscovery`); otherwise use the passive
+ways below — the model id from BTHome object `0xF0` (power-on and every 6 h), or an
+estimate from the BTHome objects. The name from the advertisement is the model's
+short name anyway (e.g. `SBBT-004CEU`); a user-given name exists only in the Shelly
+Cloud, which ShellyLanMan does not use.
 2. **Passively, from the BTHome data in `sdata`**: BLU devices send object `0xF0`
    (device type id = the same model id) and `0xF1` (firmware) at power-on and every
    6 hours. `ListInfos` keeps only the last advertisement, so it shows up only now and
