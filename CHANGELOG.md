@@ -5,6 +5,16 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Rows for BLU devices that a gateway only relays (BLE.CloudRelay): readings,
+  buttons and sensors from their BTHome messages; read only — no backup, restore
+  or logs. The model is estimated from what the device sends ("?") until it is
+  identified; a name can be given under Notes.
+- *Identify BLU devices*: a wizard in which a gateway listens while you put a BLU
+  device in pairing mode, and shows the model of every device that answers. The
+  model is stored in ShellyLanMan's archive; nothing changes on the device or the
+  gateway. On the Devices page (Identify) and in the checklist's BLE dialog.
+
 ## [0.7.0] - 2026-10-04
 
 Your Shellys into Home Assistant in one go: the Home Assistant integration adds the

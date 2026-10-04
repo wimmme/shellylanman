@@ -220,6 +220,12 @@ table.devices td.c-ip,table.devices td.c-mac,table.devices td.c-rssi,table.devic
 table.devices td.c-cloud,table.devices td.c-mqtt,table.devices td.c-logs{text-align:center}
 .cell-lines div{white-space:nowrap}
 .modal.wide{width:min(1000px,100%)}
+/* Identify BLU devices (Phase 14) */
+.blu-steps{margin:10px 0 14px;padding-left:22px;line-height:1.6}
+.blu-status{min-height:1.4em;margin:10px 0}
+.blu-found{margin-top:6px}
+.blu-found td.mono{font-family:var(--font-mono);font-size:.82rem}
+.blu-found tr.selected td{background:color-mix(in srgb,var(--accent-rx) 14%,transparent)}
 pre.json,pre.log{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin:10px 0 0;max-height:60vh;overflow:auto;font-family:var(--font-mono);font-size:.8rem;white-space:pre-wrap;word-break:break-word}
 .log-meta{color:var(--accent-rx)}
 .info-panel .tabs{flex-wrap:wrap}

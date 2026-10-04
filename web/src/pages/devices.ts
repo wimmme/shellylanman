@@ -13,6 +13,7 @@ import { openLogs } from '../panels/logs';
 import { openNotes } from '../panels/notes';
 import { openScheduler, schedulerKind } from '../panels/scheduler';
 import { openScripts } from '../panels/scripts';
+import { openIdentify } from '../panels/bluidentify';
 import { download, toCSV } from '../csv';
 import { toast } from '../toast';
 import { selected } from '../selection';
@@ -342,6 +343,7 @@ export const devicesPage: Page = {
         act('action.scripts', !!one && notGhost(one) && ['2', '3', '4'].includes(one.gen), () => void openScripts(O()), 'action.scriptsTip',
           (d) => notGhost(d) && ['2', '3', '4'].includes(d.gen), true),
         act('action.notes', !!one && archiveInUse(), () => openNotes(O()), archiveInUse() ? 'action.notesTip' : 'action.notesOff', undefined, true),
+        sel.some((d) => d.relay) ? act('action.identify', !!one && !!one.relay, () => void openIdentify(O()), 'action.identifyTip', (d) => !!d.relay, true) : null,
       ].filter((x): x is HTMLElement => x !== null));
       keepOrReplace(controlsBox, [
         dropdown(t('columns.menu'), COLUMNS.filter((c) => c.key !== 'status').map((c) => ({
@@ -458,6 +460,7 @@ export const devicesPage: Page = {
           { label: 'action.backup', run: () => void backupDevices(sel), on: sel.every((x) => !x.relay) },
           { label: 'action.restore', run: () => void (one ? restoreDevice(one) : restoreDevices(sel)), on: sel.every((x) => !x.relay) },
           { label: 'action.notes', run: () => one && openNotes(one), on: !!one && archiveInUse() },
+          { label: 'action.identify', run: () => one && void openIdentify(one), on: !!one && !!one.relay },
           { label: 'action.reload', run: () => reload(sel), on: true },
         ];
       document.querySelectorAll('.ctx-menu').forEach((m) => m.remove());

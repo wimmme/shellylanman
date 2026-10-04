@@ -244,6 +244,15 @@ export const scheduleApi = {
 
 export interface Sample { t: number; rssi: number; temp?: number; meters?: MeterSet[] }
 export interface EMSeries { meter: string; lines: number; data: [number, number][] }
+// ---- BLU identification (DECISIONS P14-4) ----
+
+export interface BLUDiscovered { id: string; mac: string; localName: string; modelId: number; model: string; rssi: number; listed: boolean }
+export interface BLUIdentifyEvent { state: 'started' | 'done' | 'error'; gateway: string; duration?: number; found?: number; error?: string }
+export const bluApi = {
+  gateways: () => request<Device[]>('GET', '/blu/gateways'),
+  identify: (gateway: string, duration: number) => request<unknown>('POST', '/blu/identify', { gateway, duration }),
+};
+
 export const chartsApi = {
   samples: (ids: string[]) => request<Record<string, Sample[]>>('GET', `/samples?${idsQuery(ids)}`),
   clear: (ids: string[]) => request<unknown>('DELETE', `/samples?${idsQuery(ids)}`),

@@ -15,6 +15,7 @@ import { h, ICONS, keepOrReplace, patch } from '../dom';
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
 import { openDeviceSettings } from '../panels/devsettings';
+import { openIdentify } from '../panels/bluidentify';
 import { toast } from '../toast';
 import { openingScope, selected, takeHashIds } from '../selection';
 import { card, emptyState, scopeBanner, type Page } from './common';
@@ -65,7 +66,9 @@ function bleDialog(row: ChecklistRow, dev: Device | undefined): void {
   }
   const box = h('div', {}, content());
   filter.addEventListener('input', () => box.replaceChildren(content()));
-  openModal(t(isBLU(row) ? 'chk.ble.bluTitle' : 'chk.ble.wifiTitle'), h('div', {}, filter, box), [{ label: t('common.close') }]);
+  // The wizard that identifies BLU devices (DECISIONS P14-4): for this BLU device, or with this gateway.
+  const identify = { label: t('blu.title'), onClick: () => { void openIdentify(isBLU(row) ? dev : undefined, isBLU(row) ? undefined : row.id); } };
+  openModal(t(isBLU(row) ? 'chk.ble.bluTitle' : 'chk.ble.wifiTitle'), h('div', {}, filter, box), [identify, { label: t('common.close') }]);
 }
 
 // ---- page -----------------------------------------------------------------------------------
