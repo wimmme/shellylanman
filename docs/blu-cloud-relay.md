@@ -64,6 +64,12 @@ RC Button 4).
    is only there while the device is discoverable — in pairing mode (button held
    > 10 s, docs-ble/common.md "Pairing") and, for some models, shortly after power-on.
 
+   **Third try, 90 s, a single button held:** the device sent "hold" (0x80) and
+   "long press" (0x04) events, but did not enter pairing mode (no blue LED) and
+   nothing changed. The device is a BLU **RC Button 4** (SBBT-004CUS): since its
+   firmware 1.0.22 pairing mode needs **two buttons held for more than 10 s**
+   (docs-ble/Devices/BLU/BluRCButton4.md); one held button is a normal "hold" event.
+
 **Conclusion for battery BLU devices behind the Cloud Relay:** name and model can be
 read with an active scan only while the device is in pairing mode (ask the user to
 hold its button during a short `StartDeviceDiscovery`); otherwise use the passive
