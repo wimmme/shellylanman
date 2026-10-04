@@ -70,22 +70,37 @@ RC Button 4).
    firmware 1.0.22 pairing mode needs **two buttons held for more than 10 s**
    (docs-ble/Devices/BLU/BluRCButton4.md); one held button is a normal "hold" event.
 
-**Conclusion for battery BLU devices behind the Cloud Relay:** name and model can be
-read with an active scan only while the device is in pairing mode (ask the user to
-hold its button during a short `StartDeviceDiscovery`); otherwise use the passive
-ways below — the model id from BTHome object `0xF0` (power-on and every 6 h), or an
-estimate from the BTHome objects. The name from the advertisement is the model's
-short name anyway (e.g. `SBBT-004CEU`); a user-given name exists only in the Shelly
-Cloud, which ShellyLanMan does not use.
-2. **Passively, from the BTHome data in `sdata`**: BLU devices send object `0xF0`
-   (device type id = the same model id) and `0xF1` (firmware) at power-on and every
-   6 hours. `ListInfos` keeps only the last advertisement, so it shows up only now and
-   then — but for devices that advertise rarely (buttons) that packet is often the
-   last one. Cache it when seen.
-3. **Passively, an estimate from the BTHome objects** of any packet: four `0x3A`
-   buttons → Wall Switch 4 / RC Button 4; temperature + humidity → H&T; window +
-   illuminance + rotation → Door/Window; motion + illuminance → Motion; one button →
-   Button 1. Not exact (models with the same objects), but always available.
+   **Fourth try, 90 s, two buttons held > 10 s (pairing mode, blue LED):** 24 s into
+   the scan the gateway emitted
+
+   ```json
+   {"component": "bthome", "event": "device_discovered", "device": {
+     "addr": "7c:c6:b6:a5:c9:3d", "local_name": "SBBT-004CUS", "rssi": -61,
+     "encrypted": false,
+     "shelly_mfdata": {"flags": 17, "model_id": 7, "mac": "7c:c6:b6:a5:c9:3d"}}}
+   ```
+
+   and `discovery_done` reported `device_count: 1`. Model id 7 = BLU RC Button 4;
+   flags 17 = discoverable (bit 0) + in pairing mode (bit 4). But
+   `BLE.CloudRelay.ListInfos` **still** showed `name: null, model: 0, mdata: {}`
+   throughout (firmware 2.0.1 on a Dimmer G3): the Cloud Relay did not keep the scan
+   response even while the shared scan was active and the device answered it.
+
+**Conclusion for battery BLU devices behind the Cloud Relay (firmware 2.0.1):**
+
+- `ListInfos` gives the address, the last BTHome data and `last_seen`, but in
+  practice **not** `name` and `model` — not even during an active scan with the
+  device in pairing mode.
+- Name and model come from **`BTHome.StartDeviceDiscovery`'s `device_discovered`
+  event** (WebSocket notifications) **while the device is in pairing mode** (for the
+  RC Button 4: two buttons held > 10 s; other models: one button > 10 s). It changes
+  nothing on the gateway (no BTHome device is added) and the device leaves pairing
+  mode by itself.
+- Without the user's help: the model id from BTHome object `0xF0` (power-on and every
+  6 hours, cache it), or an estimate from the BTHome objects of any packet (here:
+  four buttons → Wall Switch 4 or RC Button 4).
+- The "name" is the model's short name (`SBBT-004CUS`); a name the user gave exists
+  only in the Shelly Cloud.
 
 Model ids (docs-ble/common.md): 0x0001 BLU Button1 SBBT-002C · 0x0002 DoorWindow
 SBDW-002C · 0x0003 HT SBHT-003C · 0x0005 Motion SBMO-003Z · 0x0006 Wall Switch 4
