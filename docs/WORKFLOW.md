@@ -97,7 +97,9 @@ base of the app), then `shellylanman-ha`.
 2. `shellylanman/CHANGELOG.md` (app) and `CHANGELOG.md` (integration): new section.
 3. `sh tools/test.sh` on both Home Assistant versions.
 4. Commit `release: vX.Y.Z …`, tag, push `main` and the tag; wait for the *App* and
-   *Integration* workflows (on `main` and on the tag).
+   *Integration* workflows (on `main` and on the tag). The Integration workflow makes
+   the GitHub release of the tag after its checks (HACS needs releases), with notes
+   from both changelogs (`tools/release-notes.sh`).
 
 **Afterwards:** install it on the Home Assistant test instance (§6) and record what
 was checked in `docs/hardware-tests.md` (append, never rewrite).

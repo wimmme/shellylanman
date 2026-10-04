@@ -17,6 +17,7 @@ internal/web/dist/*
 # tools/screenshots/run.sh output, and machine-specific notes for Claude Code
 /screenshots-out/
 CLAUDE.local.md
+/local/
 
 # Editors and OS
 .idea/
