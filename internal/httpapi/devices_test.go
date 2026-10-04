@@ -173,3 +173,50 @@ func TestConfigEndpoints(t *testing.T) {
 		t.Fatalf("checklist %v", rows)
 	}
 }
+
+func TestDeviceCredentialsOnlyOnTrustedPaths(t *testing.T) {
+	srv, devs, st := newDeviceServerStore(t)
+	const url = "/api/v1/devices/AABBCC000001/credentials"
+	if r := do(t, "GET", srv.URL+url, "", nil); r.StatusCode != 403 {
+		t.Fatalf("no token, nothing stored: %d", r.StatusCode)
+	}
+	if err := devs.SetGlobalCredentials(shelly.Credentials{User: "admin", Password: "s3cret"}); err != nil {
+		t.Fatal(err)
+	}
+	// The open LAN port: never without the MCP token at access level configure.
+	if r := do(t, "GET", srv.URL+url, "", nil); r.StatusCode != 403 {
+		t.Fatalf("no token: %d", r.StatusCode)
+	}
+	st.SetSecret(store.MCPTokenSecret, "tok")
+	bearer := map[string]string{"Authorization": "Bearer tok"}
+	st.Update(func(s *store.Settings) { s.MCP.Enabled, s.MCP.Access = true, "control" })
+	if r := do(t, "GET", srv.URL+url, "", bearer); r.StatusCode != 403 {
+		t.Fatalf("token, access control: %d", r.StatusCode)
+	}
+	st.Update(func(s *store.Settings) { s.MCP.Access = "configure" })
+	if r := do(t, "GET", srv.URL+url, "", map[string]string{"Authorization": "Bearer wrong"}); r.StatusCode != 403 {
+		t.Fatalf("wrong token: %d", r.StatusCode)
+	}
+	resp := do(t, "GET", srv.URL+url, "", bearer)
+	var c shelly.Credentials
+	decode(t, resp, &c)
+	if c.User != "admin" || c.Password != "s3cret" || resp.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("with token: %+v %q", c, resp.Header.Get("Cache-Control"))
+	}
+	if r := do(t, "GET", srv.URL+"/api/v1/devices/NOPE/credentials", "", bearer); r.StatusCode != 404 {
+		t.Fatalf("unknown device: %d", r.StatusCode)
+	}
+
+	// The Home Assistant app's loopback listener: without token (MCP may be off).
+	st.Update(func(s *store.Settings) { s.MCP.Enabled = false })
+	local := httptest.NewServer(MCPLocal(Config{Store: st, Devices: devs}))
+	t.Cleanup(local.Close)
+	c = shelly.Credentials{}
+	decode(t, do(t, "GET", local.URL+url, "", nil), &c)
+	if c.Password != "s3cret" {
+		t.Fatalf("local listener: %+v", c)
+	}
+	if r := do(t, "GET", local.URL+"/api/v1/devices", "", nil); r.StatusCode != 404 {
+		t.Fatalf("local listener serves only /mcp and the credentials: %d", r.StatusCode)
+	}
+}

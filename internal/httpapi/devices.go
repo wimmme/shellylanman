@@ -12,6 +12,7 @@ import (
 	"github.com/coder/websocket"
 
 	"github.com/wimmme/shellylanman/internal/discovery"
+	"github.com/wimmme/shellylanman/internal/mcp"
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/shelly"
 )
@@ -30,6 +31,16 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 	}
 	mux.HandleFunc("GET /api/v1/devices", h(s.listDevices))
 	mux.HandleFunc("GET /api/v1/devices/{id}", h(s.getDevice))
+	mux.HandleFunc("GET /api/v1/devices/{id}/credentials", h(func(w http.ResponseWriter, r *http.Request) {
+		// The LAN port has no login: device passwords only with the MCP token
+		// at access level "configure" (DECISIONS P13-3).
+		c := s.mcpConfig()
+		if !c.Enabled || c.Access != mcp.AccessConfigure || !mcp.Authorized(r, c.Token) {
+			writeError(w, http.StatusForbidden, "device credentials need the MCP token with access level configure")
+			return
+		}
+		s.writeCredentials(w, r)
+	}))
 	mux.HandleFunc("DELETE /api/v1/devices/{id}", h(s.removeDevice))
 	mux.HandleFunc("POST /api/v1/devices/refresh", h(s.refreshDevices))
 	mux.HandleFunc("POST /api/v1/devices/{id}/reload", h(s.reloadDevice))
@@ -110,6 +121,22 @@ func (s *server) listDevices(w http.ResponseWriter, r *http.Request) {
 		list = out
 	}
 	writeJSON(w, http.StatusOK, list)
+}
+
+// writeCredentials answers with the user and password ShellyLanMan uses for the
+// device; callers have checked that the request may have them.
+func (s *server) writeCredentials(w http.ResponseWriter, r *http.Request) {
+	c, err := s.Devices.DeviceCredentials(r.PathValue("id"))
+	switch {
+	case errors.Is(err, service.ErrNotFound), errors.Is(err, service.ErrNoCredentials):
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusOK, c)
 }
 
 func (s *server) getDevice(w http.ResponseWriter, r *http.Request) {

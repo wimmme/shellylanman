@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/wimmme/shellylanman/internal/model"
 	"github.com/wimmme/shellylanman/internal/shelly"
@@ -85,4 +86,28 @@ func (m *Devices) SetDeviceCredentials(id string, c shelly.Credentials) error {
 	}
 	m.Reload(id)
 	return nil
+}
+
+// ErrNoCredentials: ShellyLanMan stores no credentials for the device.
+var ErrNoCredentials = errors.New("no credentials stored for this device")
+
+// DeviceCredentials returns the credentials ShellyLanMan uses for a device
+// (its own, else the global ones) for the Home Assistant integration, which
+// adds the device to Home Assistant's Shelly integration (DECISIONS P13-3).
+// Gen2+ devices always use the user "admin". The HTTP layer decides who may
+// ask (never the open LAN port without the MCP token).
+func (m *Devices) DeviceCredentials(id string) (shelly.Credentials, error) {
+	d, ok := m.Get(id)
+	if !ok {
+		return shelly.Credentials{}, ErrNotFound
+	}
+	c := m.credentialsFor(id)
+	if c == nil {
+		return shelly.Credentials{}, ErrNoCredentials
+	}
+	out := *c
+	if d.Gen != "1" {
+		out.User = "admin"
+	}
+	return out, nil
 }

@@ -367,7 +367,7 @@ func (m *Devices) create(ctx context.Context, addr string, info shelly.Info, hin
 	e.conn = m.client.Conn(addr, gen1)
 	e.dev = model.Device{
 		ID: model.NormalizeMAC(info.MAC), MAC: info.MAC, Gen: info.Generation(),
-		TypeID: mdl.TypeID, TypeName: mdl.TypeName, Managed: mdl.Known, Battery: mdl.Battery,
+		TypeID: mdl.TypeID, TypeName: mdl.TypeName, Managed: mdl.Known, Battery: mdl.Battery, Protected: info.AuthEnabled(),
 		Hostname: hint, Name: info.Name, IP: ip, Port: port, Status: model.StatusReading,
 	}
 	if !gen1 {

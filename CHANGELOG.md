@@ -5,6 +5,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- API for the Home Assistant integration (adding Shellys to Home Assistant's Shelly
+  integration): `protected` in the device list, and
+  `GET /api/v1/devices/{id}/credentials` with the credentials ShellyLanMan uses for a
+  device — only with the MCP token at access level *configure*, or on the Home
+  Assistant app's loopback listener; never on the open LAN port without that token.
+
 ## [0.6.4] - 2026-10-04
 
 The script editor gives feedback at once and never opens blind.

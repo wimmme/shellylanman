@@ -47,9 +47,11 @@ type Device struct {
 	Status   Status `json:"status"`
 	Managed  bool   `json:"managed"` // false: unknown type or failed to initialise ("unmanaged")
 	Battery  bool   `json:"battery"`
-	Error    string `json:"error,omitempty"`
-	LastSeen int64  `json:"lastSeen"` // unix milliseconds of the last successful contact
-	SSID     string `json:"ssid,omitempty"`
+	// Protected: the device asks for a password (GET /shelly auth / auth_en).
+	Protected bool   `json:"protected,omitempty"`
+	Error     string `json:"error,omitempty"`
+	LastSeen  int64  `json:"lastSeen"` // unix milliseconds of the last successful contact
+	SSID      string `json:"ssid,omitempty"`
 
 	// Read-only information (Phase 3): the remaining device-table columns.
 	RSSI           int              `json:"rssi"`

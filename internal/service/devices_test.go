@@ -155,15 +155,22 @@ func TestProtectedGen2NeedsCredentials(t *testing.T) {
 	addr := startSim(t, dir, func(d *sim.Device) { d.Password = "s3cret" })
 	m.handle(ctx, addr, "shellyplus1-aabbcc000002", true)
 	d := waitDevice(t, m, "AABBCC000002", func(d model.Device) bool { return d.Status == model.StatusLogin })
-	if d.TypeName != "Shelly +1" {
+	if d.TypeName != "Shelly +1" || !d.Protected {
 		t.Fatalf("protected device not identified: %+v", d)
 	}
-	if err := m.SetGlobalCredentials(shelly.Credentials{Password: "s3cret"}); err != nil {
+	if _, err := m.DeviceCredentials("AABBCC000002"); err != ErrNoCredentials {
+		t.Fatalf("credentials before any are stored: %v", err)
+	}
+	if err := m.SetGlobalCredentials(shelly.Credentials{User: "someone", Password: "s3cret"}); err != nil {
 		t.Fatal(err)
 	}
 	waitDevice(t, m, "AABBCC000002", online)
 	if !m.Credentials().GlobalSet {
 		t.Fatal("global credentials not reported")
+	}
+	// For the integration (DECISIONS P13-3): Gen2+ always as admin.
+	if c, err := m.DeviceCredentials("AABBCC000002"); err != nil || c.User != "admin" || c.Password != "s3cret" {
+		t.Fatalf("device credentials: %+v %v", c, err)
 	}
 }
 

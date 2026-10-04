@@ -244,6 +244,11 @@ func (s *Server) audit(t *tool, args json.RawMessage, err error) {
 	}
 }
 
+// Authorized reports whether the request carries the MCP token as a bearer
+// token (also used for the device credentials the Home Assistant integration
+// may read, DECISIONS P13-3).
+func Authorized(r *http.Request, token string) bool { return authorized(r, token) }
+
 func authorized(r *http.Request, token string) bool {
 	if token == "" {
 		return false
