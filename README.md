@@ -206,16 +206,16 @@ if you switch it on (off by default). No telemetry.
 
 | | |
 |---|---|
-| | |
-|---|---|
 | ![Devices](docs/images/screenshot-devices.png) | ![Checklist](docs/images/screenshot-checklist.png) |
 | **Devices** — every Shelly with its readings and controls (here a dimmer's slider); three ticked | **Checklist** — the same selection, settings worth checking |
 | ![Firmware](docs/images/screenshot-firmware.png) | ![Charts](docs/images/screenshot-charts.png) |
 | **Firmware** — current, stable and beta, and the Shelly index | **Charts** — readings of the selected devices over time |
 | ![Script editor](docs/images/screenshot-editor.png) | ![Device info](docs/images/screenshot-info.png) |
 | **Script editor** — edit, upload and run the device's scripts | **Device info** — everything the device reports |
-| ![Logs](docs/images/screenshot-logs.png) | ![About](docs/images/screenshot-about.png) |
-| **Logs** — the device's live debug log | **About** — version, system information and support |
+| ![Logs](docs/images/screenshot-logs.png) | ![Identify BLU devices](docs/images/screenshot-identify.png) |
+| **Logs** — the device's live debug log | **Identify BLU devices** — the model of a BLU device a gateway only relays |
+| ![About](docs/images/screenshot-about.png) | |
+| **About** — version, system information and support | |
 
 On a phone the pages get the full width; the navigation is behind ☰:
 

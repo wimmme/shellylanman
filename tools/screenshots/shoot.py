@@ -36,8 +36,8 @@ with sync_playwright() as p:
     br = p.chromium.launch()
 
     # Devices: a few ticked, wide enough for the Command column (the dimmers'
-    # sliders), with the host name, cloud, MQTT, uptime and source columns hidden.
-    pg = page(br, width=1920, height=1250)
+    # sliders) and the relayed BLU row, with the host name, cloud, MQTT, uptime and source columns hidden.
+    pg = page(br, width=1920, height=1480)
     pg.context.add_init_script("""try { localStorage.setItem('sl_cols_default',
       JSON.stringify(['keyword', 'mac', 'ssid', 'logs', 'device', 'mqtt', 'uptime', 'source', 'cloud'])) } catch (e) {}""")
     pg.goto(B + "#/devices"); pg.wait_for_timeout(3000)
@@ -87,6 +87,17 @@ with sync_playwright() as p:
     pg = page(br)
     pg.goto(B + "#/about"); pg.wait_for_timeout(2000)
     pg.screenshot(path=OUT + "screenshot-about.png")
+
+    # Identify a BLU device that "Living room" relays (tools/screenshots/blu).
+    pg = page(br)
+    pg.goto(B + "#/devices"); pg.wait_for_timeout(3000)
+    tick(pg, "7c:c6:b6:a5:c9:3d")
+    pg.get_by_role("button", name="Identify", exact=True).click()
+    pg.wait_for_selector(".blu-identify")
+    pg.locator(".blu-identify").get_by_role("button", name="Start").click()
+    pg.wait_for_selector(".blu-found tbody tr:nth-child(2)", timeout=15000)
+    pg.locator(".blu-status", has_text="Done").wait_for(timeout=15000)
+    pg.screenshot(path=OUT + "screenshot-identify.png")
 
     # A phone: Checklist, and the menu.
     ph = page(br, 390, 844, 2)

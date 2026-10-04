@@ -60,7 +60,7 @@ with sync_playwright() as p:
     pg.wait_for_selector(".blu-found tbody tr:nth-child(2)", timeout=15000)
     found = body.locator(".blu-found").inner_text()
     check("Button 4" in found and "SBHT-003C" in found, f"both answers shown: {found!r}")
-    pg.wait_for_function("document.querySelector('.blu-status').textContent.includes('Done')", timeout=15000)
+    pg.locator(".blu-status", has_text="Done").wait_for(timeout=15000)
     pg.screenshot(path="/shots/blu-identify.png")
     pg.get_by_role("button", name="Close").last.click()
     pg.wait_for_timeout(2500)
