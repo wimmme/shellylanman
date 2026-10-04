@@ -129,6 +129,7 @@ type bluLink struct {
 	gwID  string
 	index string // component index, e.g. "200"
 	trv   bool
+	relay bool   // only relayed to the Shelly Cloud (blu_relay.go)
 	keys  string // Shelly.GetComponents keys for BTHome devices
 	known []byte // BTHomeDevice.GetKnownObjects
 	hooks []byte // the gateway's Webhook.List (BTHome button actions)
@@ -602,6 +603,9 @@ func (m *Devices) poll(ctx context.Context, e *entry) {
 		}
 		if tics++; tics >= m.store.Settings().Scan.ConfigTics {
 			m.refreshConfig(ctx, e)
+			if relayCapable(e) { // its relayed BLU devices, with its configuration (P14-1)
+				m.refreshRelay(ctx, e)
+			}
 			tics = 0
 		}
 		m.refreshStatus(ctx, e)

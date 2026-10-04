@@ -42,6 +42,8 @@ func (m *Devices) InfoRequests(id string) ([]InfoRequest, error) {
 	switch {
 	case e.conn == nil:
 		paths = []string{"/shelly"}
+	case e.blu != nil && e.blu.relay: // what the gateway knows of it
+		paths = []string{"/rpc/BLE.CloudRelay.ListInfos"}
 	case e.blu != nil && e.blu.trv:
 		i := e.blu.index
 		paths = []string{"/rpc/BluTrv.GetRemoteDeviceInfo?id=" + i, "/rpc/BluTrv.GetConfig?id=" + i, "/rpc/BluTrv.GetRemoteConfig?id=" + i,

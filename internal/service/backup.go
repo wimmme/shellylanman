@@ -216,6 +216,9 @@ func (m *Devices) backupOne(ctx context.Context, e *entry, mayQueue bool) (Resul
 	if e.conn == nil && e.blu == nil {
 		return fail(ErrNoConnection)
 	}
+	if e.blu != nil && e.blu.relay {
+		return fail(ErrRelayed)
+	}
 	m.setBusy(e, true)
 	defer m.setBusy(e, false)
 	data, stored, err := sbk.Backup(ctx, m.sbkDevice(e))
@@ -293,8 +296,11 @@ func stored(e *entry) bool {
 // original (only the restore itself is queued).
 func (m *Devices) check(ctx context.Context, e *entry, files sbk.Files) ([]sbk.Item, bool, error) {
 	m.mu.Lock()
-	ghost := stored(e)
+	ghost, relay := stored(e), e.blu != nil && e.blu.relay
 	m.mu.Unlock()
+	if relay {
+		return nil, false, ErrRelayed
+	}
 	sd := m.sbkDevice(e)
 	if ghost {
 		return sbk.CheckStored(sd, files).Items(), true, nil
@@ -345,8 +351,11 @@ func (m *Devices) restoreData(ctx context.Context, e *entry, data []byte, answer
 		return RestoreResult{Result: ResultQueued}, nil
 	}
 	m.mu.Lock()
-	ghost := stored(e)
+	ghost, relay := stored(e), e.blu != nil && e.blu.relay
 	m.mu.Unlock()
+	if relay {
+		return RestoreResult{}, ErrRelayed
+	}
 	if ghost {
 		if mayQueue {
 			return queue()

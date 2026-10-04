@@ -72,6 +72,9 @@ type Device struct {
 	// BLU devices live behind a Gen2+ gateway.
 	Parent  string   `json:"parent,omitempty"`  // gateway device ID
 	Parents []string `json:"parents,omitempty"` // other gateways that see it (hostnames)
+	// Relay: a BLU device the gateway only relays to the Shelly Cloud
+	// (BLE.CloudRelay), read only (DECISIONS P14-1).
+	Relay bool `json:"relay,omitempty"`
 
 	// From the archive (notes editor).
 	Note    string `json:"note,omitempty"`

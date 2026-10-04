@@ -96,6 +96,7 @@ func (m *Devices) discoverBLU(ctx context.Context, gw *entry) {
 			}
 		}
 	}
+	m.refreshRelay(ctx, gw) // the devices it only relays (P14-1)
 }
 
 func bluBase(gw *entry, mac, index string) *entry {
@@ -205,6 +206,17 @@ func applyBTHomeStatus(d *model.Device, raw json.RawMessage) {
 }
 
 func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
+	if e.blu.relay { // read with its gateway (refreshRelay); here only end a "reading"
+		m.apply(e, func(d *model.Device) {
+			if d.Status == model.StatusReading {
+				d.Status = model.StatusOffline
+				if d.LastSeen > 0 {
+					d.Status = model.StatusOnline
+				}
+			}
+		})
+		return
+	}
 	if e.blu.trv {
 		// BluTRV.refreshStatus: GetStatus + GetRemoteStatus; refreshSettings: GetConfig + GetRemoteConfig.
 		st, err := e.blu.gw.Get(ctx, "/rpc/BluTrv.GetStatus?id="+e.blu.index)
@@ -287,7 +299,7 @@ func (m *Devices) upsertBLU(e *entry, gw *entry) {
 	if exists && old.dev.Status != model.StatusGhost && old.blu != nil {
 		// newBluDevice: BTHome → TRV always; otherwise newer or same gateway,
 		// but never a TRV back to a plain BTHome row.
-		replace := (!old.blu.trv && e.blu.trv) ||
+		replace := old.blu.relay || (!old.blu.trv && e.blu.trv) ||
 			((e.dev.LastSeen > old.dev.LastSeen || old.dev.Parent == e.dev.Parent) && !(old.blu.trv && !e.blu.trv))
 		if !replace {
 			if !contains(old.dev.Parents, gw.dev.Hostname) {
