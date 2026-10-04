@@ -85,8 +85,15 @@ RC Button 4).
    `BLE.CloudRelay.ListInfos` **still** showed `name: null, model: 0, mdata: {}`
    throughout (firmware 2.0.1 on a Dimmer G3): the Cloud Relay did not keep the scan
    response even while the shared scan was active and the device answered it.
-
-
+2. **Passively, from the BTHome data in `sdata`**: BLU devices send object `0xF0`
+   (device type id = the same model id) and `0xF1` (firmware) at power-on and every
+   6 hours. `ListInfos` keeps only the last advertisement, so it shows up only now and
+   then — but for devices that advertise rarely (buttons) that packet is often the
+   last one. Cache it when seen.
+3. **Passively, an estimate from the BTHome objects** of any packet: four `0x3A`
+   buttons → Wall Switch 4 / RC Button 4; temperature + humidity → H&T; window +
+   illuminance + rotation → Door/Window; motion + illuminance → Motion; one button →
+   Button 1. Not exact (models with the same objects), but always available.
 
 **Conclusion for battery BLU devices behind the Cloud Relay (firmware 2.0.1):**
 
