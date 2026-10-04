@@ -8,6 +8,8 @@
 // served status (Gen1 /relay/N?turn=, Gen2+ Switch.Set / Switch.Toggle);
 // other commands are accepted and answered with an empty result.
 //
+// An optional _log.jsonl replaces the /debug/log messages (Gen2+).
+//
 // An optional _behaviour.json in the fixture directory makes GET requests slow
 // or failing, for tests of weak devices: {"/rpc/Script.GetCode?id=2":
 // {"delayMs": 4000}, "/rpc/Script.GetCode?id=3": {"status": 500}} (keys are the
@@ -431,7 +433,25 @@ func (d *Device) serveLog(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.CloseNow()
 	ctx := c.CloseRead(r.Context())
-	for _, l := range LogLines {
+	lines := LogLines
+	// An optional _log.jsonl in the fixture directory replaces them, one
+	// message per line, sent a little apart (screenshots, manual tests).
+	if b, err := os.ReadFile(filepath.Join(d.dir, "_log.jsonl")); err == nil {
+		lines = nil
+		for _, l := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+			if l = strings.TrimSpace(l); l != "" {
+				lines = append(lines, l)
+			}
+		}
+	}
+	for i, l := range lines {
+		if i > 0 && len(lines) > len(LogLines) {
+			select {
+			case <-time.After(150 * time.Millisecond):
+			case <-ctx.Done():
+				return
+			}
+		}
 		if c.Write(ctx, websocket.MessageText, []byte(l)) != nil {
 			return
 		}

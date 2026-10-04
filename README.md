@@ -205,10 +205,16 @@ if you switch it on (off by default). No telemetry.
 
 | | |
 |---|---|
+| | |
+|---|---|
 | ![Devices](docs/images/screenshot-devices.png) | ![Checklist](docs/images/screenshot-checklist.png) |
-| **Devices** (dark) — the live table; three devices ticked | **Checklist** (light) — the same selection, with *Show all devices* |
-| ![Firmware](docs/images/screenshot-firmware.png) | ![About](docs/images/screenshot-about.png) |
-| **Firmware** (light) — check, update and the Shelly index | **About** (dark) — version, system information and support |
+| **Devices** — every Shelly with its readings and controls (here a dimmer's slider); three ticked | **Checklist** — the same selection, settings worth checking |
+| ![Firmware](docs/images/screenshot-firmware.png) | ![Charts](docs/images/screenshot-charts.png) |
+| **Firmware** — current, stable and beta, and the Shelly index | **Charts** — readings of the selected devices over time |
+| ![Script editor](docs/images/screenshot-editor.png) | ![Device info](docs/images/screenshot-info.png) |
+| **Script editor** — edit, upload and run the device's scripts | **Device info** — everything the device reports |
+| ![Logs](docs/images/screenshot-logs.png) | ![About](docs/images/screenshot-about.png) |
+| **Logs** — the device's live debug log | **About** — version, system information and support |
 
 On a phone the pages get the full width; the navigation is behind ☰:
 
@@ -216,9 +222,6 @@ On a phone the pages get the full width; the navigation is behind ☰:
   <img src="docs/images/screenshot-phone.png" alt="Checklist on a phone" width="240">
   <img src="docs/images/screenshot-phone-menu.png" alt="The menu on a phone" width="240">
 </p>
-
-The screenshots show simulated devices in the Home Assistant palette, which is the
-start look; `sh tools/screenshots/run.sh` makes them again.
 
 ## 🤖 AI assistants (MCP)
 

@@ -1,0 +1,16 @@
+{"ts": 1791150000.0, "level": 2, "data": "shelly_main.cpp:2341 Device ID shellyplus1-aabbcc000006 (Plus1), FW 2.0.1", "fd": 1}
+{"ts": 1791150001.7, "level": 2, "data": "shelly_wifi.cpp:612 WiFi STA: connected, RSSI -50 dBm", "fd": 1}
+{"ts": 1791150003.4, "level": 2, "data": "shos_cloud.cpp:298 Cloud disconnected (disabled)", "fd": 1}
+{"ts": 1791150005.1, "level": 2, "data": "shelly_mqtt.cpp:184 MQTT connected to 192.168.0.10:1883", "fd": 1}
+{"ts": 1791150006.8, "level": 2, "data": "shelly_input.cpp:88 input:0 state: true", "fd": 1}
+{"ts": 1791150008.5, "level": 2, "data": "shelly_notification:163 Status change of input:0: {\"id\":0,\"state\":true}", "fd": 1}
+{"ts": 1791150010.2, "level": 2, "data": "shelly_switch.cpp:445 switch:0 output: true (source: switch)", "fd": 1}
+{"ts": 1791150011.9, "level": 2, "data": "shelly_notification:163 Status change of switch:0: {\"id\":0,\"output\":true,\"source\":\"switch\"}", "fd": 1}
+{"ts": 1791150013.6, "level": 2, "data": "shos_rpc_inst.c:243 Switch.GetStatus via HTTP_in GET 192.168.0.12", "fd": 1}
+{"ts": 1791150015.3, "level": 1, "data": "shelly_ws.cpp:95 WS client 192.168.0.12:51234 connected", "fd": 1}
+{"ts": 1791150017.0, "level": 2, "data": "shelly_input.cpp:88 input:0 state: false", "fd": 1}
+{"ts": 1791150018.7, "level": 2, "data": "shelly_switch.cpp:445 switch:0 output: false (source: switch)", "fd": 1}
+{"ts": 1791150020.4, "level": 2, "data": "shelly_notification:163 Status change of switch:0: {\"id\":0,\"output\":false,\"source\":\"switch\"}", "fd": 1}
+{"ts": 1791150022.1, "level": 2, "data": "shelly_schedule.cpp:212 Schedule 1 (sunset) armed for 19:12", "fd": 1}
+{"ts": 1791150023.8, "level": 2, "data": "shos_time.cpp:177 SNTP: time synced, offset 3 ms", "fd": 1}
+{"ts": 1791150025.5, "level": 2, "data": "shelly_sys.cpp:301 RAM free 98412, FS free 233472", "fd": 1}
