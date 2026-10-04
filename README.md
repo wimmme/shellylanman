@@ -169,7 +169,8 @@ Everything ShellyScanner does, in the browser, and pages that work together:
   does and, when it is grey, why.
 
 - **Discovery** by mDNS (all interfaces or one), IP-range scan or offline, Gen1 to
-  Gen4, Pro, BLU devices through their gateways, range-extender clients, protected
+  Gen4, Pro, BLU devices through their gateways (also the ones a gateway only relays,
+  with a wizard that identifies their model), range-extender clients, protected
   devices, an archive of known devices with notes and keywords.
 - **Devices table** with all columns, filters, views, device information, live logs,
   controls (relays, rollers, lights, thermostats, …), reboot, CSV export and print.

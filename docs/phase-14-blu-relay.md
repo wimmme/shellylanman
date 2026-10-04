@@ -117,3 +117,10 @@ device (read only); the wizard itself stays in the UI.
 | 14.5 | Wizard UI (8 languages) | M |
 | 14.6 | Simulator fixtures, tests, browser test; hardware test with Wim | M |
 | 14.7 | FEATURE_PARITY (new, beyond ShellyScanner), DECISIONS P14-x, CHANGELOG, release | S |
+
+## 6. Status
+
+14.1–14.7 done in code, tests and simulator: unit tests (decoder, relayed rows,
+identify with authentication), `tools/screenshots/check-blu.py` (relayed row and
+wizard end to end in the browser, all ok). Open: hardware test with Wim (RC Button 4
+via a Gen3 gateway, pairing mode = two buttons > 10 s), then the release.
