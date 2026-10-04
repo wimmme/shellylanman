@@ -574,3 +574,13 @@ Technical choices made while building discovery, within the scope agreed above.
 | P13-3 | **Passwords are passed on**: for a protected Shelly the integration answers the Shelly credentials step with the credentials ShellyLanMan stores. ShellyLanMan hands them out only on a trusted path (see the phase document §8), never on its open LAN port | Q3 |
 | P13-4 | In the integration's **Configure** (options flow): *Add Shellys to Home Assistant*, a list with the reason per device and a result step; plus a repair issue while Shellys are missing | Q4 |
 | P13-5 | First find out why Home Assistant did not offer six Shellys on `ha-test`: Shelly/zeroconf debug logging there for a while, read only | Q5 |
+
+## 23. Phase 14 — relayed BLU devices and "Identify BLU devices" (2026-10-05, Wim's answers to `docs/phase-14-blu-relay.md` §4)
+
+| # | Decision | Source |
+|---|---|---|
+| P14-1 | BLU devices a gateway only relays to the Shelly Cloud (`BLE.CloudRelay.ListInfos`) get rows of their own, read only, with readings decoded from their BTHome data and the model identified, seen (object `0xF0`) or estimated. New beyond ShellyScanner (Wim, 2026-10-04) | Wim |
+| P14-2 | Such a row is **online** once a gateway heard it, like other BLU rows; the last time heard is in the tooltip | Q1 |
+| P14-3 | Their name is a **name field in ShellyLanMan's archive**, editable in Notes (they have no name of their own outside the Shelly Cloud) | Q2 |
+| P14-4 | A wizard "Identify BLU devices" (on those rows and in the checklist's Bluetooth dialog) runs `BTHome.StartDeviceDiscovery` on a gateway while the user puts the device in pairing mode, shows what answers, and stores the model in the archive; nothing changes on device or gateway | Wim, 2026-10-04 |
+| P14-5 | Rows and wizard ship together in one release, before going public | Q3 |
