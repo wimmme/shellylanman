@@ -276,3 +276,13 @@ rotated afterwards.
 | Relayed row | IP scan of the gateway only (LampKeukenTafel, Dimmer G3, 192.168.0.117): the RC Button 4 it relays appears as its own row, *BLU online*, "Blu Wall Switch 4 / RC Button 4 ?", battery 100 %, buttons 1–4; Backup, Restore, Logs grey |
 | Identify | Wizard from the row: gateway preselected, two-button hint; Wim held two buttons > 10 s → "Blu RC Button 4 · SBBT-004CUS · 7c:c6:b6:a5:c9:3d · −53 dBm · in the list: yes"; the row is "Blu RC Button 4" afterwards. Nothing written to device or gateway |
 | Release 0.8.0 on `ha-test` | app 0.7.0 → 0.8.0 through the Supervisor (log `starting ShellyLanMan version=v0.8.0`); integration files 0.8.0 (no code change, no Core restart). Within a minute the RC Button 4 relayed by LampKeukenTafel is a row of its own (27 devices, "… RC Button 4 ?": this archive has not identified it) and a device in Home Assistant through the integration; no integration errors in the log. *Publish image* first failed on a 502 from Docker Hub, green on the rerun |
+
+## Phase 15 — optional UI password (2026-10-05, Wim tested the dev build; release 0.9.0 on `ha-test`)
+
+| Check | Result |
+|---|---|
+| Dev build on a test port (Wim) | Settings → Security, login, *Stay logged in*, wrong password, log out, switching off: "looks good" |
+| Release 0.9.0 on `ha-test` | app 0.8.0 → 0.9.0 (log `version=v0.9.0`, warning that no password is set); integration files 0.9.0 and a Core restart (code changed) |
+| Temporary password on the app's LAN port | set through the API: `{"authEnabled":true}`; `/api/v1/devices` without session 401, with the session cookie 200; status `loggedIn:false` without session |
+| The integration next to the app with that password | 27 status sensors, none unavailable; a forced refresh (`homeassistant.update_entity`) fine; no ShellyLanMan errors in Home Assistant's log — its calls went to the app's loopback listener |
+| Switched off again | `{"authEnabled":false}`; `ha-test` back as before |
