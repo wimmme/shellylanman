@@ -584,3 +584,15 @@ Technical choices made while building discovery, within the scope agreed above.
 | P14-3 | Their name is a **name field in ShellyLanMan's archive**, editable in Notes (they have no name of their own outside the Shelly Cloud) | Q2 |
 | P14-4 | A wizard "Identify BLU devices" (on those rows and in the checklist's Bluetooth dialog) runs `BTHome.StartDeviceDiscovery` on a gateway while the user puts the device in pairing mode, shows what answers, and stores the model in the archive; nothing changes on device or gateway | Wim, 2026-10-04 |
 | P14-5 | Rows and wizard ship together in one release, before going public | Q3 |
+
+## 24. Phase 15 — optional UI password (2026-10-05, Wim's answers to `docs/phase-15-ui-password.md` §5)
+
+| # | Decision | Source |
+|---|---|---|
+| P15-1 | One optional password (no user name), off by default, set in *Settings → Security* (DECISIONS Q25). It protects the UI, `/api/v1` and `/ws`; `/healthz` and `/mcp` (own token) stay as they are | Wim, Q25 |
+| P15-2 | No ShellyLanMan login through Home Assistant ingress (Home Assistant's login applies); the app's LAN port and a standalone ShellyLanMan ask for the password | Q1 |
+| P15-3 | A valid MCP token also opens `/api/v1` (the Home Assistant integration keeps working; it needs the token once a password is set) | Q2 |
+| P15-4 | Session: a checkbox *Stay logged in* (30 days since the last use); without it the session ends when the browser closes | Q3 |
+| P15-5 | Forgotten password: the environment variable `SHELLYLANMAN_RESET_PASSWORD=1` removes it at start (logged as a warning); remove the variable again afterwards | Q4 |
+| P15-6 | Wrong passwords per client address: after 5, waits of 1 s, 2 s, 4 s … up to 60 s, logged as a warning | Q5 |
+| P15-7 | A password has at least 8 characters and at least one capital letter; punctuation and digits are not required but raise the strength shown by a **strength indicator** while the password is chosen | Q6, Wim |

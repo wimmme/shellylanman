@@ -1,6 +1,6 @@
 # Phase 15 — optional UI password
 
-Status: analysis and design, questions open (§5). Nothing built yet.
+Status: decided (DECISIONS §24, P15-1..7); being built.
 
 ## 1. Background
 
