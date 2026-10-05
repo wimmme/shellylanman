@@ -18,6 +18,9 @@ services:
       - TZ=${TZ:-UTC}
       # - SHELLYLANMAN_LISTEN=:3082
       # - SHELLYLANMAN_ORIGINS=shelly.example.net   # reverse proxy host name
+      # Forgotten UI password: uncomment, `docker compose up -d` once (the password is
+      # removed, see the log), comment it out again and `docker compose up -d`.
+      # - SHELLYLANMAN_RESET_PASSWORD=1
     restart: unless-stopped
     logging:
       driver: json-file

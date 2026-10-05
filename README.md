@@ -122,6 +122,22 @@ docker run --rm -v shellylanman_data:/data -v "$PWD":/backup alpine   tar czf /b
 directory, e.g. `shellylanman_data`; the `docker run` example uses `shellylanman-data`). To go back, start the previous tag with the saved
 volume content.
 
+### Forgotten password
+
+When a UI password is set (Settings → Security) and forgotten, start ShellyLanMan
+once with `SHELLYLANMAN_RESET_PASSWORD=1`: it removes the password and logs out every
+browser (the log says so). With compose, uncomment the line in `docker-compose.yml`:
+
+```yaml
+    environment:
+      - SHELLYLANMAN_RESET_PASSWORD=1
+```
+
+then `docker compose up -d`, open ShellyLanMan (no password now), comment the line out
+again and `docker compose up -d` once more — otherwise every restart removes the
+password again. With `docker run`, start it once with `-e SHELLYLANMAN_RESET_PASSWORD=1`
+and then without it. Set a new password in Settings → Security.
+
 ### Why host networking
 
 ShellyLanMan finds devices with mDNS, which uses multicast on your LAN.
@@ -291,6 +307,7 @@ Step by step: [`shellylanman-ha`](https://github.com/wimmme/shellylanman-ha#read
   name; a login page with *Stay logged in*; slower after five wrong tries. Without it
   anyone who can reach the port can use ShellyLanMan; a warning is logged at start and
   shown once per browser. In Home Assistant's sidebar Home Assistant's login applies.
+  Forgotten: see [Forgotten password](#forgotten-password).
 - **Secrets at rest** — device and Wi-Fi passwords are encrypted in `/data` with
   AES-256-GCM; they are never sent back to the browser.
 - **Browser protection** — same-origin checks on every state-changing request and the
