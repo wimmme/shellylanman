@@ -13,10 +13,11 @@ import { toast } from '../toast';
 import { openMode, setOpenMode } from '../weblinks';
 import { card, type Page } from './common';
 import { mcpSettings } from './settings-mcp';
+import { securitySettings } from './settings-security';
 import { archive, network } from './settings-network';
 
 export function settingsPage(onLanguageChange: () => void): Page {
-  let tab: 'general' | 'network' | 'archive' | 'ide' | 'appearance' | 'mcp' = 'general';
+  let tab: 'general' | 'network' | 'archive' | 'ide' | 'appearance' | 'security' | 'mcp' = 'general';
   return {
     id: 'settings',
     title: 'nav.settings',
@@ -33,9 +34,10 @@ export function settingsPage(onLanguageChange: () => void): Page {
         else if (which === 'archive') void archive(body);
         else if (which === 'ide') ide(body);
         else if (which === 'mcp') void mcpSettings(body);
+        else if (which === 'security') void securitySettings(body, () => location.reload());
         else appearance(body);
       };
-      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['ide', 'settings.tab.ide'], ['appearance', 'settings.tab.appearance'], ['mcp', 'settings.tab.mcp']] as const) {
+      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['ide', 'settings.tab.ide'], ['appearance', 'settings.tab.appearance'], ['security', 'settings.tab.security'], ['mcp', 'settings.tab.mcp']] as const) {
         const b = h('button', { role: 'tab', 'data-tab': id, onclick: () => show(id) }, t(key));
         tabs.append(b);
       }

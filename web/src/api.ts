@@ -1,6 +1,6 @@
 // REST client for /api/v1. Types mirror internal/httpapi.
 
-export interface Status { firstRunDone: boolean; authEnabled: boolean; clients: number; ingress?: boolean }
+export interface Status { firstRunDone: boolean; authEnabled: boolean; loggedIn?: boolean; clients: number; ingress?: boolean }
 
 // URLs are relative to the page, so ShellyLanMan also works under a path prefix
 // (Home Assistant ingress: /api/hassio_ingress/<token>/).
@@ -23,10 +23,14 @@ export interface ServerInfo { port: number; fixed: boolean }
 export interface MCPInfo { enabled: boolean; access: 'read' | 'control' | 'configure'; hasToken: boolean; token?: string }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(public status: number, message: string, public code?: string, public retryAfter?: number) {
     super(message);
   }
 }
+
+// A session that ended (logged out elsewhere, password changed): main.ts shows the login.
+let loginRequired: () => void = () => {};
+export function onLoginRequired(fn: () => void): void { loginRequired = fn; }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const init: RequestInit = { method, headers: {} };
@@ -36,7 +40,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
   const resp = await fetch('api/v1' + path, init);
   const data = resp.status === 204 ? {} : await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new ApiError(resp.status, (data as { error?: string }).error || resp.statusText);
+  if (!resp.ok) {
+    const e = data as { error?: string; code?: string; retryAfter?: number };
+    if (resp.status === 401 && e.error === 'login required') loginRequired();
+    throw new ApiError(resp.status, e.error || resp.statusText, e.code, e.retryAfter);
+  }
   return data as T;
 }
 
@@ -51,6 +59,14 @@ export const api = {
   mcp: () => request<MCPInfo>('GET', '/mcp'),
   setMCP: (patch: { enabled?: boolean; access?: MCPInfo['access'] }) => request<MCPInfo>('PUT', '/mcp', patch),
   newMCPToken: () => request<MCPInfo>('POST', '/mcp/token', {}),
+};
+
+// ---- UI password (DECISIONS §24) ----
+export const authApi = {
+  login: (password: string, remember: boolean) => request<void>('POST', '/auth/login', { password, remember }),
+  logout: () => request<void>('POST', '/auth/logout', {}),
+  /** Set or change (current needed once one is set); an empty password switches it off. */
+  setPassword: (current: string, password: string) => request<{ authEnabled: boolean }>('PUT', '/auth/password', { current, password }),
 };
 
 // ---- devices (Phase 2) ----

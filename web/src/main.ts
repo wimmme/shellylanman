@@ -1,9 +1,10 @@
 // Application shell: sidebar, top bar, hash router, connection state, first run.
-import { api, type FullSettings, type Status, type UpdateStatus } from './api';
+import { api, authApi, onLoginRequired, type FullSettings, type Status, type UpdateStatus } from './api';
 import { initAppearance } from './appearance';
 import { h, icon, ICONS } from './dom';
 import { LANGUAGES, isLang, setLang, storedLang, t } from './i18n';
 import { aboutPage } from './pages/about';
+import { showLogin } from './pages/login';
 import { errorState, loadingState, type Page } from './pages/common';
 import { chartsPage } from './pages/charts';
 import { checklistPage } from './pages/checklist';
@@ -65,7 +66,10 @@ function renderShell(): void {
     h('aside', { class: 'sidebar', id: 'sidebar', onkeydown: (e: Event) => { if ((e as KeyboardEvent).key === 'Escape') { setOpen(false); menuBtn.focus(); } } },
       h('div', { class: 'brand' }, h('img', { src: 'logo.png', alt: '', width: 28, height: 28 }), h('span', { class: 'label' }, t('app.name'))),
       h('nav', { 'aria-label': 'Main', onclick: () => setOpen(false) }, nav),
-      h('div', { class: 'nav-foot' }, version && (version === 'dev' ? 'dev' : `v${version}`))),
+      h('div', { class: 'nav-foot' }, version && (version === 'dev' ? 'dev' : `v${version}`),
+        status.authEnabled && !status.ingress
+          ? h('button', { class: 'btn logout', title: t('login.logoutTip'), onclick: async () => { await authApi.logout().catch(() => {}); location.reload(); } }, t('login.logout'))
+          : null)),
     h('header', { class: 'topbar' }, menuBtn, h('h1', {}, t(page.title)), h('div', { class: 'spacer' }), connLabel()),
     main);
   app.replaceChildren(shell);
@@ -124,8 +128,15 @@ function firstRun(defaultLang: string): void {
 
 async function boot(): Promise<void> {
   initAppearance();
-  const [st, settings, about] = await Promise.all([api.status(), api.settings(), api.about()]);
-  status = st;
+  status = await api.status();
+  if (status.loggedIn === false) { // the optional UI password (DECISIONS §24)
+    const nav = navigator.language.slice(0, 2);
+    setLang(storedLang() ?? (isLang(nav) ? nav : 'en'), false);
+    showLogin(app);
+    return;
+  }
+  onLoginRequired(() => location.reload()); // the session ended: back to the login
+  const [settings, about] = await Promise.all([api.settings(), api.about()]);
   version = about.version;
   const stored = storedLang();
   setLang(stored ?? (isLang(settings.language) ? settings.language : 'en'), false);

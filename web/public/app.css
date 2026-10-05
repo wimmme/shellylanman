@@ -342,3 +342,21 @@ a[target="_blank"]::after,.btn.ext::after{content:"↗";margin-left:.25em;font-s
 /* Script editor while its code is read, or when reading failed */
 .ide-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;min-height:160px;padding:16px;text-align:center}
 .ide-state.error strong{color:var(--accent-err)}
+/* UI password (Phase 15): login page, logout, Settings → Security */
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.login-card{width:min(360px,100%);display:flex;flex-direction:column;gap:12px;padding:28px 24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card)}
+.login-card img{align-self:center}
+.login-card h1{margin:0 0 6px;text-align:center;font-size:1.3rem}
+.login-card .field{max-width:none;margin-bottom:0}
+.login-card .btn{justify-content:center}
+.login-msg,.sec-error,.sec-match{min-height:1.2em;margin:0;color:var(--accent-err);font-size:.85rem}
+.nav-foot{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.btn.logout{padding:3px 8px;font-size:.72rem}
+.sec-meter{display:flex;align-items:center;gap:10px}
+.sec-meter meter{flex:1;height:10px}
+.sec-strength{font-size:.8rem;color:var(--text-muted);min-width:6em}
+.sec-rules{margin:-6px 0 12px;padding-left:20px;font-size:.82rem;color:var(--text-muted)}
+.sec-rules li.ok{color:var(--accent-ok)}
+.sec-rules li.ok::marker{content:"✓ "}
+.sec-state{color:var(--accent-ok)}
+.security h3{margin:18px 0 8px;font-size:.95rem}
