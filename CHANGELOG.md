@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Repository security: Dependabot (alerts, security and weekly version updates),
+  CodeQL code scanning and private vulnerability reporting are on.
+
 ## [0.8.0] - 2026-10-05
 
 BLU devices that a gateway only relays get a row of their own, and a wizard tells

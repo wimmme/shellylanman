@@ -44,3 +44,10 @@ ShellyScanner's backups do.
 None in normal operation. Planned, and only when you use the feature: Shelly's
 firmware index and firmware files (firmware page), and an opt-in check for new
 ShellyLanMan releases on GitHub.
+
+## How this repository is checked
+
+Secret scanning with push protection, Dependabot alerts, security updates and
+weekly version updates (Go modules, npm, Docker base images, GitHub Actions),
+CodeQL code scanning (Go, TypeScript, Python, workflows), and the checks of
+`tools/verify.sh` on every push.
