@@ -287,3 +287,4 @@ rotated afterwards.
 | The integration next to the app with that password | 27 status sensors, none unavailable; a forced refresh (`homeassistant.update_entity`) fine; no ShellyLanMan errors in Home Assistant's log — its calls went to the app's loopback listener |
 | Switched off again | `{"authEnabled":false}`; `ha-test` back as before |
 | Release 0.9.1 on `ha-test` | app 0.9.0 → 0.9.1 (log `version=v0.9.1`), integration files 0.9.1 (no code change, no Core restart). Changing / switching off without the current password under ingress is covered by `TestIngressNeedsNoLogin`; in the sidebar itself it is for Wim to try (the ingress path needs a Home Assistant browser session) |
+| Release 0.9.2 on `ha-test` | app 0.9.1 → 0.9.2 (log `version=v0.9.2`), integration files 0.9.2 (no code change, no Core restart). The sidebar switch was tried by Wim on a dev build first ("super") |
