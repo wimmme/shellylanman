@@ -67,7 +67,7 @@ simulator): styled under the CSP, following the theme, a slow device (4 s) and a
 failing read (HTTP 500). Run it after changes to the CSP, the editor or its
 libraries; unit tests do not render under the real CSP. The same goes for
 `check-blu.py` (relayed BLU rows and the Identify wizard, "Living room" relays a
-BLU device, `tools/screenshots/blu/`) and `check-login.py` (the UI password:
+BLU device, `tools/screenshots/blu/`) and `check-nav.py` (full and minimal sidebar) and `check-login.py` (the UI password:
 Settings → Security, login, log out, switching off).
 
 Slow or failing devices: an optional `_behaviour.json` in a fixture directory
