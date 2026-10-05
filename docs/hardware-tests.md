@@ -286,3 +286,4 @@ rotated afterwards.
 | Temporary password on the app's LAN port | set through the API: `{"authEnabled":true}`; `/api/v1/devices` without session 401, with the session cookie 200; status `loggedIn:false` without session |
 | The integration next to the app with that password | 27 status sensors, none unavailable; a forced refresh (`homeassistant.update_entity`) fine; no ShellyLanMan errors in Home Assistant's log — its calls went to the app's loopback listener |
 | Switched off again | `{"authEnabled":false}`; `ha-test` back as before |
+| Release 0.9.1 on `ha-test` | app 0.9.0 → 0.9.1 (log `version=v0.9.1`), integration files 0.9.1 (no code change, no Core restart). Changing / switching off without the current password under ingress is covered by `TestIngressNeedsNoLogin`; in the sidebar itself it is for Wim to try (the ingress path needs a Home Assistant browser session) |
