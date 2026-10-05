@@ -863,6 +863,7 @@
   "security.changed": "Password cambiata. Gli altri browser devono accedere di nuovo.",
   "security.offTitle": "Disattiva la password",
   "security.offText": "Richiede la password attuale. Dopo, chiunque raggiunga questo indirizzo potrà di nuovo usare ShellyLanMan.",
+  "security.offTextHa": "Dopo, chiunque raggiunga la porta propria dell'app potrà di nuovo usare ShellyLanMan.",
   "security.switchOff": "Disattiva",
   "security.off": "La password è disattivata.",
   "security.wrongCurrent": "La password attuale è errata.",

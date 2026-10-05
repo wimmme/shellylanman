@@ -863,6 +863,7 @@
   "security.changed": "密码已修改。其他浏览器需要重新登录。",
   "security.offTitle": "停用密码",
   "security.offText": "需要当前密码。之后任何能访问此地址的人都可以再次使用 ShellyLanMan。",
+  "security.offTextHa": "之后任何能访问应用自身端口的人都可以再次使用 ShellyLanMan。",
   "security.switchOff": "停用",
   "security.off": "密码已停用。",
   "security.wrongCurrent": "当前密码错误。",

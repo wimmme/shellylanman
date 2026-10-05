@@ -863,6 +863,7 @@
   "security.changed": "Passwort geändert. Andere Browser müssen sich neu anmelden.",
   "security.offTitle": "Passwort ausschalten",
   "security.offText": "Benötigt das aktuelle Passwort. Danach kann jeder, der diese Adresse erreicht, ShellyLanMan wieder benutzen.",
+  "security.offTextHa": "Danach kann jeder, der den eigenen Port der App erreicht, ShellyLanMan wieder benutzen.",
   "security.switchOff": "Ausschalten",
   "security.off": "Das Passwort ist ausgeschaltet.",
   "security.wrongCurrent": "Das aktuelle Passwort ist falsch.",

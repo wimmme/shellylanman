@@ -863,6 +863,7 @@
   "security.changed": "Wachtwoord gewijzigd. Andere browsers moeten opnieuw inloggen.",
   "security.offTitle": "Wachtwoord uitschakelen",
   "security.offText": "Vraagt het huidige wachtwoord. Daarna kan iedereen die dit adres bereikt ShellyLanMan weer gebruiken.",
+  "security.offTextHa": "Daarna kan iedereen die de eigen poort van de app bereikt ShellyLanMan weer gebruiken.",
   "security.switchOff": "Uitschakelen",
   "security.off": "Het wachtwoord staat uit.",
   "security.wrongCurrent": "Het huidige wachtwoord is fout.",

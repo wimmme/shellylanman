@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Settings → Security in Home Assistant's sidebar no longer says that switching the
+  password off needs the current one.
+
 ## [0.9.1] - 2026-10-05
 
 A forgotten UI password can be reset in the Home Assistant app too.

@@ -863,6 +863,7 @@
   "security.changed": "Contraseña cambiada. Los demás navegadores deben volver a iniciar sesión.",
   "security.offTitle": "Desactivar la contraseña",
   "security.offText": "Requiere la contraseña actual. Después, cualquiera que llegue a esta dirección podrá volver a usar ShellyLanMan.",
+  "security.offTextHa": "Después, cualquiera que llegue al puerto propio de la app podrá volver a usar ShellyLanMan.",
   "security.switchOff": "Desactivar",
   "security.off": "La contraseña está desactivada.",
   "security.wrongCurrent": "La contraseña actual es incorrecta.",

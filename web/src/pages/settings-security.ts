@@ -119,7 +119,7 @@ export async function securitySettings(body: HTMLElement, onChanged: () => void)
       h('p', { class: 'sec-state' }, t('security.isOn')),
       needCurrent ? field(t('security.current'), current) : h('p', { class: 'muted' }, t('security.noCurrent')),
       h('h3', {}, t('security.changeTitle')), ...np.part, h('div', { class: 'row' }, change),
-      h('h3', {}, t('security.offTitle')), h('p', { class: 'muted' }, t('security.offText')), h('div', { class: 'row' }, off),
+      h('h3', {}, t('security.offTitle')), h('p', { class: 'muted' }, t(needCurrent ? 'security.offText' : 'security.offTextHa')), h('div', { class: 'row' }, off),
       err,
       ...(needCurrent ? [h('p', { class: 'muted' }, t('security.reset'))] : []));
   }

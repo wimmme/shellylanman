@@ -863,6 +863,7 @@
   "security.changed": "Password changed. Other browsers have to log in again.",
   "security.offTitle": "Switch the password off",
   "security.offText": "Needs the current password. Afterwards anyone who can reach this address can use ShellyLanMan again.",
+  "security.offTextHa": "Afterwards anyone who can reach the app's own port can use ShellyLanMan again.",
   "security.switchOff": "Switch off",
   "security.off": "The password is off.",
   "security.wrongCurrent": "The current password is wrong.",

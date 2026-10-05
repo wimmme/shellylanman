@@ -863,6 +863,7 @@
   "security.changed": "Mot de passe changé. Les autres navigateurs doivent se reconnecter.",
   "security.offTitle": "Désactiver le mot de passe",
   "security.offText": "Demande le mot de passe actuel. Ensuite, quiconque atteint cette adresse peut de nouveau utiliser ShellyLanMan.",
+  "security.offTextHa": "Ensuite, quiconque atteint le port propre de l'app peut de nouveau utiliser ShellyLanMan.",
   "security.switchOff": "Désactiver",
   "security.off": "Le mot de passe est désactivé.",
   "security.wrongCurrent": "Le mot de passe actuel est incorrect.",
