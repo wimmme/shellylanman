@@ -844,6 +844,7 @@
   "security.new": "Nieuw wachtwoord",
   "security.again": "Nieuw wachtwoord nogmaals",
   "security.current": "Huidig wachtwoord",
+  "security.noCurrent": "Hier in Home Assistant is het huidige wachtwoord niet nodig om het te wijzigen of uit te zetten: je bent ingelogd in Home Assistant.",
   "security.strength": "Sterkte",
   "security.level.veryWeak": "zeer zwak",
   "security.level.weak": "zwak",

@@ -210,6 +210,21 @@ func TestIngressNeedsNoLogin(t *testing.T) {
 	if r := do(t, "GET", direct.URL+"/api/v1/settings", "", nil); r.StatusCode != 401 {
 		t.Fatalf("LAN port %d", r.StatusCode)
 	}
+	// A forgotten password in the app: change and switch off without the current one (P15-9).
+	if r := do(t, "PUT", ing.URL+"/api/v1/auth/password", `{"password":"Other pass 3"}`, jsonHdr); r.StatusCode != 200 {
+		t.Fatalf("change under ingress %d", r.StatusCode)
+	}
+	if h, _, _ := st.Secret(auth.PasswordSecret); !auth.Verify("Other pass 3", h) {
+		t.Fatal("not changed")
+	}
+	if r := do(t, "PUT", ing.URL+"/api/v1/auth/password", `{"password":""}`, jsonHdr); r.StatusCode != 200 {
+		t.Fatalf("off under ingress %d", r.StatusCode)
+	}
+	// On the LAN port the current password stays needed.
+	setPassword(t, st, "Secret pass")
+	if r := do(t, "PUT", direct.URL+"/api/v1/auth/password", `{"password":""}`, jsonHdr); r.StatusCode != 401 {
+		t.Fatalf("off on the LAN port without current %d", r.StatusCode)
+	}
 }
 
 func TestWrongPasswordsSlowDown(t *testing.T) {

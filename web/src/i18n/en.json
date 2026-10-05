@@ -844,6 +844,7 @@
   "security.new": "New password",
   "security.again": "New password again",
   "security.current": "Current password",
+  "security.noCurrent": "Here in Home Assistant the current password is not needed to change or switch it off: you are logged in to Home Assistant.",
   "security.strength": "Strength",
   "security.level.veryWeak": "very weak",
   "security.level.weak": "weak",

@@ -844,6 +844,7 @@
   "security.new": "Нова парола",
   "security.again": "Новата парола отново",
   "security.current": "Текуща парола",
+  "security.noCurrent": "Тук, в Home Assistant, текущата парола не е нужна, за да я смените или изключите: влезли сте в Home Assistant.",
   "security.strength": "Сила",
   "security.level.veryWeak": "много слаба",
   "security.level.weak": "слаба",

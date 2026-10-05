@@ -81,11 +81,15 @@ export async function securitySettings(body: HTMLElement, onChanged: () => void)
     });
     box.append(...intro, h('h3', {}, t('security.setTitle')), ...np.part, h('div', { class: 'row' }, save), err);
   } else {
+    // Under Home Assistant ingress the current password is not needed (P15-9):
+    // the user is logged in to Home Assistant, and a forgotten one cannot be reset otherwise.
+    const needCurrent = !status.ingress;
     const current = pwInput('secCurrent', 'current-password');
+    const haveCurrent = (): boolean => !needCurrent || current.value !== '';
     const change = h('button', { class: 'btn primary', disabled: true }, t('security.change'));
-    const np = newPassword(() => { change.disabled = !np.ok() || !current.value; });
-    current.addEventListener('input', () => { change.disabled = !np.ok() || !current.value; off.disabled = !current.value; });
-    const off = h('button', { class: 'btn danger', disabled: true }, t('security.switchOff'));
+    const np = newPassword(() => { change.disabled = !np.ok() || !haveCurrent(); });
+    current.addEventListener('input', () => { change.disabled = !np.ok() || !haveCurrent(); off.disabled = !haveCurrent(); });
+    const off = h('button', { class: 'btn danger', disabled: needCurrent }, t('security.switchOff'));
     const err = h('p', { class: 'sec-error', role: 'alert' });
     change.addEventListener('click', async () => {
       change.disabled = true;
@@ -97,7 +101,7 @@ export async function securitySettings(body: HTMLElement, onChanged: () => void)
         toast(t('security.changed'), 'info');
       } catch (e) {
         err.textContent = message(e);
-        change.disabled = !np.ok() || !current.value;
+        change.disabled = !np.ok() || !haveCurrent();
       }
     });
     off.addEventListener('click', async () => {
@@ -108,16 +112,16 @@ export async function securitySettings(body: HTMLElement, onChanged: () => void)
         onChanged();
       } catch (e) {
         err.textContent = message(e);
-        off.disabled = !current.value;
+        off.disabled = !haveCurrent();
       }
     });
     box.append(...intro,
       h('p', { class: 'sec-state' }, t('security.isOn')),
-      field(t('security.current'), current),
+      needCurrent ? field(t('security.current'), current) : h('p', { class: 'muted' }, t('security.noCurrent')),
       h('h3', {}, t('security.changeTitle')), ...np.part, h('div', { class: 'row' }, change),
       h('h3', {}, t('security.offTitle')), h('p', { class: 'muted' }, t('security.offText')), h('div', { class: 'row' }, off),
       err,
-      h('p', { class: 'muted' }, t('security.reset')));
+      ...(needCurrent ? [h('p', { class: 'muted' }, t('security.reset'))] : []));
   }
   body.append(box);
 }

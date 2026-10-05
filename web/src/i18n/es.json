@@ -844,6 +844,7 @@
   "security.new": "Nueva contraseña",
   "security.again": "Repite la nueva contraseña",
   "security.current": "Contraseña actual",
+  "security.noCurrent": "Aquí, en Home Assistant, no hace falta la contraseña actual para cambiarla o desactivarla: has iniciado sesión en Home Assistant.",
   "security.strength": "Fortaleza",
   "security.level.veryWeak": "muy débil",
   "security.level.weak": "débil",

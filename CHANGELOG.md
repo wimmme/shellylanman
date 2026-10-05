@@ -5,6 +5,18 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-10-05
+
+A forgotten UI password can be reset in the Home Assistant app too.
+
+### Fixed
+- Home Assistant app: in Home Assistant's sidebar the UI password can be changed or
+  switched off without the current one (you are logged in to Home Assistant there,
+  and the app cannot be started with `SHELLYLANMAN_RESET_PASSWORD`).
+
+### Changed
+- README and `docker-compose.yml`: how to reset a forgotten password.
+
 ## [0.9.0] - 2026-10-05
 
 Security: an optional password for the UI, two fixes found by code scanning, and

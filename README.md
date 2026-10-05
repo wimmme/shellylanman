@@ -138,6 +138,11 @@ again and `docker compose up -d` once more — otherwise every restart removes t
 password again. With `docker run`, start it once with `-e SHELLYLANMAN_RESET_PASSWORD=1`
 and then without it. Set a new password in Settings → Security.
 
+In the Home Assistant app there is no environment variable to set: open ShellyLanMan
+in Home Assistant's sidebar and change or switch the password off in Settings →
+Security — there the current password is not asked, you are logged in to Home
+Assistant.
+
 ### Why host networking
 
 ShellyLanMan finds devices with mDNS, which uses multicast on your LAN.

@@ -844,6 +844,7 @@
   "security.new": "Nouveau mot de passe",
   "security.again": "Confirmer le nouveau mot de passe",
   "security.current": "Mot de passe actuel",
+  "security.noCurrent": "Ici, dans Home Assistant, le mot de passe actuel n'est pas nécessaire pour le changer ou le désactiver : vous êtes connecté à Home Assistant.",
   "security.strength": "Robustesse",
   "security.level.veryWeak": "très faible",
   "security.level.weak": "faible",

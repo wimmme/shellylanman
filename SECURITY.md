@@ -32,7 +32,9 @@ ShellyLanMan is a LAN tool. It talks to your Shelly devices over plain HTTP
   - under Home Assistant ingress no password is asked: Home Assistant's own login
     applies there;
   - `/healthz` stays open and tells nothing;
-  - forgotten: start once with `SHELLYLANMAN_RESET_PASSWORD=1`.
+  - forgotten: start once with `SHELLYLANMAN_RESET_PASSWORD=1`; in the Home
+    Assistant app, change or switch it off in Home Assistant's sidebar, where the
+    current password is not asked.
 - **Cross-origin protection:** state-changing API requests and the WebSocket are
   refused when the browser's `Origin` does not match the host. Behind a reverse
   proxy with a different public name, list that name in `SHELLYLANMAN_ORIGINS`.

@@ -206,8 +206,10 @@ func (s *server) logout(w http.ResponseWriter, r *http.Request) {
 }
 
 // setPassword sets, changes (current needed) or removes (empty password,
-// current needed) the password. Every session ends; the browser that made
-// the change gets a new one, so it stays logged in.
+// current needed) the password. Under Home Assistant ingress the current
+// password is not asked: the user is logged in to Home Assistant, and the app
+// has no environment variable to reset a forgotten one (P15-9). Every session
+// ends; the browser that made the change gets a new one, so it stays logged in.
 func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		Current  string `json:"current"`
@@ -216,7 +218,7 @@ func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body) {
 		return
 	}
-	if hash := s.passwordHash(); hash != "" && !s.checkPassword(w, r, body.Current, hash) {
+	if hash := s.passwordHash(); hash != "" && !viaIngress(r) && !s.checkPassword(w, r, body.Current, hash) {
 		return
 	}
 	if body.Password == "" {

@@ -844,6 +844,7 @@
   "security.new": "新密码",
   "security.again": "再次输入新密码",
   "security.current": "当前密码",
+  "security.noCurrent": "在 Home Assistant 中修改或停用密码无需当前密码：你已登录 Home Assistant。",
   "security.strength": "强度",
   "security.level.veryWeak": "非常弱",
   "security.level.weak": "弱",
