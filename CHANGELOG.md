@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-10-05
+
+More room on the screen: the sidebar can be full or minimal, as in Home Assistant.
+
 ### Added
 - Full or minimal sidebar on wide screens, as in Home Assistant: the button at the top
   left switches between icons with labels and icons only (remembered per browser);
@@ -13,6 +17,9 @@ versions follow [Semantic Versioning](https://semver.org/).
 ### Fixed
 - Settings → Security in Home Assistant's sidebar no longer says that switching the
   password off needs the current one.
+
+### Changed
+- README: screenshots with the new sidebar header.
 
 ## [0.9.1] - 2026-10-05
 
