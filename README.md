@@ -140,6 +140,7 @@ needed before the UI is up:
 | `SHELLYLANMAN_LISTEN` | — | Listen address. Normally the port is set in Settings → General (default 3082); when this variable is set it wins and the setting is locked |
 | `SHELLYLANMAN_DATA` | `/data` | Data directory |
 | `SHELLYLANMAN_ORIGINS` | — | Extra allowed browser origins (host names), comma separated, e.g. your reverse proxy's name |
+| `SHELLYLANMAN_RESET_PASSWORD` | — | `1`: remove the UI password at start (forgotten password); remove the variable again afterwards |
 | `TZ` | `UTC` | Time zone for logs |
 
 ### What is stored in `/data`
@@ -150,6 +151,7 @@ needed before the UI is up:
 | `settings.json` | Application settings; device credentials encrypted |
 | `archive.json` | Device archive: known devices, last address, notes and keywords |
 | `deferred.json` | Deferred tasks for offline devices (passwords encrypted) |
+| `sessions.json` | Logged-in browsers when a UI password is set (only hashes of the session ids) |
 | `backups/<device>/*.sbk` | Device backups (newest N per device, setting) |
 | `firmware/` | Verified firmware files of the local download (cache) |
 
@@ -159,9 +161,9 @@ Chart readings are kept in memory only (24 hours). Details:
 ### Behind a reverse proxy
 
 Terminate TLS at the proxy, forward WebSocket upgrades for `/ws`, and set
-`SHELLYLANMAN_ORIGINS` to the public host name. UI authentication is off by
-default — add authentication at the proxy if the UI is reachable beyond your
-own LAN. See [`SECURITY.md`](SECURITY.md).
+`SHELLYLANMAN_ORIGINS` to the public host name. The UI password is off by
+default — set one in Settings → Security, or add authentication at the proxy,
+if the UI is reachable beyond your own LAN. See [`SECURITY.md`](SECURITY.md).
 
 ## 🧭 Features
 
@@ -285,8 +287,10 @@ Step by step: [`shellylanman-ha`](https://github.com/wimmme/shellylanman-ha#read
 - **Keep it on your LAN.** ShellyLanMan can change the configuration of your devices;
   do not expose it to the internet. For remote access use a reverse proxy with TLS
   **and** authentication.
-- **UI authentication is off by default** — anyone who can reach the port can use it.
-  A warning is logged at start and shown once per browser.
+- **Optional password** (Settings → Security, off by default) — one password, no user
+  name; a login page with *Stay logged in*; slower after five wrong tries. Without it
+  anyone who can reach the port can use ShellyLanMan; a warning is logged at start and
+  shown once per browser. In Home Assistant's sidebar Home Assistant's login applies.
 - **Secrets at rest** — device and Wi-Fi passwords are encrypted in `/data` with
   AES-256-GCM; they are never sent back to the browser.
 - **Browser protection** — same-origin checks on every state-changing request and the

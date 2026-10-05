@@ -172,6 +172,7 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 | A9 | Localisation: English and Italian label bundles | `resources/LabelsBundle*.properties` | — | — | **English + Dutch** string catalogues (Q21); Italian not planned | 3 | ⚠️ |
 | A10 | Online help links (manual, checklist, charts) | `UsnaOpenUrlAction`, `*ManualUrl` labels | — | — | **Own short in-app help** (Q22); usna.it linked from About | 8 | ✅ |
 | A11 | Keyboard shortcuts (filter, tabs, pause, macOS cmd-C/V/X) | various | — | — | Web equivalents where sensible | 8 | ✅ |
+| A12 | **NEW**: optional UI password — one password, no user name, off by default; login page with *Stay logged in*, log out, Settings → Security with rules and a strength indicator; slowdown after wrong tries; not asked under Home Assistant ingress; the MCP token opens the API; reset with `SHELLYLANMAN_RESET_PASSWORD=1` | — (not in original: a desktop program) | — | — | `internal/auth`, `httpapi/login.go`, login page — `DECISIONS.md` §24 | 15 | ✅ |
 
 ### 1.11 Command line
 

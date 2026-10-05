@@ -15,9 +15,24 @@ ShellyLanMan is a LAN tool. It talks to your Shelly devices over plain HTTP
 
 - **Do not expose it to the internet.** If you need remote access, put it behind
   a reverse proxy with TLS **and** authentication.
-- **UI authentication is off by default.** Anyone who can reach the port can use
-  it. A warning is logged at start and shown in the UI. (An optional admin
-  password is planned.)
+- **UI password: optional, off by default.** Without it anyone who can reach the
+  port can use it; a warning is logged at start and shown in the UI. Set one in
+  *Settings → Security*:
+  - one password, no user name; stored only as a PBKDF2-HMAC-SHA256 hash
+    (600 000 iterations, random salt), at least 8 characters with a capital;
+  - the UI, `/api/v1` and `/ws` then need a session: a random 256-bit id in an
+    `HttpOnly`, `SameSite=Strict` cookie (`Secure` over HTTPS, also behind a proxy
+    that sends `X-Forwarded-Proto: https`); `/data/sessions.json` keeps only hashes
+    of the ids; a session ends after 30 days without use, on log out, and for every
+    browser when the password changes;
+  - after five wrong passwords from one address each try waits longer (1 s, 2 s,
+    4 s … up to 60 s); wrong tries are logged with the address;
+  - programs (the Home Assistant integration) use the MCP token instead; a read-only
+    token can only read;
+  - under Home Assistant ingress no password is asked: Home Assistant's own login
+    applies there;
+  - `/healthz` stays open and tells nothing;
+  - forgotten: start once with `SHELLYLANMAN_RESET_PASSWORD=1`.
 - **Cross-origin protection:** state-changing API requests and the WebSocket are
   refused when the browser's `Origin` does not match the host. Behind a reverse
   proxy with a different public name, list that name in `SHELLYLANMAN_ORIGINS`.

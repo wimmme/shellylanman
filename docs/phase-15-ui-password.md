@@ -98,3 +98,16 @@ the sidebar without a second login, and the integration with the MCP token.
 | 15.3 | Login page, log out, Settings → Security (8 languages); browser test | M |
 | 15.4 | Reset (Q4), `SECURITY.md`, README, FEATURE_PARITY (new), CHANGELOG | S |
 | 15.5 | HA test instance: sidebar and integration; release on Wim's go | S |
+
+## 7. Status (2026-10-05)
+
+15.1–15.4 built and tested: `internal/auth` (unit tests), `httpapi/login.go`
+(every path of §2 with and without session, token and ingress; slowdown; reset),
+the login page and Settings → Security in the browser under the CSP
+(`tools/screenshots/check-login.py`, all ok). One difference from §3: the login is
+drawn by the app itself (the page and its files are open, the API is not), which
+keeps it under the same CSP and in the browser's language.
+
+Open (15.5): the Home Assistant integration sends the MCP token only to `/mcp` and
+for credentials, not on its other API calls; with a password set it needs the
+token on every call — see the question to Wim about the app's own integration.

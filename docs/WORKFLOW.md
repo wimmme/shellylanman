@@ -65,7 +65,10 @@ against the same setup. `check-editor.py` is such a browser test of the script
 editor (scripts in `tools/screenshots/script/`, served by the "Heat pump"
 simulator): styled under the CSP, following the theme, a slow device (4 s) and a
 failing read (HTTP 500). Run it after changes to the CSP, the editor or its
-libraries; unit tests do not render under the real CSP.
+libraries; unit tests do not render under the real CSP. The same goes for
+`check-blu.py` (relayed BLU rows and the Identify wizard, "Living room" relays a
+BLU device, `tools/screenshots/blu/`) and `check-login.py` (the UI password:
+Settings → Security, login, log out, switching off).
 
 Slow or failing devices: an optional `_behaviour.json` in a fixture directory
 delays or fails GET requests by URI, e.g.
