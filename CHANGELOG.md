@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-05
+
+Security: an optional password for the UI, two fixes found by code scanning, and
+the repository checked by Dependabot and CodeQL.
+
 ### Added
 - Optional password for the UI (*Settings → Security*, off by default): one password,
   no user name; a login page with *Stay logged in* (30 days since the last use);
@@ -17,6 +22,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 - Repository security: Dependabot (alerts, security and weekly version updates),
   CodeQL code scanning and private vulnerability reporting are on.
+- Updated: Go modules, Node 26 for building the web UI.
+- README: tests, CodeQL and PayPal badges.
 
 ### Fixed
 - Device login (digest): the realm, nonce and opaque a device sends are quoted
