@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/base64"
 	"errors"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -143,4 +144,18 @@ func callPrefix(d *sim.Device, prefix string) bool {
 		}
 	}
 	return false
+}
+
+// A device id never leads out of the device's own folder under backups.
+func TestBackupDirStaysInside(t *testing.T) {
+	m, _, _ := newService(t, nil)
+	base := filepath.Join(m.store.Dir(), "backups")
+	for _, id := range []string{"", ".", "..", "../x", `..\x`, "a:b", "AABBCC000001"} {
+		if d := m.backupDir(id); filepath.Dir(d) != base {
+			t.Errorf("backupDir(%q) = %s", id, d)
+		}
+	}
+	if _, err := m.BackupData("..", "settings.sbk"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("BackupData(..) = %v", err)
+	}
 }

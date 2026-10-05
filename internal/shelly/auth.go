@@ -70,6 +70,12 @@ func parseParams(s string) map[string]string {
 	return out
 }
 
+// quoted makes an RFC 9110 quoted-string: the realm, nonce and opaque come from
+// the device and must not be able to end the string or the header line.
+func quoted(s string) string {
+	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\r", "", "\n", "").Replace(s) + `"`
+}
+
 func sha256hex(s string) string {
 	h := sha256.Sum256([]byte(s))
 	return hex.EncodeToString(h[:])
@@ -92,10 +98,10 @@ func (d *digestState) header(method, uri, password string) string {
 	cnonce := hex.EncodeToString(b[:])
 	qop := "auth"
 	resp := DigestResponse(DigestUser, d.realm, password, method, uri, d.nonce, nc, cnonce, qop)
-	h := fmt.Sprintf(`Digest username="%s", realm="%s", nonce="%s", uri="%s", algorithm=SHA-256, response="%s", qop=%s, nc=%s, cnonce="%s"`,
-		DigestUser, d.realm, d.nonce, uri, resp, qop, nc, cnonce)
+	h := fmt.Sprintf(`Digest username=%s, realm=%s, nonce=%s, uri=%s, algorithm=SHA-256, response=%s, qop=%s, nc=%s, cnonce=%s`,
+		quoted(DigestUser), quoted(d.realm), quoted(d.nonce), quoted(uri), quoted(resp), qop, nc, quoted(cnonce))
 	if d.opaque != "" {
-		h += fmt.Sprintf(`, opaque="%s"`, d.opaque)
+		h += ", opaque=" + quoted(d.opaque)
 	}
 	return h
 }

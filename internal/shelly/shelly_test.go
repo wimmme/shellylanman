@@ -164,3 +164,16 @@ func TestPacingAndErrors(t *testing.T) {
 		t.Fatalf("closed server not offline: %v", err)
 	}
 }
+
+// A device's realm, nonce and opaque are quoted, so they cannot add header
+// parameters or lines of their own.
+func TestDigestHeaderQuotesDeviceValues(t *testing.T) {
+	d := &digestState{realm: `shelly", evil="1`, nonce: "n\r\nX-Injected: 1", opaque: `o\`}
+	h := d.header("GET", "/rpc/Shelly.GetStatus", "pw")
+	if strings.ContainsAny(h, "\r\n") || strings.Contains(h, `evil="1"`) {
+		t.Fatalf("header not quoted: %s", h)
+	}
+	if !strings.Contains(h, `realm="shelly\", evil=\"1"`) || !strings.HasSuffix(h, `opaque="o\\"`) {
+		t.Fatalf("header = %s", h)
+	}
+}

@@ -46,7 +46,11 @@ const stampLayout = "20060102-150405"
 var safeName = regexp.MustCompile(`^[\w\-.]+\.sbk$`)
 
 func (m *Devices) backupDir(id string) string {
-	return filepath.Join(m.store.Dir(), "backups", strings.NewReplacer("/", "_", ":", "_", "\\", "_").Replace(id))
+	dir := strings.NewReplacer("/", "_", ":", "_", "\\", "_").Replace(id)
+	if dir == "" || dir == "." || dir == ".." { // never the backups folder itself or /data
+		dir = "_"
+	}
+	return filepath.Join(m.store.Dir(), "backups", dir)
 }
 
 // Backups lists the stored backups of a device (all devices when id is empty), newest first.
