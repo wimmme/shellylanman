@@ -8,6 +8,8 @@
   "nav.settings": "Impostazioni",
   "nav.about": "Informazioni",
   "nav.menu": "Menu",
+  "nav.collapse": "Comprimi la barra laterale",
+  "nav.expand": "Espandi la barra laterale",
   "conn.ok": "Live",
   "conn.connecting": "Connessione…",
   "conn.down": "Disconnesso – nuovo tentativo",

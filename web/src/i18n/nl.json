@@ -8,6 +8,8 @@
   "nav.settings": "Instellingen",
   "nav.about": "Over",
   "nav.menu": "Menu",
+  "nav.collapse": "Zijbalk inklappen",
+  "nav.expand": "Zijbalk uitklappen",
   "conn.ok": "Live",
   "conn.connecting": "Verbinden…",
   "conn.down": "Verbinding verbroken – opnieuw proberen",

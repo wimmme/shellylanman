@@ -3,6 +3,7 @@ import { api, authApi, onLoginRequired, type FullSettings, type Status, type Upd
 import { initAppearance } from './appearance';
 import { h, icon, ICONS } from './dom';
 import { LANGUAGES, isLang, setLang, storedLang, t } from './i18n';
+import { navMode, setNavMode, toggled } from './navmode';
 import { aboutPage } from './pages/about';
 import { showLogin } from './pages/login';
 import { errorState, loadingState, type Page } from './pages/common';
@@ -61,15 +62,21 @@ function renderShell(): void {
   };
   const menuBtn = h('button', { class: 'menu-btn', 'aria-label': t('nav.menu'), title: t('nav.menu'), 'aria-controls': 'sidebar', 'aria-expanded': 'false',
     onclick: () => setOpen(!shell.classList.contains('nav-open')) }, icon(ICONS.menu, 22));
-  const shell = h('div', { class: 'shell' },
+  // Wide screens: full or minimal sidebar, as in Home Assistant (remembered per browser).
+  const mini = navMode() === 'mini';
+  const sideBtn = h('button', { class: 'side-btn', 'aria-controls': 'sidebar', 'aria-expanded': String(!mini),
+    title: t(mini ? 'nav.expand' : 'nav.collapse'), 'aria-label': t(mini ? 'nav.expand' : 'nav.collapse'),
+    onclick: () => { setNavMode(toggled(navMode())); renderShell(); } }, icon(mini ? ICONS.menu : ICONS.menuOpen, 22));
+  const logout = status.authEnabled && !status.ingress
+    ? h('button', { class: 'btn logout', title: t('login.logoutTip'), 'aria-label': t('login.logout'), onclick: async () => { await authApi.logout().catch(() => {}); location.reload(); } },
+      icon(ICONS.logout, 16), h('span', { class: 'label' }, t('login.logout')))
+    : null;
+  const shell = h('div', { class: mini ? 'shell nav-mini' : 'shell' },
     h('div', { class: 'nav-back', onclick: () => setOpen(false) }),
     h('aside', { class: 'sidebar', id: 'sidebar', onkeydown: (e: Event) => { if ((e as KeyboardEvent).key === 'Escape') { setOpen(false); menuBtn.focus(); } } },
-      h('div', { class: 'brand' }, h('img', { src: 'logo.png', alt: '', width: 28, height: 28 }), h('span', { class: 'label' }, t('app.name'))),
+      h('div', { class: 'brand' }, sideBtn, h('span', { class: 'label' }, t('app.name')), h('img', { src: 'logo.png', alt: '', width: 28, height: 28 })),
       h('nav', { 'aria-label': 'Main', onclick: () => setOpen(false) }, nav),
-      h('div', { class: 'nav-foot' }, version && (version === 'dev' ? 'dev' : `v${version}`),
-        status.authEnabled && !status.ingress
-          ? h('button', { class: 'btn logout', title: t('login.logoutTip'), onclick: async () => { await authApi.logout().catch(() => {}); location.reload(); } }, t('login.logout'))
-          : null)),
+      h('div', { class: 'nav-foot' }, h('span', { class: 'label' }, version && (version === 'dev' ? 'dev' : `v${version}`)), logout)),
     h('header', { class: 'topbar' }, menuBtn, h('h1', {}, t(page.title)), h('div', { class: 'spacer' }), connLabel()),
     main);
   app.replaceChildren(shell);

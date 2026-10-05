@@ -8,6 +8,8 @@
   "nav.settings": "设置",
   "nav.about": "关于",
   "nav.menu": "菜单",
+  "nav.collapse": "收起侧边栏",
+  "nav.expand": "展开侧边栏",
   "conn.ok": "实时",
   "conn.connecting": "正在连接…",
   "conn.down": "已断开 – 正在重试",

@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Full or minimal sidebar on wide screens, as in Home Assistant: the button at the top
+  left switches between icons with labels and icons only (remembered per browser);
+  the logo moved to the right of the name. On a phone the ☰ drawer stays.
+
 ### Fixed
 - Settings → Security in Home Assistant's sidebar no longer says that switching the
   password off needs the current one.

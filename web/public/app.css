@@ -9,7 +9,7 @@
  */
 
 /* ── Tokens and palettes (from MikroDash, MIT) ───────────────────────────── */
-:root{--bg-deep:#07090f;--bg-card:rgba(13,18,30,.85);--border:rgba(99,130,190,.13);--accent-rx:#38bdf8;--accent-tx:#34d399;--accent-warn:#f59f00;--accent-err:#f87171;--accent-ok:#4ade80;--accent-alt:#a78bfa;--accent-pink:#f472b6;--text-muted:rgba(148,163,190,.55);--text-main:rgba(200,215,240,.9);--font-mono:'JetBrains Mono',ui-monospace,monospace;--font-ui:'Oxanium',sans-serif;--nav-w:52px;--nav-w-open:190px;--nav-bg:rgba(5,8,16,.92);--topbar-bg:rgba(5,8,16,.70)}
+:root{--bg-deep:#07090f;--bg-card:rgba(13,18,30,.85);--border:rgba(99,130,190,.13);--accent-rx:#38bdf8;--accent-tx:#34d399;--accent-warn:#f59f00;--accent-err:#f87171;--accent-ok:#4ade80;--accent-alt:#a78bfa;--accent-pink:#f472b6;--text-muted:rgba(148,163,190,.55);--text-main:rgba(200,215,240,.9);--font-mono:'JetBrains Mono',ui-monospace,monospace;--font-ui:'Oxanium',sans-serif;--nav-w:52px;--nav-w-open:212px;--nav-bg:rgba(5,8,16,.92);--topbar-bg:rgba(5,8,16,.70)}
 html[data-theme="light"]{--bg-deep:#e8eaee;--bg-card:rgba(255,255,255,.92);--border:#b1bbcf;--accent-rx:#247ba1;--accent-tx:#20835f;--accent-alt:#6a3fb0;--accent-pink:#c2185b;--text-muted:#5f7196;--text-main:#1a2030;--nav-bg:rgba(232,234,239,.95);--topbar-bg:rgba(232,234,239,.85);--card-badge-bg:rgba(100,120,160,.15);--card-badge-color:rgba(40,60,100,.8);--card-badge-bg-active-blue:rgba(56,149,218,.18);--card-badge-color-active-blue:rgba(14,90,160,.9);--card-badge-bg-active-green:rgba(34,170,100,.15);--card-badge-color-active-green:rgba(20,120,70,.9)}
 html[data-palette="nord"]{--bg-deep:#1e2430;--bg-card:rgba(46,52,64,.9);--border:rgba(76,86,106,.4);--accent-rx:#88c0d0;--accent-tx:#a3be8c;--text-muted:rgba(216,222,233,.5);--text-main:rgba(236,239,244,.9);--nav-bg:rgba(25,30,40,.95);--topbar-bg:rgba(25,30,40,.8)}
 html[data-palette="nord"][data-theme="light"]{--bg-deep:#d8dce3;--bg-card:rgba(236,239,244,.95);--border:#a9afba;--accent-rx:#5e81ac;--accent-tx:#4b7a55;--text-muted:#626876;--text-main:rgba(46,52,64,.9);--nav-bg:rgba(204,210,220,.97);--topbar-bg:rgba(204,210,220,.9)}
@@ -196,6 +196,23 @@ dl.kv dd{margin:0}
   .menu-btn{display:inline-flex}
   .topbar{padding:0 12px}
   .main{padding:12px}
+}
+/* Wide screens: full or minimal sidebar, as in Home Assistant (navmode.ts) */
+.brand{padding:0 8px;gap:8px}
+.brand .label{flex:1;overflow:hidden;text-overflow:ellipsis}
+.side-btn{display:inline-flex;flex:none;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:0;border-radius:8px;background:none;color:var(--text-main);cursor:pointer}
+.side-btn:hover{background:rgba(99,130,190,.09)}
+.brand .side-btn svg{color:var(--text-main)}
+.btn.logout{display:inline-flex;align-items:center;gap:6px}
+@media (max-width:900px){.side-btn{display:none}.brand{padding:0 14px}}
+@media (min-width:901px){
+  .shell.nav-mini{grid-template-columns:var(--nav-w) 1fr}
+  .nav-mini .sidebar .label,.nav-mini .brand img{display:none}
+  .nav-mini .brand{padding:0;justify-content:center}
+  .nav-mini .nav a{justify-content:center;padding:9px 0}
+  .nav-mini .nav-foot{justify-content:center;padding:10px 0}
+  .nav-mini .nav a .nav-badge{position:absolute;top:3px;left:30px}
+  .nav-mini .nav a{position:relative}
 }
 @media (prefers-reduced-motion:reduce){.sidebar{transition:none}}
 @media print{

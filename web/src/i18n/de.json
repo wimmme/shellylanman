@@ -8,6 +8,8 @@
   "nav.settings": "Einstellungen",
   "nav.about": "Über",
   "nav.menu": "Menü",
+  "nav.collapse": "Seitenleiste einklappen",
+  "nav.expand": "Seitenleiste ausklappen",
   "conn.ok": "Live",
   "conn.connecting": "Verbinde…",
   "conn.down": "Getrennt – neuer Versuch",

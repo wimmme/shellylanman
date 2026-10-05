@@ -88,6 +88,8 @@ export function icon(path: string, size = 18): SVGSVGElement {
 export const ICONS = {
   logo: 'M13 2 4 14h7l-1 8 9-12h-7z',
   menu: 'M4 6h16M4 12h16M4 18h16',
+  menuOpen: 'M4 6h11M4 12h8M4 18h11M20 8l-4 4 4 4', // Home Assistant's "menu open": hamburger with an arrow
+  logout: 'M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10',
   devices: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   checklist: 'M9 11l2 2 4-4M5 4h14v16H5z',
   charts: 'M4 20V10M10 20V4M16 20v-7M22 20H2',

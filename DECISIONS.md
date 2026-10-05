@@ -598,3 +598,9 @@ Technical choices made while building discovery, within the scope agreed above.
 | P15-7 | A password has at least 8 characters and at least one capital letter; punctuation and digits are not required but raise the strength shown by a **strength indicator** while the password is chosen | Q6, Wim |
 | P15-8 | The Home Assistant app's loopback listener (`127.0.0.1:8097`, only in the app, only reachable on the Home Assistant host) also serves the integration's calls (`about`, `devices`, `checklist`, `backups`, `backup`, `scan`) without a token, so the integration in Home Assistant keeps working when a UI password is set; the integration falls back to it on "login required" when it talks to ShellyLanMan on the same host | Wim, 2026-10-05 (option A) |
 | P15-9 | Under Home Assistant ingress the password can be changed or switched off without the current one: the user is logged in to Home Assistant, and the app cannot get `SHELLYLANMAN_RESET_PASSWORD` | Wim, 2026-10-05 |
+
+## 25. Full or minimal sidebar (2026-10-05, Wim's proposal)
+
+| # | Decision | Source |
+|---|---|---|
+| P16-1 | On screens wider than 900px a button at the top left of the sidebar switches between full (icons and labels) and minimal (icons only, with tooltips), with Home Assistant's icons (hamburger with an arrow / hamburger); remembered per browser, full by default; the logo moves to the right of the name. Below 900px the ☰ drawer of P12-9 stays | Wim |

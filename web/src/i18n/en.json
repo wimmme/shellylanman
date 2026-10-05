@@ -8,6 +8,8 @@
   "nav.settings": "Settings",
   "nav.about": "About",
   "nav.menu": "Menu",
+  "nav.collapse": "Collapse sidebar",
+  "nav.expand": "Expand sidebar",
   "conn.ok": "Live",
   "conn.connecting": "Connecting…",
   "conn.down": "Disconnected – retrying",
