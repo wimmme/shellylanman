@@ -216,7 +216,20 @@ func TestDeviceCredentialsOnlyOnTrustedPaths(t *testing.T) {
 	if c.Password != "s3cret" {
 		t.Fatalf("local listener: %+v", c)
 	}
-	if r := do(t, "GET", local.URL+"/api/v1/devices", "", nil); r.StatusCode != 404 {
-		t.Fatalf("local listener serves only /mcp and the credentials: %d", r.StatusCode)
+	// With a UI password the integration's calls still work there (P15-8),
+	// and nothing else is served.
+	setPassword(t, st, "Secret pass")
+	for _, c := range []struct{ method, path string }{{"GET", "/api/v1/about"}, {"GET", "/api/v1/devices"}, {"GET", "/api/v1/backups"}} {
+		if r := do(t, c.method, local.URL+c.path, "", nil); r.StatusCode != 200 {
+			t.Fatalf("local listener %s: %d", c.path, r.StatusCode)
+		}
+	}
+	if r := do(t, "POST", local.URL+"/api/v1/scan", "{}", jsonHdr); r.StatusCode >= 300 {
+		t.Fatalf("local listener scan: %d", r.StatusCode)
+	}
+	for _, p := range []string{"/api/v1/settings", "/api/v1/credentials", "/api/v1/mcp", "/"} {
+		if r := do(t, "GET", local.URL+p, "", nil); r.StatusCode != 404 {
+			t.Fatalf("local listener serves %s: %d", p, r.StatusCode)
+		}
 	}
 }

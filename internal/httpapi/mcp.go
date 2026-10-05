@@ -36,9 +36,11 @@ func (s *server) mcpRoutes(mux *http.ServeMux) {
 }
 
 // MCPLocal is the handler of the Home Assistant app's token-less MCP listener
-// on 127.0.0.1 (DECISIONS Q5), only from the loopback address: /mcp, and the
-// device credentials for the integration (DECISIONS P13-3) — this listener
-// exists only in the Home Assistant app and is reachable only on its host.
+// on 127.0.0.1 (DECISIONS Q5), only from the loopback address: /mcp, the
+// device credentials for the integration (DECISIONS P13-3), and the calls the
+// integration makes, so it keeps working when a UI password is set (P15-8) —
+// this listener exists only in the Home Assistant app and is reachable only on
+// its host.
 func MCPLocal(cfg Config) http.Handler {
 	if cfg.Log == nil {
 		cfg.Log = slog.Default()
@@ -51,6 +53,13 @@ func MCPLocal(cfg Config) http.Handler {
 	local := http.NewServeMux()
 	local.Handle("/mcp", srv)
 	local.HandleFunc("GET /api/v1/devices/{id}/credentials", s.writeCredentials)
+	// The integration's calls (shellylanman-ha COMPATIBILITY.md).
+	local.HandleFunc("GET /api/v1/about", s.about)
+	local.HandleFunc("GET /api/v1/devices", s.listDevices)
+	local.HandleFunc("GET /api/v1/checklist", s.getChecklist)
+	local.HandleFunc("GET /api/v1/backups", s.listBackups)
+	local.HandleFunc("POST /api/v1/backup", s.backup)
+	local.HandleFunc("POST /api/v1/scan", s.rescan)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host, _, _ := net.SplitHostPort(r.RemoteAddr)
 		if ip := net.ParseIP(host); ip == nil || !ip.IsLoopback() {
