@@ -5,6 +5,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Optional password for the UI (*Settings → Security*, off by default): one password,
+  no user name; a login page with *Stay logged in* (30 days since the last use);
+  slower after five wrong tries; not asked under Home Assistant's sidebar, where
+  Home Assistant's login applies. Programs use the MCP token for the API.
+  Forgotten: start once with `SHELLYLANMAN_RESET_PASSWORD=1`.
+
 ### Changed
 - Repository security: Dependabot (alerts, security and weekly version updates),
   CodeQL code scanning and private vulnerability reporting are on.

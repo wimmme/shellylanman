@@ -48,6 +48,7 @@ type Config struct {
 
 type server struct {
 	Config
+	guard *guard
 }
 
 // New returns the complete HTTP handler.
@@ -55,9 +56,10 @@ func New(cfg Config) http.Handler {
 	if cfg.Log == nil {
 		cfg.Log = slog.Default()
 	}
-	s := &server{Config: cfg}
+	s := &server{Config: cfg, guard: newGuard(cfg.Store, cfg.Log)}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", s.health)
+	s.loginRoutes(mux)
 	s.aboutRoutes(mux)
 	mux.HandleFunc("GET /api/v1/status", s.status)
 	mux.HandleFunc("GET /api/v1/settings", s.getSettings)
@@ -68,7 +70,7 @@ func New(cfg Config) http.Handler {
 	s.mcpRoutes(mux)
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)
-	return securityHeaders(s.sameOrigin(mux))
+	return securityHeaders(s.sameOrigin(s.requireLogin(mux)))
 }
 
 // health is unauthenticated by design and says nothing about the version.
@@ -79,7 +81,8 @@ func (s *server) health(w http.ResponseWriter, r *http.Request) {
 // Status tells the UI what it needs before anything else.
 type Status struct {
 	FirstRunDone bool `json:"firstRunDone"`
-	AuthEnabled  bool `json:"authEnabled"`
+	AuthEnabled  bool `json:"authEnabled"` // a UI password is set (DECISIONS §24)
+	LoggedIn     bool `json:"loggedIn"`    // this browser may use the UI (also: no password, or ingress)
 	Clients      int  `json:"clients"`
 	// Ingress: this request came through the Home Assistant ingress (the
 	// user is logged in to Home Assistant; the page is under a path prefix).
@@ -87,12 +90,14 @@ type Status struct {
 }
 
 func (s *server) status(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, Status{
-		FirstRunDone: s.Store.Settings().FirstRunDone,
-		AuthEnabled:  false, // optional UI password: not built yet
-		Clients:      s.Hub.Clients(),
-		Ingress:      viaIngress(r),
-	})
+	enabled := s.authEnabled()
+	st := Status{AuthEnabled: enabled, Ingress: viaIngress(r)}
+	st.LoggedIn = !enabled || st.Ingress || s.loggedIn(w, r) || s.tokenAllows(r)
+	if st.LoggedIn { // nothing else for a browser that still has to log in
+		st.FirstRunDone = s.Store.Settings().FirstRunDone
+		st.Clients = s.Hub.Clients()
+	}
+	writeJSON(w, http.StatusOK, st)
 }
 
 func (s *server) getSettings(w http.ResponseWriter, r *http.Request) {

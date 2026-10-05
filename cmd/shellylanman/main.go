@@ -10,6 +10,7 @@
 //	-ingress  SHELLYLANMAN_INGRESS  Home Assistant app: ingress listener address
 //	-ingress-from SHELLYLANMAN_INGRESS_FROM  the Supervisor's address (172.30.32.2)
 //	-mcp-local SHELLYLANMAN_MCP_LOCAL  Home Assistant app: token-less MCP on a loopback address
+//	SHELLYLANMAN_RESET_PASSWORD=1   remove the UI password at start (forgotten password)
 //	-healthcheck                    probe /healthz of a running server and exit (used by Docker)
 package main
 
@@ -29,6 +30,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wimmme/shellylanman/internal/auth"
 	"github.com/wimmme/shellylanman/internal/httpapi"
 	"github.com/wimmme/shellylanman/internal/hub"
 	"github.com/wimmme/shellylanman/internal/listen"
@@ -82,7 +84,17 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 		devices.SetViewers(n)
 	})
 
-	log.Warn("UI authentication is off: anyone who can reach this port can use ShellyLanMan. Keep it on a trusted LAN or behind a reverse proxy with authentication.")
+	if os.Getenv("SHELLYLANMAN_RESET_PASSWORD") == "1" { // forgotten password (DECISIONS P15-5)
+		if err := httpapi.ResetPassword(st); err != nil {
+			return fmt.Errorf("reset password: %w", err)
+		}
+		log.Warn("UI password removed (SHELLYLANMAN_RESET_PASSWORD=1): set a new one in Settings → Security and remove the variable")
+	}
+	if pw, _, _ := st.Secret(auth.PasswordSecret); pw == "" {
+		log.Warn("UI authentication is off: anyone who can reach this port can use ShellyLanMan. Set a password in Settings → Security, keep it on a trusted LAN, or put it behind a reverse proxy with authentication.")
+	} else {
+		log.Info("UI password is on")
+	}
 
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
