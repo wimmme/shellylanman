@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.4] - 2026-10-06
+
+A Log page: see ShellyLanMan's own log in the browser.
+
 ### Added
 - **Log** page, above Settings: ShellyLanMan's own log — the last 1000 lines of this run,
   kept in memory, live while the page is open. Filter by level (information and up,
