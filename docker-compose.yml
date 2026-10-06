@@ -10,6 +10,7 @@
 services:
   shellylanman:
     image: ghcr.io/wimmme/shellylanman:latest
+    # Only used when you build from a clone of the repository (docker compose up -d --build).
     build: .
     container_name: shellylanman
     network_mode: host

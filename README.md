@@ -69,17 +69,54 @@ eight languages. No desktop, no VNC, no Java, no cloud.
 
 ## 🚀 Quick start
 
-Linux with Docker Engine. `docker-compose.yml`:
+Linux with Docker Engine. Save this as `docker-compose.yml` (it is the
+[`docker-compose.yml`](docker-compose.yml) of this repository; every option is in it,
+the optional ones in comments):
 
 ```yaml
+# ShellyLanMan — compose file. Every option is listed below; the ones in
+# comments are optional.
+#
+# Host networking is the default on purpose: mDNS discovery needs multicast on
+# your LAN, which Docker's bridge network does not pass (ARCHITECTURE.md §2.5).
+# Linux only.
+#
+# Start / apply a change:  docker compose up -d
+# Update:                  docker compose pull && docker compose up -d
 services:
   shellylanman:
     image: ghcr.io/wimmme/shellylanman:latest
+    # Only used when you build from a clone of the repository (docker compose up -d --build).
+    build: .
     container_name: shellylanman
     network_mode: host
+    # Bridge mode instead (no mDNS discovery; use an IP-range scan): remove
+    # network_mode above and map the port, host port on the left:
+    # ports:
+    #   - "3082:3082"
     volumes:
       - data:/data
+    environment:
+      - TZ=${TZ:-UTC}                      # time zone of the logs and the UI
+      # Port of the web UI and API (default 3082). Settings → General → Ports
+      # shows it; change it here and run `docker compose up -d`.
+      # - SHELLYLANMAN_PORT=3082
+      # Extra allowed browser origins: the host name(s) of your reverse proxy,
+      # comma separated.
+      # - SHELLYLANMAN_ORIGINS=shelly.example.net
+      # Data directory inside the container (default /data, the volume above).
+      # - SHELLYLANMAN_DATA=/data
+      # Forgotten UI password: uncomment, `docker compose up -d` once (the password
+      # is removed, see the log), comment it out again and `docker compose up -d`.
+      # - SHELLYLANMAN_RESET_PASSWORD=1
+      # Set by the Home Assistant app only — do not set them here:
+      # SHELLYLANMAN_INGRESS, SHELLYLANMAN_INGRESS_FROM, SHELLYLANMAN_MCP_LOCAL
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   data:
