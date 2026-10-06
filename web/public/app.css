@@ -377,3 +377,7 @@ a[target="_blank"]::after,.btn.ext::after{content:"↗";margin-left:.25em;font-s
 .sec-rules li.ok::marker{content:"✓ "}
 .sec-state{color:var(--accent-ok)}
 .security h3{margin:18px 0 8px;font-size:.95rem}
+/* Settings → General: ports and where they are set (P17-1) */
+.server-ports h3{margin:18px 0 8px;font-size:.95rem}
+.server-ports table.data th{position:static;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--text-main);background:none;white-space:nowrap}
+.server-ports table.data td.muted{white-space:normal}

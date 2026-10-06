@@ -63,3 +63,34 @@ func (c *Client) Announce(ctx context.Context, service string, config map[string
 	}
 	return nil
 }
+
+// IngressPort asks the Supervisor which port it chose for this app's ingress
+// (config.yaml "ingress_port: 0": a free port, so it never clashes with another
+// app on the host network).
+func (c *Client) IngressPort(ctx context.Context) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.Base+"/addons/self/info", nil)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.Token)
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("app info: HTTP %d", resp.StatusCode)
+	}
+	var body struct {
+		Data struct {
+			IngressPort int `json:"ingress_port"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		return 0, fmt.Errorf("app info: %w", err)
+	}
+	if body.Data.IngressPort < 1 || body.Data.IngressPort > 65535 {
+		return 0, fmt.Errorf("app info: no ingress port (%d)", body.Data.IngressPort)
+	}
+	return body.Data.IngressPort, nil
+}

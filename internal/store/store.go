@@ -63,9 +63,6 @@ type Settings struct {
 	UpdateCheck string `json:"updateCheck"`
 	// SkipVersion: a release the user chose to skip.
 	SkipVersion string `json:"skipVersion,omitempty"`
-	// Port is the web server's port (0 = default 3082). SHELLYLANMAN_LISTEN
-	// overrides it. Changed only through PUT /api/v1/server (package listen).
-	Port int `json:"port,omitempty"`
 	// MCP is the Model Context Protocol server at /mcp (package mcp); its
 	// bearer token is the secret MCPTokenSecret.
 	MCP MCPSettings `json:"mcp"`
@@ -162,9 +159,6 @@ func (s Settings) Validate() error {
 	}
 	if s.MCP.Access != "" && s.MCP.Access != "read" && s.MCP.Access != "control" && s.MCP.Access != "configure" {
 		return errors.New("MCP access must be read, control or configure")
-	}
-	if s.Port < 0 || s.Port > 65535 {
-		return errors.New("port must be 1–65535")
 	}
 	if s.Scan.ConfigTics < 1 || s.Scan.ConfigTics > 1000 {
 		return errors.New("configuration refresh must be 1–1000 status refreshes")

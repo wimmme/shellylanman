@@ -153,22 +153,49 @@ with an IP-range scan. Details: [`ARCHITECTURE.md` §2.5](ARCHITECTURE.md).
 
 ### Configuration
 
-Everything is set in the browser. A few environment variables exist for things
-needed before the UI is up:
+Everything is set in the browser, except what is needed before the UI is up. In
+Docker that is a few environment variables — all of them are in
+[`docker-compose.yml`](docker-compose.yml), the optional ones in comments; in the Home
+Assistant app it is the app's options (Configuration tab), which set the same
+variables. *Settings → General → Ports* shows the ports in use and where they are set.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SHELLYLANMAN_LISTEN` | — | Listen address. Normally the port is set in Settings → General (default 3082); when this variable is set it wins and the setting is locked |
-| `SHELLYLANMAN_DATA` | `/data` | Data directory |
+| `SHELLYLANMAN_PORT` | `3082` | Port of the web UI and API. Home Assistant app: option `port` |
 | `SHELLYLANMAN_ORIGINS` | — | Extra allowed browser origins (host names), comma separated, e.g. your reverse proxy's name |
+| `SHELLYLANMAN_DATA` | `/data` | Data directory |
 | `SHELLYLANMAN_RESET_PASSWORD` | — | `1`: remove the UI password at start (forgotten password); remove the variable again afterwards |
 | `TZ` | `UTC` | Time zone for logs |
+
+Set by the Home Assistant app's start script only (do not set them yourself):
+
+| Variable | From | Meaning |
+|---|---|---|
+| `SHELLYLANMAN_INGRESS` | — | Listener for Home Assistant's sidebar, on a free port the Supervisor chooses |
+| `SHELLYLANMAN_INGRESS_FROM` | — | The only address that listener accepts (the Supervisor) |
+| `SHELLYLANMAN_MCP_LOCAL` | options `mcp_local`, `mcp_local_port` (8097) | Token-less access on 127.0.0.1 for Home Assistant on the same host (MCP, the integration) |
+
+### Shellys with a password
+
+Supported, as in ShellyScanner. Protected Shellys show up as **not logged** until
+ShellyLanMan knows their password:
+
+- **One password for all** — *Settings → Network → Restricted login*: the user (Gen1;
+  Gen2+ always use `admin`) and password ShellyLanMan tries on every protected Shelly.
+- **Per device** — tick the device and press **Login** (the *Reload* button becomes
+  *Login* for a device that is not logged in): its own password, which wins over the
+  default.
+
+The passwords are stored encrypted in `/data` and never sent back to the browser. With
+the Home Assistant integration, *Add Shellys to Home Assistant* passes them on to Home
+Assistant's Shelly integration, so you do not type them twice.
 
 ### What is stored in `/data`
 
 | File | Content |
 |---|---|
 | `secret.key` | Random key created on first start; encrypts secrets in `settings.json` |
+| `listen.port` | The port in use, for Docker's health check |
 | `settings.json` | Application settings; device credentials encrypted |
 | `archive.json` | Device archive: known devices, last address, notes and keywords |
 | `deferred.json` | Deferred tasks for offline devices (passwords encrypted) |
@@ -225,7 +252,7 @@ if you switch it on (off by default). No telemetry.
 | **Charts** | Power, energy, voltage, temperature, RSSI and more for the selected devices, with 24 hours of history, zoom, pause and CSV export. |
 | **Firmware** | Current, stable and beta firmware of the selected devices (or all), update with live progress, and the QR code for the local download. |
 | **Deferred** | Actions for offline devices, run when the device comes back. |
-| **Settings** | Scan mode and IP ranges, archive, device credentials, backups, web server port, script editor, appearance (palette, font, how device pages open) and language. |
+| **Settings** | Scan mode and IP ranges, archive, device credentials, backups, the ports in use and where they are set, script editor, appearance (palette, font, how device pages open) and language. |
 | **About** | What is running (version, runtime, uptime), release notes, dependencies with their licences, credits and help. |
 
 ## 📸 Screenshots

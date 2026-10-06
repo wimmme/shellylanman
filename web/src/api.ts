@@ -19,7 +19,11 @@ export interface About {
   runtime: { go: string; os: string; arch: string; kernel?: string; memMB: number; data: string };
   basedOn: Credit[]; credits: Credit[]; deps: Dep[]; notice: string; languages: string[]; donate: { name: string; url: string }[];
 }
-export interface ServerInfo { port: number; fixed: boolean }
+/** Where ShellyLanMan listens and where that is set (DECISIONS P17-1); shown, not changed. */
+export interface ServerInfo {
+  port: number; source: 'default' | 'env' | 'app';
+  app: boolean; ingress?: string; mcpLocal?: string;
+}
 export interface MCPInfo { enabled: boolean; access: 'read' | 'control' | 'configure'; hasToken: boolean; token?: string }
 
 export class ApiError extends Error {
@@ -55,7 +59,6 @@ export const api = {
   updateSettings: (patch: Partial<Settings>) => request<Settings>('PUT', '/settings', patch),
   update: () => request<UpdateStatus>('GET', '/update'),
   server: () => request<ServerInfo>('GET', '/server'),
-  moveServer: (port: number) => request<ServerInfo>('PUT', '/server', { port, confirm: true }),
   mcp: () => request<MCPInfo>('GET', '/mcp'),
   setMCP: (patch: { enabled?: boolean; access?: MCPInfo['access'] }) => request<MCPInfo>('PUT', '/mcp', patch),
   newMCPToken: () => request<MCPInfo>('POST', '/mcp/token', {}),

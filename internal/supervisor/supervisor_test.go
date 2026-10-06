@@ -47,3 +47,23 @@ func TestAnnounce(t *testing.T) {
 		t.Fatal("error status not reported")
 	}
 }
+
+func TestIngressPort(t *testing.T) {
+	answer := `{"result":"ok","data":{"name":"ShellyLanMan","ingress":true,"ingress_port":62487}}`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/addons/self/info" || r.Header.Get("Authorization") != "Bearer tok" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Write([]byte(answer))
+	}))
+	defer srv.Close()
+	c := &Client{Base: srv.URL, Token: "tok", HTTP: srv.Client()}
+	if p, err := c.IngressPort(context.Background()); err != nil || p != 62487 {
+		t.Fatalf("port %d %v", p, err)
+	}
+	answer = `{"result":"ok","data":{"ingress_port":0}}`
+	if _, err := c.IngressPort(context.Background()); err == nil {
+		t.Fatal("port 0 accepted")
+	}
+}

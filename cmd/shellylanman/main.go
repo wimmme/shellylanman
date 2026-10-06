@@ -3,11 +3,12 @@
 // Configuration that must be known before the UI is up comes from flags or
 // environment variables; everything else is set in the browser.
 //
-//	-listen   SHELLYLANMAN_LISTEN   address to listen on; when set, the port can no
-//	                                longer be changed in the settings (default ":3082")
+//	-port     SHELLYLANMAN_PORT     port of the web UI (default 3082); the Home Assistant
+//	                                app sets it from its option "port" (DECISIONS P17-1)
 //	-data     SHELLYLANMAN_DATA     data directory (default "/data")
 //	-origins  SHELLYLANMAN_ORIGINS  extra allowed Origin hosts, comma separated
-//	-ingress  SHELLYLANMAN_INGRESS  Home Assistant app: ingress listener address
+//	-ingress  SHELLYLANMAN_INGRESS  Home Assistant app: ingress listener address; port 0 =
+//	                                the port the Supervisor chose (ingress_port: 0)
 //	-ingress-from SHELLYLANMAN_INGRESS_FROM  the Supervisor's address (172.30.32.2)
 //	-mcp-local SHELLYLANMAN_MCP_LOCAL  Home Assistant app: token-less MCP on a loopback address
 //	SHELLYLANMAN_RESET_PASSWORD=1   remove the UI password at start (forgotten password)
@@ -16,7 +17,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -44,28 +44,28 @@ import (
 )
 
 func main() {
-	fixed := flag.String("listen", env("SHELLYLANMAN_LISTEN", ""), "address to listen on (default: the port in the settings, else :3082)")
+	port := flag.String("port", env("SHELLYLANMAN_PORT", ""), "port of the web UI (default 3082)")
 	dataDir := flag.String("data", env("SHELLYLANMAN_DATA", "/data"), "data directory")
 	origins := flag.String("origins", env("SHELLYLANMAN_ORIGINS", ""), "extra allowed Origin hosts, comma separated")
-	ingress := flag.String("ingress", env("SHELLYLANMAN_INGRESS", ""), "Home Assistant app: address of the ingress listener, e.g. 172.30.32.1:8099")
+	ingress := flag.String("ingress", env("SHELLYLANMAN_INGRESS", ""), "Home Assistant app: address of the ingress listener, e.g. 172.30.32.1:0 (0: the port the Supervisor chose)")
 	ingressFrom := flag.String("ingress-from", env("SHELLYLANMAN_INGRESS_FROM", "172.30.32.2"), "the only client address the ingress listener accepts (the Supervisor)")
 	mcpLocal := flag.String("mcp-local", env("SHELLYLANMAN_MCP_LOCAL", ""), "Home Assistant app: token-less MCP listener on a loopback address, e.g. 127.0.0.1:8097")
 	healthcheck := flag.Bool("healthcheck", false, "probe /healthz of a running server and exit")
 	flag.Parse()
 
 	if *healthcheck {
-		os.Exit(probe(listen.Addr(*fixed, savedPort(*dataDir))))
+		os.Exit(probe(*dataDir))
 	}
 
 	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(log)
-	if err := run(log, *fixed, *dataDir, splitList(*origins), *ingress, *ingressFrom, *mcpLocal); err != nil {
+	if err := run(log, *port, *dataDir, splitList(*origins), *ingress, *ingressFrom, *mcpLocal); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ingressFrom, mcpLocal string) error {
+func run(log *slog.Logger, port, dataDir string, origins []string, ingress, ingressFrom, mcpLocal string) error {
 	log.Info("starting ShellyLanMan", "version", version.Version, "commit", version.Commit, "data", dataDir)
 
 	st, err := store.Open(dataDir)
@@ -124,26 +124,43 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 			}
 		}
 	}
-	savePort := func(port int) error {
-		_, err := st.Update(func(s *store.Settings) { s.Port = port })
-		if err == nil {
-			go announce(port) // the integration follows the new address
-		}
-		return err
-	}
-	ln, err := listen.New(srv, listen.Addr(fixed, st.Settings().Port), fixed != "", savePort, log)
+	// Where the web UI listens: one setting (DECISIONS P17-1), shown on the settings page.
+	addr, source, err := listen.Resolve(port, sup != nil)
 	if err != nil {
 		return err
 	}
-	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Listener: ln, Static: web.Files(), Origins: origins, Log: log})
-	if err := ln.Start(); err != nil {
+	where := "set another one with SHELLYLANMAN_PORT (docker-compose.yml or docker run -e)"
+	if sup != nil {
+		where = "set another one in Home Assistant: Settings → Apps → ShellyLanMan → Configuration → port"
+	}
+	ln, err := listen.New(srv, addr, log)
+	if err != nil {
 		return err
 	}
+	ports := httpapi.Ports{Source: source, App: sup != nil}
+	if ingress != "" { // Home Assistant app: the port the Supervisor chose (ingress_port: 0)
+		if host, p, err := net.SplitHostPort(ingress); err == nil && p == "0" && sup != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			ip, err := sup.IngressPort(ctx)
+			cancel()
+			if err != nil {
+				return fmt.Errorf("ingress port from the Supervisor: %w", err)
+			}
+			ingress = net.JoinHostPort(host, fmt.Sprint(ip))
+		}
+		ports.Ingress = ingress
+	}
+	ports.MCPLocal = mcpLocal
+	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Port: ln.Port, Ports: ports, Static: web.Files(), Origins: origins, Log: log})
+	if _, err := ln.Start(); err != nil {
+		return listen.InUse("web UI", addr, where, err)
+	}
+	writeAddr(dataDir, ln.Port(), log)
 	var ingressSrv *http.Server
 	if ingress != "" { // Home Assistant app: a listener only the Supervisor can use
 		ingressLn, err := net.Listen("tcp", ingress)
 		if err != nil {
-			return fmt.Errorf("ingress listener: %w", err)
+			return listen.InUse("ingress (Home Assistant's sidebar)", ingress, "restart the app so the Supervisor chooses a free one", err)
 		}
 		ingressSrv = &http.Server{Handler: httpapi.Ingress(srv.Handler, ingressFrom), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 120 * time.Second}
 		go func() {
@@ -161,9 +178,9 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 		}
 		mcpLn, err := net.Listen("tcp", mcpLocal)
 		if err != nil {
-			return fmt.Errorf("local MCP listener: %w", err)
+			return listen.InUse("local MCP listener", mcpLocal, "set another one in Home Assistant: Settings → Apps → ShellyLanMan → Configuration → mcp_local_port", err)
 		}
-		mcpLocalSrv = &http.Server{Handler: httpapi.MCPLocal(httpapi.Config{Store: st, Devices: devices, Log: log}), ReadHeaderTimeout: 10 * time.Second}
+		mcpLocalSrv = &http.Server{Handler: httpapi.MCPLocal(httpapi.Config{Store: st, Devices: devices, Ports: ports, Log: log}), ReadHeaderTimeout: 10 * time.Second}
 		go func() {
 			if err := mcpLocalSrv.Serve(mcpLn); err != nil && !errors.Is(err, http.ErrServerClosed) {
 				log.Error("local MCP listener", "err", err)
@@ -171,7 +188,7 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 		}()
 		log.Info("local MCP listener (no token, loopback only)", "listen", mcpLocal)
 	}
-	go announce(ln.Info().Port)
+	go announce(ln.Port())
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	devices.Start(ctx)
@@ -201,18 +218,25 @@ func run(log *slog.Logger, fixed, dataDir string, origins []string, ingress, ing
 	return nil
 }
 
-// probe returns 0 if the server on listen answers /healthz with 200.
-func probe(listen string) int {
-	host, port, err := net.SplitHostPort(listen)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "healthcheck:", err)
-		return 1
+// addrFile holds the port the running server listens on, for the health check:
+// Docker runs it with the container's environment, which does not have what
+// the Home Assistant app's start script exported.
+const addrFile = "listen.port"
+
+func writeAddr(dataDir string, port int, log *slog.Logger) {
+	if err := os.WriteFile(filepath.Join(dataDir, addrFile), []byte(fmt.Sprint(port)), 0o600); err != nil {
+		log.Warn("health check port file", "err", err)
 	}
-	if host == "" || host == "0.0.0.0" || host == "::" {
-		host = "127.0.0.1"
+}
+
+// probe returns 0 if the running server answers /healthz with 200.
+func probe(dataDir string) int {
+	port := strings.TrimSpace(readFile(filepath.Join(dataDir, addrFile)))
+	if port == "" {
+		port = fmt.Sprint(listen.DefaultPort)
 	}
 	c := http.Client{Timeout: 3 * time.Second}
-	resp, err := c.Get("http://" + net.JoinHostPort(host, port) + "/healthz")
+	resp, err := c.Get("http://" + net.JoinHostPort("127.0.0.1", port) + "/healthz")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "healthcheck:", err)
 		return 1
@@ -225,18 +249,9 @@ func probe(listen string) int {
 	return 0
 }
 
-// savedPort reads the port from settings.json without opening the store
-// (the health check has no business with the secret key). 0 if unknown.
-func savedPort(dataDir string) int {
-	b, err := os.ReadFile(filepath.Join(dataDir, "settings.json"))
-	if err != nil {
-		return 0
-	}
-	var s struct {
-		Port int `json:"port"`
-	}
-	_ = json.Unmarshal(b, &s)
-	return s.Port
+func readFile(path string) string {
+	b, _ := os.ReadFile(path)
+	return string(b)
 }
 
 func env(key, def string) string {

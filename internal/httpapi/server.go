@@ -1,58 +1,33 @@
 package httpapi
 
-import (
-	"errors"
-	"net/http"
+import "net/http"
 
-	"github.com/wimmme/shellylanman/internal/listen"
-	"github.com/wimmme/shellylanman/internal/service"
-)
+// Ports tells the settings page where ShellyLanMan listens and where that is
+// set (DECISIONS P17-1): the page shows it, it does not change it.
+type Ports struct {
+	Source   string `json:"source"`             // package listen: default, env (SHELLYLANMAN_PORT), app
+	App      bool   `json:"app"`                // running as the Home Assistant app
+	Ingress  string `json:"ingress,omitempty"`  // the app's ingress listener (chosen by the Supervisor)
+	MCPLocal string `json:"mcpLocal,omitempty"` // the app's token-less loopback listener
+}
 
-// Listener is the web server's own socket (package listen).
-type Listener interface {
-	Info() listen.Info
-	Move(port int) error
+// ServerInfo is GET /api/v1/server.
+type ServerInfo struct {
+	Port int `json:"port"`
+	Ports
 }
 
 func (s *server) serverRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/server", s.getServer)
-	mux.HandleFunc("PUT /api/v1/server", s.putServer)
 }
 
 func (s *server) getServer(w http.ResponseWriter, r *http.Request) {
-	if s.Listener == nil {
-		writeJSON(w, http.StatusOK, listen.Info{Fixed: true})
-		return
+	info := ServerInfo{Ports: s.Ports}
+	if s.Port != nil {
+		info.Port = s.Port()
 	}
-	writeJSON(w, http.StatusOK, s.Listener.Info())
-}
-
-// putServer moves the web server to another port. The old port keeps working
-// for a few seconds, so this response still arrives; the browser then goes to
-// the new port. It needs confirm, like other actions that cut the UI off.
-func (s *server) putServer(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Port    int  `json:"port"`
-		Confirm bool `json:"confirm"`
+	if info.Source == "" {
+		info.Source = "default"
 	}
-	if !readJSON(w, r, &body) {
-		return
-	}
-	if !body.Confirm {
-		writeError(w, http.StatusPreconditionRequired, service.ErrConfirm.Error())
-		return
-	}
-	if s.Listener == nil {
-		writeError(w, http.StatusConflict, listen.ErrFixed.Error())
-		return
-	}
-	if err := s.Listener.Move(body.Port); err != nil {
-		code := http.StatusBadRequest
-		if errors.Is(err, listen.ErrFixed) {
-			code = http.StatusConflict
-		}
-		writeError(w, code, err.Error())
-		return
-	}
-	writeJSON(w, http.StatusOK, s.Listener.Info())
+	writeJSON(w, http.StatusOK, info)
 }

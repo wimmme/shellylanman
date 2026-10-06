@@ -1,9 +1,9 @@
-// Package listen owns the web server's listening socket, so the port can be
-// changed from the settings page without a restart.
+// Package listen works out where the web server listens and owns its socket.
 //
-// The port comes from, in order: SHELLYLANMAN_LISTEN / -listen (then it is
-// fixed and the settings page only shows it), the port saved in settings.json,
-// the default 3082.
+// One setting decides the port (DECISIONS P17-1): SHELLYLANMAN_PORT — in a
+// Docker container from docker-compose.yml or `docker run -e`, in the Home
+// Assistant app from the app's option "port" (its start script passes it on).
+// The settings page only shows it and where it is set.
 package listen
 
 import (
@@ -13,26 +13,36 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
-	"time"
+	"syscall"
 )
 
-// DefaultPort is the port of a fresh installation.
+// DefaultPort is the port when nothing else is set.
 const DefaultPort = 3082
 
-// ErrFixed is returned by Move when the address comes from the environment.
-var ErrFixed = errors.New("the listen address is set by SHELLYLANMAN_LISTEN or -listen")
+// Where the port comes from.
+const (
+	FromDefault = "default" // nothing set
+	FromEnv     = "env"     // SHELLYLANMAN_PORT
+	FromApp     = "app"     // the Home Assistant app's option "port"
+)
 
-// Addr works out the listen address: fixed (from the environment or a flag)
-// wins, then the saved port, then DefaultPort.
-func Addr(fixed string, saved int) string {
-	if fixed != "" {
-		return fixed
+// Resolve works out the listen address from SHELLYLANMAN_PORT (portEnv), else
+// DefaultPort. app tells that the Home Assistant app's start script set it
+// from the app's option "port".
+func Resolve(portEnv string, app bool) (addr, source string, err error) {
+	if portEnv == "" {
+		return ":" + strconv.Itoa(DefaultPort), FromDefault, nil
 	}
-	if saved < 1 || saved > 65535 {
-		saved = DefaultPort
+	p, err := strconv.Atoi(portEnv)
+	if err != nil || p < 1 || p > 65535 {
+		return "", "", fmt.Errorf("SHELLYLANMAN_PORT must be a port number from 1 to 65535, got %q", portEnv)
 	}
-	return ":" + strconv.Itoa(saved)
+	if app {
+		return ":" + strconv.Itoa(p), FromApp, nil
+	}
+	return ":" + strconv.Itoa(p), FromEnv, nil
 }
 
 // Port returns the port of a listen address, 0 if it has none.
@@ -45,57 +55,43 @@ func Port(addr string) int {
 	return n
 }
 
-// Info is what the settings page shows.
-type Info struct {
-	Port  int  `json:"port"`
-	Fixed bool `json:"fixed"` // set by SHELLYLANMAN_LISTEN or -listen
+// InUse wraps a failed listen with what to do about it: an "address already
+// in use" names the port and where to set another one.
+func InUse(what, addr, where string, err error) error {
+	if errors.Is(err, syscall.EADDRINUSE) || strings.Contains(strings.ToLower(fmt.Sprint(err)), "address already in use") {
+		return fmt.Errorf("%s: port %d is already used by another program on this host; %s: %w", what, Port(addr), where, err)
+	}
+	return fmt.Errorf("%s %s: %w", what, addr, err)
 }
 
-// Manager serves srv on one listener at a time.
+// Manager serves srv on its listener.
 type Manager struct {
-	srv   *http.Server
-	fixed bool
-	save  func(port int) error
-	log   *slog.Logger
-	// Grace is how long the old port keeps accepting after a move, so the
-	// response to the move request (and a straggling request) still arrive.
-	Grace time.Duration
+	srv  *http.Server
+	log  *slog.Logger
+	addr string
 
 	mu   sync.Mutex
-	host string
 	port int
-	ln   net.Listener
 	errc chan error
 }
 
-// New prepares a manager for addr. save stores a new port (settings.json).
-func New(srv *http.Server, addr string, fixed bool, save func(int) error, log *slog.Logger) (*Manager, error) {
-	host, p, err := net.SplitHostPort(addr)
-	if err != nil {
+// New prepares a manager for addr.
+func New(srv *http.Server, addr string, log *slog.Logger) (*Manager, error) {
+	if _, _, err := net.SplitHostPort(addr); err != nil {
 		return nil, fmt.Errorf("listen address %q: %w", addr, err)
 	}
-	port, _ := strconv.Atoi(p)
-	return &Manager{srv: srv, fixed: fixed, save: save, log: log, host: host, port: port, Grace: 3 * time.Second, errc: make(chan error, 1)}, nil
+	return &Manager{srv: srv, log: log, addr: addr, port: Port(addr), errc: make(chan error, 1)}, nil
 }
 
 // Start opens the listener and serves on it. Errors of the server end up on Err.
-func (m *Manager) Start() error {
-	ln, err := net.Listen("tcp", net.JoinHostPort(m.host, strconv.Itoa(m.port)))
+func (m *Manager) Start() (net.Listener, error) {
+	ln, err := net.Listen("tcp", m.addr)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	m.mu.Lock()
-	m.ln = ln
 	m.port = ln.Addr().(*net.TCPAddr).Port
 	m.mu.Unlock()
-	m.serve(ln)
-	return nil
-}
-
-// Err delivers a fatal server error (not the closing of a moved listener).
-func (m *Manager) Err() <-chan error { return m.errc }
-
-func (m *Manager) serve(ln net.Listener) {
 	m.log.Info("listening", "addr", ln.Addr().String())
 	go func() {
 		err := m.srv.Serve(ln)
@@ -107,41 +103,15 @@ func (m *Manager) serve(ln net.Listener) {
 		default:
 		}
 	}()
+	return ln, nil
 }
 
-// Info reports the current port.
-func (m *Manager) Info() Info {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	return Info{Port: m.port, Fixed: m.fixed}
-}
+// Err delivers a fatal server error.
+func (m *Manager) Err() <-chan error { return m.errc }
 
-// Move starts listening on port, saves it and closes the old port after Grace.
-// Nothing changes if the new port cannot be opened or saved.
-func (m *Manager) Move(port int) error {
-	if m.fixed {
-		return ErrFixed
-	}
-	if port < 1 || port > 65535 {
-		return errors.New("port must be 1–65535")
-	}
+// Port is the port it listens on.
+func (m *Manager) Port() int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if port == m.port {
-		return nil
-	}
-	ln, err := net.Listen("tcp", net.JoinHostPort(m.host, strconv.Itoa(port)))
-	if err != nil {
-		return fmt.Errorf("port %d cannot be used: %w", port, err)
-	}
-	if err := m.save(port); err != nil {
-		ln.Close()
-		return err
-	}
-	old := m.ln
-	m.ln, m.port = ln, port
-	m.serve(ln)
-	m.log.Info("moving to a new port", "port", port, "grace", m.Grace)
-	time.AfterFunc(m.Grace, func() { old.Close() })
-	return nil
+	return m.port
 }

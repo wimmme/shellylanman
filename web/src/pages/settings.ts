@@ -1,6 +1,6 @@
 import { CHART_TYPES } from '../chartlogic';
 import { ideprefs, setIdeprefs, type IDETheme, type Indent } from '../ideprefs';
-import { api } from '../api';
+import { api, type ServerInfo } from '../api';
 import {
   APPEAR_DEFAULT, FONTS, FONT_SIZES, PALETTES, SLIDER_MAX, applyFont, applyFontSize, applyLevel, applyPalette,
   applyTheme, currentPalette, currentTheme, resetAppearance, storedFont, storedFontSize,
@@ -8,8 +8,6 @@ import {
 import { h, ICONS } from '../dom';
 import { prefs, type DblClick, type TempUnit, type UptimeMode } from '../format';
 import { LANGUAGES, isLang, lang, setLang, t, type Key } from '../i18n';
-import { confirmDialog } from '../modal';
-import { toast } from '../toast';
 import { openMode, setOpenMode } from '../weblinks';
 import { card, type Page } from './common';
 import { mcpSettings } from './settings-mcp';
@@ -102,37 +100,23 @@ async function general(body: HTMLElement, onLanguageChange: () => void): Promise
   })), saved);
 }
 
-/** The web server's port (not in ShellyScanner, a desktop program: a server needs it). */
+/** Where ShellyLanMan listens and where that is set (DECISIONS P17-1): shown here,
+ * set in the app's options (Home Assistant) or with SHELLYLANMAN_PORT (Docker). */
 async function serverPort(): Promise<HTMLElement> {
   const info = await api.server();
-  const input = h('input', { id: 'srvPort', type: 'number', min: 1, max: 65535, value: info.port, disabled: info.fixed });
-  const apply = h('button', { class: 'btn', disabled: info.fixed }, t('server.apply'));
-  apply.addEventListener('click', async () => {
-    const port = Number(input.value);
-    if (!Number.isInteger(port) || port < 1 || port > 65535) { toast(t('server.invalid')); return; }
-    if (port === info.port) return;
-    if (!(await confirmDialog(t('server.port'), t('server.confirm', { port }), t('server.apply')))) return;
-    try {
-      await api.moveServer(port);
-    } catch (e) {
-      toast(e instanceof Error ? e.message : String(e));
-      return;
-    }
-    // Reached directly on the old port: follow to the new one. Through a reverse
-    // proxy (another port in the address bar) the proxy must be changed first.
-    const here = Number(location.port || (location.protocol === 'https:' ? 443 : 80));
-    if (here === info.port) {
-      const u = new URL(location.href);
-      u.port = String(port);
-      location.href = u.toString();
-    } else {
-      toast(t('server.proxy', { port }));
-      info.port = port;
-    }
-  });
-  return h('div', {},
-    h('div', { class: 'field' }, h('label', { for: 'srvPort' }, t('server.port')), h('div', { class: 'row' }, input, apply)),
-    h('p', { class: 'muted' }, t(info.fixed ? 'server.fixed' : 'server.help')));
+  const how: Record<ServerInfo['source'], Key> = {
+    app: 'server.fromApp', env: 'server.fromEnv', default: 'server.fromDefault',
+  };
+  const rows: [string, string, string][] = [[t('server.port'), String(info.port), t(how[info.source])]];
+  if (info.app) {
+    rows.push([t('server.ingress'), info.ingress ?? '—', t('server.ingressHow')]);
+    rows.push([t('server.mcpLocal'), info.mcpLocal ?? t('server.off'), t('server.mcpLocalHow')]);
+  }
+  return h('div', { class: 'server-ports' },
+    h('h3', {}, t('server.title')),
+    h('table', { class: 'data' }, h('tbody', {}, ...rows.map(([what, value, set]) =>
+      h('tr', {}, h('th', { scope: 'row' }, what), h('td', { class: 'mono' }, value), h('td', { class: 'muted' }, set))))),
+    info.app ? null : h('p', { class: 'muted' }, t('server.bridge')));
 }
 
 /** PanelIDE: script editor settings, per browser. */

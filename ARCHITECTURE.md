@@ -305,7 +305,7 @@ no `NET_RAW` capability is needed. (Recorded as a deliberate difference in `FEAT
 
 Image: multi-stage build; final stage `alpine` (or distroless static) + `ca-certificates` + `tzdata`,
 one static binary with the web assets embedded. Target image size: ~20–30 MB. One volume: `/data`.
-Platforms: `linux/amd64` and `linux/arm64`. Default port **3082** (`SHELLYLANMAN_LISTEN` to change).
+Platforms: `linux/amd64` and `linux/arm64`. Default port **3082** (`SHELLYLANMAN_PORT` to change; the Home Assistant app: option `port`).
 Runs as a non-root user. No `.env` needed: everything is configured in the browser; a few environment
 variables exist for things that must be known before the UI (listen address, allowed origins, trusted
 proxies).

@@ -36,8 +36,10 @@ type Config struct {
 	Hub     *hub.Hub
 	Devices *service.Devices
 	Updates *update.Checker // release check (nil in tests)
-	// Listener changes the web server's port (nil in tests: fixed).
-	Listener Listener
+	// Port is the web UI's port, Ports where it and the app's other listeners
+	// are set (shown on the settings page; nil and empty in most tests).
+	Port  func() int
+	Ports Ports
 	// Static is the built frontend (index.html at its root).
 	Static fs.FS
 	// Origins are extra allowed Origin hosts for state-changing requests and
@@ -87,11 +89,15 @@ type Status struct {
 	// Ingress: this request came through the Home Assistant ingress (the
 	// user is logged in to Home Assistant; the page is under a path prefix).
 	Ingress bool `json:"ingress"`
+	// LocalURL: the Home Assistant app's token-less loopback listener, so the
+	// integration next to the app finds it also when a password is set
+	// (a loopback address: tells nothing to anyone else).
+	LocalURL string `json:"localUrl,omitempty"`
 }
 
 func (s *server) status(w http.ResponseWriter, r *http.Request) {
 	enabled := s.authEnabled()
-	st := Status{AuthEnabled: enabled, Ingress: viaIngress(r)}
+	st := Status{AuthEnabled: enabled, Ingress: viaIngress(r), LocalURL: localURL(s.Ports.MCPLocal)}
 	st.LoggedIn = !enabled || st.Ingress || s.loggedIn(w, r) || s.tokenAllows(r)
 	if st.LoggedIn { // nothing else for a browser that still has to log in
 		st.FirstRunDone = s.Store.Settings().FirstRunDone

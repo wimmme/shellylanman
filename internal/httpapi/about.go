@@ -21,19 +21,22 @@ type About struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	// InstanceID identifies this installation (Home Assistant integration unique id).
-	InstanceID string   `json:"instanceId"`
-	Commit     string   `json:"commit,omitempty"`
-	License    string   `json:"license"`
-	Source     string   `json:"source"`
-	Issues     string   `json:"issues"`
-	Started    int64    `json:"started"` // Unix ms
-	Runtime    Runtime  `json:"runtime"`
-	BasedOn    []Credit `json:"basedOn"`
-	Credits    []Credit `json:"credits"`
-	Deps       []Dep    `json:"deps"` // Go modules in the binary; the frontend adds its own (deps.json)
-	Notice     string   `json:"notice"`
-	Language   []string `json:"languages"`
-	Donate     []Link   `json:"donate"`
+	InstanceID string `json:"instanceId"`
+	// LocalURL is the Home Assistant app's token-less loopback listener, so the
+	// integration next to the app finds its port (option mcp_local_port).
+	LocalURL string   `json:"localUrl,omitempty"`
+	Commit   string   `json:"commit,omitempty"`
+	License  string   `json:"license"`
+	Source   string   `json:"source"`
+	Issues   string   `json:"issues"`
+	Started  int64    `json:"started"` // Unix ms
+	Runtime  Runtime  `json:"runtime"`
+	BasedOn  []Credit `json:"basedOn"`
+	Credits  []Credit `json:"credits"`
+	Deps     []Dep    `json:"deps"` // Go modules in the binary; the frontend adds its own (deps.json)
+	Notice   string   `json:"notice"`
+	Language []string `json:"languages"`
+	Donate   []Link   `json:"donate"`
 }
 
 // Credit names a project ShellyLanMan builds on.
@@ -121,6 +124,7 @@ func (s *server) about(w http.ResponseWriter, r *http.Request) {
 		Name:       "ShellyLanMan",
 		Version:    version.Version,
 		InstanceID: s.Store.InstanceID(),
+		LocalURL:   localURL(s.Ports.MCPLocal),
 		Commit:     version.Commit,
 		License:    "GPL-3.0-or-later",
 		Source:     "https://github.com/wimmme/shellylanman",
@@ -167,4 +171,11 @@ func (s *server) about(w http.ResponseWriter, r *http.Request) {
 			{Name: "PayPal", URL: "https://www.paypal.com/donate/?business=LPS62D2BRTD2Y&no_recurring=0&item_name=You+help+me+buying+coffee+and+tokens+for+coding+%3A-%29&currency_code=EUR"},
 		},
 	})
+}
+
+func localURL(addr string) string {
+	if addr == "" {
+		return ""
+	}
+	return "http://" + addr
 }

@@ -604,3 +604,13 @@ Technical choices made while building discovery, within the scope agreed above.
 | # | Decision | Source |
 |---|---|---|
 | P16-1 | On screens wider than 900px a button at the top left of the sidebar switches between full (icons and labels) and minimal (icons only, with tooltips), with Home Assistant's icons (hamburger with an arrow / hamburger); remembered per browser, full by default; the logo moves to the right of the name. Below 900px the ☰ drawer of P12-9 stays | Wim |
+
+## 26. Ports: one setting, shown in ShellyLanMan (2026-10-06, Wim, after the first install on his production Home Assistant)
+
+| # | Decision | Source |
+|---|---|---|
+| P17-1 | The web UI's port has **one** setting: `SHELLYLANMAN_PORT` — in Docker in `docker-compose.yml` / `docker run -e`, in the Home Assistant app the option `port` (its start script sets the variable). The settings page no longer changes the port: *Settings → General → Ports* shows the ports in use and where they are set. `SHELLYLANMAN_LISTEN` and the port saved by the settings page are dropped, without compatibility (no installations to keep) | Wim |
+| P17-2 | Home Assistant app: `ingress_port: 0` — the Supervisor chooses a free port, ShellyLanMan asks for it at start (`/addons/self/info`); a fixed 8099 clashed with another app on Wim's production host | Wim's production install |
+| P17-3 | Home Assistant app: options `mcp_local` and `mcp_local_port` (default 8097) for the token-less loopback listener; the integration finds it in the open `GET /api/v1/status` (`localUrl`) | Wim |
+| P17-4 | A port that is taken stops ShellyLanMan with a message that names the port and where to set another one | Wim |
+| P17-5 | Every option is in the `docker-compose.yml` template (optional ones in comments) and in the README; the app's options in its `DOCS.md` and translations | Wim |
