@@ -14,6 +14,7 @@ server + plain TypeScript frontend, one Docker image, one `/data` volume.
 | How the original works, the new architecture, Java → new mapping | `ARCHITECTURE.md` |
 | Every feature, where it is in the Java code, the Shelly API it uses, status | `FEATURE_PARITY.md` |
 | Decisions already taken (technology, networking, QR scope, …) | `DECISIONS.md` §8 — it overrides earlier proposals |
+| Long-term ideas, not decided (Shelly firmware 2.0 / EU RED, …) | `docs/roadmap.md` |
 | Where code came from | `docs/PROVENANCE.md` |
 | How we work: checks, simulator and screenshots, releases, the HA test instance | `docs/WORKFLOW.md` |
 | Wim's own hosts, accounts and test systems (git-ignored, local only) | `CLAUDE.local.md` |
