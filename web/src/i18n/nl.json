@@ -873,5 +873,20 @@
   "security.switchOff": "Uitschakelen",
   "security.off": "Het wachtwoord staat uit.",
   "security.wrongCurrent": "Het huidige wachtwoord is fout.",
-  "security.reset": "Vergeten? Start ShellyLanMan één keer met de omgevingsvariabele SHELLYLANMAN_RESET_PASSWORD=1: het wachtwoord wordt verwijderd. Verwijder de variabele daarna weer."
+  "security.reset": "Vergeten? Start ShellyLanMan één keer met de omgevingsvariabele SHELLYLANMAN_RESET_PASSWORD=1: het wachtwoord wordt verwijderd. Verwijder de variabele daarna weer.",
+  "nav.log": "Log",
+  "log.hint": "De eigen log van ShellyLanMan: de laatste 1000 regels sinds de start (informatie, waarschuwingen en fouten). Ze staat alleen in het geheugen en is na een herstart weg. De logs van de apparaten zelf staan onder Checklist → Logs.",
+  "log.level": "Niveau",
+  "log.level.info": "Informatie en hoger",
+  "log.level.warn": "Waarschuwingen en fouten",
+  "log.level.error": "Alleen fouten",
+  "log.search": "Zoeken",
+  "log.pause": "Pauzeren",
+  "log.resume": "Hervatten",
+  "log.pauseTip": "Geen nieuwe regels meer toevoegen aan de lijst (ze blijven bewaard)",
+  "log.clear": "Wissen",
+  "log.clearTip": "Verberg de regels tot nu; nieuwe regels verschijnen wel",
+  "log.count": "{shown} van {total} regels",
+  "log.empty": "Geen logregels",
+  "log.emptyText": "Niets komt overeen met dit filter."
 }

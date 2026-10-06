@@ -245,6 +245,9 @@ table.devices td.c-cloud,table.devices td.c-mqtt,table.devices td.c-logs{text-al
 .blu-found tr.selected td{background:color-mix(in srgb,var(--accent-rx) 14%,transparent)}
 pre.json,pre.log{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin:10px 0 0;max-height:60vh;overflow:auto;font-family:var(--font-mono);font-size:.8rem;white-space:pre-wrap;word-break:break-word}
 .log-meta{color:var(--accent-rx)}
+.applog .logline{white-space:pre-wrap}.applog .logtime,.applog .logattrs{color:var(--text-muted)}.applog .loglevel{font-weight:600}
+.applog .lvl-warn .loglevel{color:var(--accent-warn)}.applog .lvl-error .loglevel,.applog .lvl-error .logmsg{color:var(--accent-err)}
+.log-tools{margin-bottom:6px}.log-tools input[type=search]{min-width:12rem;flex:1 1 12rem;max-width:24rem}
 .info-panel .tabs{flex-wrap:wrap}
 /* Command cell (Phase 4) */
 table.devices td.c-command{min-width:170px}

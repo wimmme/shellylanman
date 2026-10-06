@@ -289,6 +289,7 @@ if you switch it on (off by default). No telemetry.
 | **Charts** | Power, energy, voltage, temperature, RSSI and more for the selected devices, with 24 hours of history, zoom, pause and CSV export. |
 | **Firmware** | Current, stable and beta firmware of the selected devices (or all), update with live progress, and the QR code for the local download. |
 | **Deferred** | Actions for offline devices, run when the device comes back. |
+| **Log** | ShellyLanMan's own log: the last 1000 lines of this run, live, with a filter by level and text, pause, clear and copy. Kept in memory only. |
 | **Settings** | Scan mode and IP ranges, archive, device credentials, backups, the ports in use and where they are set, script editor, appearance (palette, font, how device pages open) and language. |
 | **About** | What is running (version, runtime, uptime), release notes, dependencies with their licences, credits and help. |
 

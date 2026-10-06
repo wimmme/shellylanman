@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/wimmme/shellylanman/internal/hub"
+	"github.com/wimmme/shellylanman/internal/logbuf"
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/store"
 	"github.com/wimmme/shellylanman/internal/update"
@@ -36,6 +37,7 @@ type Config struct {
 	Hub     *hub.Hub
 	Devices *service.Devices
 	Updates *update.Checker // release check (nil in tests)
+	Logs    *logbuf.Buffer  // ShellyLanMan's own log for the Log page (nil in most tests)
 	// Port is the web UI's port, Ports where it and the app's other listeners
 	// are set (shown on the settings page; nil and empty in most tests).
 	Port  func() int
@@ -69,6 +71,7 @@ func New(cfg Config) http.Handler {
 	mux.HandleFunc("GET /api/v1/update", s.getUpdate)
 	s.deviceRoutes(mux)
 	s.serverRoutes(mux)
+	s.logRoutes(mux)
 	s.mcpRoutes(mux)
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)

@@ -873,5 +873,20 @@
   "security.switchOff": "Ausschalten",
   "security.off": "Das Passwort ist ausgeschaltet.",
   "security.wrongCurrent": "Das aktuelle Passwort ist falsch.",
-  "security.reset": "Vergessen? ShellyLanMan einmal mit der Umgebungsvariable SHELLYLANMAN_RESET_PASSWORD=1 starten: das Passwort wird entfernt. Danach die Variable wieder entfernen."
+  "security.reset": "Vergessen? ShellyLanMan einmal mit der Umgebungsvariable SHELLYLANMAN_RESET_PASSWORD=1 starten: das Passwort wird entfernt. Danach die Variable wieder entfernen.",
+  "nav.log": "Protokoll",
+  "log.hint": "Das eigene Protokoll von ShellyLanMan: die letzten 1000 Zeilen seit dem Start (Informationen, Warnungen und Fehler). Es liegt nur im Arbeitsspeicher und ist nach einem Neustart weg. Die Protokolle der Geräte selbst finden Sie unter Checkliste → Logs.",
+  "log.level": "Stufe",
+  "log.level.info": "Information und höher",
+  "log.level.warn": "Warnungen und Fehler",
+  "log.level.error": "Nur Fehler",
+  "log.search": "Suchen",
+  "log.pause": "Pausieren",
+  "log.resume": "Fortsetzen",
+  "log.pauseTip": "Keine neuen Zeilen mehr in die Liste aufnehmen (sie werden aufbewahrt)",
+  "log.clear": "Leeren",
+  "log.clearTip": "Die Zeilen bis jetzt ausblenden; neue Zeilen erscheinen weiterhin",
+  "log.count": "{shown} von {total} Zeilen",
+  "log.empty": "Keine Protokollzeilen",
+  "log.emptyText": "Nichts passt zu diesem Filter."
 }

@@ -34,6 +34,7 @@ import (
 	"github.com/wimmme/shellylanman/internal/httpapi"
 	"github.com/wimmme/shellylanman/internal/hub"
 	"github.com/wimmme/shellylanman/internal/listen"
+	"github.com/wimmme/shellylanman/internal/logbuf"
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/shelly"
 	"github.com/wimmme/shellylanman/internal/store"
@@ -57,15 +58,17 @@ func main() {
 		os.Exit(probe(*dataDir))
 	}
 
-	log := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	// The log also goes into a ring buffer for the Log page (DECISIONS §27).
+	logs := logbuf.New(logbuf.DefaultSize)
+	log := slog.New(logs.Handler(slog.NewTextHandler(os.Stdout, nil)))
 	slog.SetDefault(log)
-	if err := run(log, *port, *dataDir, splitList(*origins), *ingress, *ingressFrom, *mcpLocal); err != nil {
+	if err := run(log, logs, *port, *dataDir, splitList(*origins), *ingress, *ingressFrom, *mcpLocal); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)
 	}
 }
 
-func run(log *slog.Logger, port, dataDir string, origins []string, ingress, ingressFrom, mcpLocal string) error {
+func run(log *slog.Logger, logs *logbuf.Buffer, port, dataDir string, origins []string, ingress, ingressFrom, mcpLocal string) error {
 	log.Info("starting ShellyLanMan", "version", version.Version, "commit", version.Commit, "data", dataDir)
 
 	st, err := store.Open(dataDir)
@@ -79,6 +82,11 @@ func run(log *slog.Logger, port, dataDir string, origins []string, ingress, ingr
 		h.Broadcast(hub.Event{Type: typ, Data: data})
 	}, log)
 	updates := update.New(st, version.Version, func(s update.Status) { h.Broadcast(hub.Event{Type: "update.status", Data: s}) })
+	logs.OnEntry(func(e logbuf.Entry) { // new lines to the Log page; nothing to do when no browser is open
+		if h.Clients() > 0 {
+			h.Broadcast(hub.Event{Type: "log.entry", Data: e})
+		}
+	})
 	h.OnClientsChanged(func(n int) {
 		log.Debug("browsers connected", "n", n)
 		devices.SetViewers(n)
@@ -151,7 +159,7 @@ func run(log *slog.Logger, port, dataDir string, origins []string, ingress, ingr
 		ports.Ingress = ingress
 	}
 	ports.MCPLocal = mcpLocal
-	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Port: ln.Port, Ports: ports, Static: web.Files(), Origins: origins, Log: log})
+	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Logs: logs, Port: ln.Port, Ports: ports, Static: web.Files(), Origins: origins, Log: log})
 	if _, err := ln.Start(); err != nil {
 		return listen.InUse("web UI", addr, where, err)
 	}

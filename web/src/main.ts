@@ -12,6 +12,7 @@ import { checklistPage } from './pages/checklist';
 import { deferredPage, sidebarBadge, wireDeferredEvents } from './pages/deferred';
 import { devicesPage } from './pages/devices';
 import { firmwarePage } from './pages/firmware';
+import { logPage, wireLogEvents } from './pages/log';
 import { wireFirmwareEvents } from './panels/firmware';
 import { wireBLUEvents } from './panels/bluidentify';
 import { settingsPage } from './pages/settings';
@@ -24,6 +25,7 @@ const pages: Page[] = [
   chartsPage,
   firmwarePage,
   deferredPage,
+  logPage,
   settingsPage(() => renderShell()),
   aboutPage,
 ];
@@ -162,6 +164,7 @@ async function boot(): Promise<void> {
   wireDeferredEvents(socket);
   wireFirmwareEvents(socket);
   wireBLUEvents(socket);
+  wireLogEvents(socket);
   socket.on('update.status', (ev) => { updateStatus = ev.data as UpdateStatus; renderShell(); });
   void api.update().then((u) => { updateStatus = u; if (u.newer) renderShell(); }).catch(() => {});
   socket.connect();

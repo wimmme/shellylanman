@@ -873,5 +873,20 @@
   "security.switchOff": "Switch off",
   "security.off": "The password is off.",
   "security.wrongCurrent": "The current password is wrong.",
-  "security.reset": "Forgotten? Start ShellyLanMan once with the environment variable SHELLYLANMAN_RESET_PASSWORD=1: the password is removed. Then remove the variable again."
+  "security.reset": "Forgotten? Start ShellyLanMan once with the environment variable SHELLYLANMAN_RESET_PASSWORD=1: the password is removed. Then remove the variable again.",
+  "nav.log": "Log",
+  "log.hint": "ShellyLanMan's own log: the last 1000 lines since it started (information, warnings and errors). It is kept in memory only and gone after a restart. The devices' own logs are under Checklist → Logs.",
+  "log.level": "Level",
+  "log.level.info": "Information and up",
+  "log.level.warn": "Warnings and errors",
+  "log.level.error": "Errors only",
+  "log.search": "Search",
+  "log.pause": "Pause",
+  "log.resume": "Resume",
+  "log.pauseTip": "Stop adding new lines to the list (they are kept)",
+  "log.clear": "Clear",
+  "log.clearTip": "Hide the lines up to now; new lines still appear",
+  "log.count": "{shown} of {total} lines",
+  "log.empty": "No log lines",
+  "log.emptyText": "Nothing matches this filter."
 }

@@ -873,5 +873,20 @@
   "security.switchOff": "Disattiva",
   "security.off": "La password è disattivata.",
   "security.wrongCurrent": "La password attuale è errata.",
-  "security.reset": "Dimenticata? Avvia ShellyLanMan una volta con la variabile d'ambiente SHELLYLANMAN_RESET_PASSWORD=1: la password viene rimossa. Poi togli la variabile."
+  "security.reset": "Dimenticata? Avvia ShellyLanMan una volta con la variabile d'ambiente SHELLYLANMAN_RESET_PASSWORD=1: la password viene rimossa. Poi togli la variabile.",
+  "nav.log": "Registro",
+  "log.hint": "Il registro di ShellyLanMan stesso: le ultime 1000 righe dall'avvio (informazioni, avvisi ed errori). Resta solo in memoria e sparisce al riavvio. I registri dei dispositivi si trovano in Checklist → Log.",
+  "log.level": "Livello",
+  "log.level.info": "Informazioni e superiori",
+  "log.level.warn": "Avvisi ed errori",
+  "log.level.error": "Solo errori",
+  "log.search": "Cerca",
+  "log.pause": "Pausa",
+  "log.resume": "Riprendi",
+  "log.pauseTip": "Non aggiungere più nuove righe all'elenco (vengono conservate)",
+  "log.clear": "Cancella",
+  "log.clearTip": "Nascondi le righe fino ad ora; le nuove righe compaiono comunque",
+  "log.count": "{shown} di {total} righe",
+  "log.empty": "Nessuna riga di registro",
+  "log.emptyText": "Nulla corrisponde a questo filtro."
 }

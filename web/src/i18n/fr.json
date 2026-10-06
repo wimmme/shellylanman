@@ -873,5 +873,20 @@
   "security.switchOff": "Désactiver",
   "security.off": "Le mot de passe est désactivé.",
   "security.wrongCurrent": "Le mot de passe actuel est incorrect.",
-  "security.reset": "Oublié ? Démarrez ShellyLanMan une fois avec la variable d'environnement SHELLYLANMAN_RESET_PASSWORD=1 : le mot de passe est supprimé. Retirez ensuite la variable."
+  "security.reset": "Oublié ? Démarrez ShellyLanMan une fois avec la variable d'environnement SHELLYLANMAN_RESET_PASSWORD=1 : le mot de passe est supprimé. Retirez ensuite la variable.",
+  "nav.log": "Journal",
+  "log.hint": "Le journal de ShellyLanMan lui-même : les 1000 dernières lignes depuis son démarrage (informations, avertissements et erreurs). Il reste en mémoire seulement et disparaît au redémarrage. Les journaux des appareils eux-mêmes se trouvent sous Checklist → Logs.",
+  "log.level": "Niveau",
+  "log.level.info": "Informations et plus",
+  "log.level.warn": "Avertissements et erreurs",
+  "log.level.error": "Erreurs seulement",
+  "log.search": "Rechercher",
+  "log.pause": "Pause",
+  "log.resume": "Reprendre",
+  "log.pauseTip": "Ne plus ajouter de nouvelles lignes à la liste (elles sont conservées)",
+  "log.clear": "Effacer",
+  "log.clearTip": "Masquer les lignes jusqu'à maintenant ; les nouvelles lignes apparaissent quand même",
+  "log.count": "{shown} sur {total} lignes",
+  "log.empty": "Aucune ligne de journal",
+  "log.emptyText": "Rien ne correspond à ce filtre."
 }

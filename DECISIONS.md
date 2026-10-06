@@ -614,3 +614,12 @@ Technical choices made while building discovery, within the scope agreed above.
 | P17-3 | Home Assistant app: options `mcp_local` and `mcp_local_port` (default 8097) for the token-less loopback listener; the integration finds it in the open `GET /api/v1/status` (`localUrl`) | Wim |
 | P17-4 | A port that is taken stops ShellyLanMan with a message that names the port and where to set another one | Wim |
 | P17-5 | Every option is in the `docker-compose.yml` template (optional ones in comments) and in the README; the app's options in its `DOCS.md` and translations | Wim |
+
+## 27. A Log page for ShellyLanMan's own log (2026-10-06, Wim)
+
+| # | Decision | Source |
+|---|---|---|
+| P18-1 | A page **Log** in the sidebar, above *Settings*, shows ShellyLanMan's own log: the last 1000 lines in a ring buffer **in memory**, only for the current run (gone after a restart, nothing on disk). New beyond ShellyScanner (Wim, 2026-10-06). It is not the devices' logs (I3/I4, Checklist → Logs) | Wim |
+| P18-2 | The server keeps what its log handler accepts and still writes the same lines to stdout (`docker logs`, the Home Assistant app's log). `GET /api/v1/log[?after=<seq>]` returns the lines; new lines arrive as `log.entry` events on `/ws` (only while a browser is connected) | Wim |
+| P18-3 | Level **info and up** (what the log has always held); debug lines are not kept. The page filters by level (information and up, warnings and errors, errors only) and by text, can pause, clear (hides what is there; the server keeps it) and copy | Wim |
+| P18-4 | No extra protection: behind the optional UI password like the rest of the UI, so without a password anyone on the LAN can read it, as with the rest of the UI | Wim |

@@ -873,5 +873,20 @@
   "security.switchOff": "停用",
   "security.off": "密码已停用。",
   "security.wrongCurrent": "当前密码错误。",
-  "security.reset": "忘记了？使用环境变量 SHELLYLANMAN_RESET_PASSWORD=1 启动一次 ShellyLanMan：密码会被删除。之后请移除该变量。"
+  "security.reset": "忘记了？使用环境变量 SHELLYLANMAN_RESET_PASSWORD=1 启动一次 ShellyLanMan：密码会被删除。之后请移除该变量。",
+  "nav.log": "日志",
+  "log.hint": "ShellyLanMan 自身的日志：启动以来的最近 1000 行（信息、警告和错误）。仅保存在内存中，重启后消失。设备自身的日志在“检查清单 → 日志”中。",
+  "log.level": "级别",
+  "log.level.info": "信息及以上",
+  "log.level.warn": "警告和错误",
+  "log.level.error": "仅错误",
+  "log.search": "搜索",
+  "log.pause": "暂停",
+  "log.resume": "继续",
+  "log.pauseTip": "不再向列表添加新行（新行会保留）",
+  "log.clear": "清除",
+  "log.clearTip": "隐藏截至目前的行；新行仍会显示",
+  "log.count": "{shown} / {total} 行",
+  "log.empty": "没有日志行",
+  "log.emptyText": "没有符合此筛选条件的内容。"
 }

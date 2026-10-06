@@ -1,4 +1,5 @@
 // REST client for /api/v1. Types mirror internal/httpapi.
+import type { LogEntry } from './loglogic';
 
 export interface Status { firstRunDone: boolean; authEnabled: boolean; loggedIn?: boolean; clients: number; ingress?: boolean }
 
@@ -62,6 +63,11 @@ export const api = {
   mcp: () => request<MCPInfo>('GET', '/mcp'),
   setMCP: (patch: { enabled?: boolean; access?: MCPInfo['access'] }) => request<MCPInfo>('PUT', '/mcp', patch),
   newMCPToken: () => request<MCPInfo>('POST', '/mcp/token', {}),
+};
+
+// ---- ShellyLanMan's own log (DECISIONS §27) ----
+export const logApi = {
+  list: (after: number) => request<{ entries: LogEntry[] }>('GET', after ? `/log?after=${after}` : '/log'),
 };
 
 // ---- UI password (DECISIONS §24) ----

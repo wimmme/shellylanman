@@ -873,5 +873,20 @@
   "security.switchOff": "Desactivar",
   "security.off": "La contraseña está desactivada.",
   "security.wrongCurrent": "La contraseña actual es incorrecta.",
-  "security.reset": "¿Olvidada? Inicia ShellyLanMan una vez con la variable de entorno SHELLYLANMAN_RESET_PASSWORD=1: la contraseña se elimina. Después quita la variable."
+  "security.reset": "¿Olvidada? Inicia ShellyLanMan una vez con la variable de entorno SHELLYLANMAN_RESET_PASSWORD=1: la contraseña se elimina. Después quita la variable.",
+  "nav.log": "Registro",
+  "log.hint": "El registro propio de ShellyLanMan: las últimas 1000 líneas desde su inicio (información, advertencias y errores). Solo se guarda en memoria y desaparece al reiniciar. Los registros de los propios dispositivos están en Checklist → Logs.",
+  "log.level": "Nivel",
+  "log.level.info": "Información y superior",
+  "log.level.warn": "Advertencias y errores",
+  "log.level.error": "Solo errores",
+  "log.search": "Buscar",
+  "log.pause": "Pausar",
+  "log.resume": "Reanudar",
+  "log.pauseTip": "Dejar de añadir líneas nuevas a la lista (se conservan)",
+  "log.clear": "Borrar",
+  "log.clearTip": "Ocultar las líneas hasta ahora; las líneas nuevas siguen apareciendo",
+  "log.count": "{shown} de {total} líneas",
+  "log.empty": "Sin líneas de registro",
+  "log.emptyText": "Nada coincide con este filtro."
 }
