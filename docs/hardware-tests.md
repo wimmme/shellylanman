@@ -288,3 +288,12 @@ rotated afterwards.
 | Switched off again | `{"authEnabled":false}`; `ha-test` back as before |
 | Release 0.9.1 on `ha-test` | app 0.9.0 → 0.9.1 (log `version=v0.9.1`), integration files 0.9.1 (no code change, no Core restart). Changing / switching off without the current password under ingress is covered by `TestIngressNeedsNoLogin`; in the sidebar itself it is for Wim to try (the ingress path needs a Home Assistant browser session) |
 | Release 0.9.2 on `ha-test` | app 0.9.1 → 0.9.2 (log `version=v0.9.2`), integration files 0.9.2 (no code change, no Core restart). The sidebar switch was tried by Wim on a dev build first ("super") |
+
+## Ports: one setting (2026-10-06, `ha-test`, local dev app `local_shellylanman_dev`, 0.9.3-dev)
+
+| Check | Result |
+|---|---|
+| Ingress port from the Supervisor (`ingress_port: 0`) | Supervisor chose 63804; ShellyLanMan listened on `172.30.32.1:63804` (Wim's production install had failed on a fixed 8099 taken by another app) |
+| Option `port` on a taken port (8123, Home Assistant itself) | app state *error*; log: `web UI: port 8123 is already used by another program on this host; set another one in Home Assistant: Settings → Apps → ShellyLanMan → Configuration → port` |
+| Options `port: 3092`, `mcp_local_port: 8197` | listening on 3092 and `127.0.0.1:8197`; `GET /api/v1/server` `{"port":3092,"source":"app","ingress":"172.30.32.1:63804","mcpLocal":"127.0.0.1:8197"}`; `GET /api/v1/status` `localUrl` `http://127.0.0.1:8197`; app *started*, so the health check follows the port (`/data/listen.port`) |
+| Found on the way | the Supervisor writes `options.json` over several lines: the start script's option parser fixed |
