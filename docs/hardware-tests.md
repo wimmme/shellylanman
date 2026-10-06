@@ -297,3 +297,4 @@ rotated afterwards.
 | Option `port` on a taken port (8123, Home Assistant itself) | app state *error*; log: `web UI: port 8123 is already used by another program on this host; set another one in Home Assistant: Settings → Apps → ShellyLanMan → Configuration → port` |
 | Options `port: 3092`, `mcp_local_port: 8197` | listening on 3092 and `127.0.0.1:8197`; `GET /api/v1/server` `{"port":3092,"source":"app","ingress":"172.30.32.1:63804","mcpLocal":"127.0.0.1:8197"}`; `GET /api/v1/status` `localUrl` `http://127.0.0.1:8197`; app *started*, so the health check follows the port (`/data/listen.port`) |
 | Found on the way | the Supervisor writes `options.json` over several lines: the start script's option parser fixed |
+| Release 0.9.3 | both repositories released (image, app image, GitHub releases); the dev app `local_shellylanman_dev` stays on `ha-test` for Wim to look at; the production install is Wim's |
