@@ -5,12 +5,18 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-10-06
+
+Ports: one setting, shown in ShellyLanMan — and the Home Assistant app no longer
+clashes with other apps on the same host.
+
 ### Changed
 - The port has one setting: `SHELLYLANMAN_PORT` (Docker: `docker-compose.yml` or
   `docker run -e`; the Home Assistant app: option `port`). *Settings → General → Ports*
   shows the ports in use and where to change them; the page no longer changes the port.
   `SHELLYLANMAN_LISTEN` is gone.
-- `docker-compose.yml` lists every option, the optional ones in comments.
+- `docker-compose.yml` lists every option, the optional ones in comments; the README's
+  Quick start is that file.
 - A port that is already taken stops ShellyLanMan with a message naming the port and
   where to set another one.
 - Home Assistant app: the sidebar (ingress) uses a free port that Home Assistant
