@@ -83,9 +83,10 @@ does on its AP is still unknown and is looked at when one is at hand.
 ## 6. What the wizards must handle
 
 - **The AP is off** on a device whose AP was switched off in the checklist (both test devices): the
-  firmware wizard has to start with "switch the AP on" for a device ShellyLanMan can still reach
-  (a write: `WiFi.SetConfig ap.enable`, Gen1 `/settings/ap?enabled=1`, with the usual confirmation),
-  and to say what to do for one it cannot reach.
+  firmware wizard offers "switch the AP on" for a Gen2+ device ShellyLanMan can still reach
+  (`WiFi.SetConfig ap.enable`) and says what to do for one it cannot reach. **Not for Gen1**: a test of
+  `/settings/ap?enabled=true` on the Gen1 plug took it off the LAN (2026-10-07, DECISIONS P20-10), so
+  the wizard only says how to switch it on in the device's page.
 - A device on 2.0.1 reports `sys.restart_required: true` after an update (see the roadmap): the
   wizard's "wait for the device" must not mistake that for "not finished".
 

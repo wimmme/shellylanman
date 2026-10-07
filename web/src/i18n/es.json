@@ -931,5 +931,6 @@
   "apw.wait.back": "{name} ha vuelto.",
   "apw.wait.version": "Ahora funciona con {current}; el archivo descargado era {target}.",
   "apw.wait.notListed": "Un dispositivo que no está en su lista lo encuentra el escaneo en cuanto está en su red; use Buscar de nuevo si tarda.",
-  "apw.wait.noId": "El nombre de este punto de acceso no incluye una dirección MAC completa, así que ShellyLanMan no sabe de qué dispositivo se trata. Al terminar la actualización, pulse Buscar de nuevo en la página Devices."
+  "apw.wait.noId": "El nombre de este punto de acceso no incluye una dirección MAC completa, así que ShellyLanMan no sabe de qué dispositivo se trata. Al terminar la actualización, pulse Buscar de nuevo en la página Devices.",
+  "apw.join.offGen1": "El punto de acceso de este dispositivo está apagado. ShellyLanMan no lo enciende en un dispositivo Gen1: en una prueba un enchufe salió de la red. Enciéndalo en la página propia del dispositivo (Settings → Internet & Security → Wi-Fi mode), o con un restablecimiento de fábrica."
 }

@@ -256,10 +256,10 @@ func TestChecklist(t *testing.T) {
 	if d, _ := m.Get("AABBCC000001"); !d.RebootRequired {
 		t.Fatal("Gen1 eco mode change must mark the device reboot required")
 	}
-	// Not in the original (the AP column is "-" on Gen1), but the access-point wizards need it (DECISIONS §29).
-	lines, _, err = m.ChecklistApply(ctx, ChecklistAction{IDs: []string{"AABBCC000001"}, Action: CheckAP, Value: true})
-	if err != nil || len(lines) != 0 || !hasCall(g1, "GET /settings/ap?enabled=true") {
-		t.Fatalf("AP on Gen1: %v %+v %v", err, lines, g1.Calls())
+	// Gen1: no (the original shows "-"; switching the AP on took a Gen1 plug off the LAN, DECISIONS P20-10).
+	lines, _, _ = m.ChecklistApply(ctx, ChecklistAction{IDs: []string{"AABBCC000001"}, Action: CheckAP, Value: true})
+	if len(lines) != 1 || lines[0].Result != ResultFail || hasCall(g1, "GET /settings/ap?enabled=true") {
+		t.Fatalf("AP on Gen1: %+v %v", lines, g1.Calls())
 	}
 }
 

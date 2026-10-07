@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { APGuide, Device } from '../src/api';
-import { apIsOff, canGoOn, cameBack, FIRMWARE_STEPS, neighbour, startWaiting, targetModel, watchedId } from '../src/aplogic';
+import { apIsOff, canSwitchAPOn, canGoOn, cameBack, FIRMWARE_STEPS, neighbour, startWaiting, targetModel, watchedId } from '../src/aplogic';
 
 const guide = (extra: Partial<APGuide> = {}): APGuide => ({ ssid: 'ShellyPlugSG3-54320467CBD4', recognised: true, gen: '2', key: 'PlugSG3', pageURL: 'http://192.168.33.1', pageQR: 'x', ...extra });
 const dev = (extra: Partial<Device> = {}): Device => ({
@@ -62,4 +62,11 @@ test('the access point is off only for a device in the list that says so', () =>
   assert.equal(apIsOff(guide({ id: 'X' })), false, 'unknown');
   assert.equal(apIsOff(guide({ apEnabled: false })), false, 'not in the list: nothing to switch');
   assert.equal(apIsOff(undefined), false);
+});
+
+test('the wizard switches the access point on for Gen2+ only', () => {
+  assert.equal(canSwitchAPOn(guide({ id: 'X', apEnabled: false, gen: '2' })), true);
+  assert.equal(canSwitchAPOn(guide({ id: 'X', apEnabled: false, gen: '1' })), false);
+  assert.equal(canSwitchAPOn(guide({ id: 'X', apEnabled: true, gen: '2' })), false);
+  assert.equal(canSwitchAPOn(undefined), false);
 });

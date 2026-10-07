@@ -18,7 +18,7 @@ versions follow [Semantic Versioning](https://semver.org/).
   page): give the access point's name (or pick the device); the file goes to the phone, a QR code
   joins the phone to the device's access point, another opens `192.168.33.1`, and ShellyLanMan waits
   until the device is back and shows its version. It also serves a Shelly ShellyLanMan does not know.
-  Where the access point of a device is switched off, the wizard offers to switch it on (Gen1 too).
+  Where the access point of a Gen2+ device is switched off, the wizard offers to switch it on; for Gen1 it says how to do it in the device's page.
 
 ### Changed
 - The raw RPC endpoint behind the scheduler's *test method* button (`POST /api/v1/devices/{id}/rpc`)

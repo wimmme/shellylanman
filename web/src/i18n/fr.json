@@ -931,5 +931,6 @@
   "apw.wait.back": "{name} est de retour.",
   "apw.wait.version": "Il fonctionne maintenant en {current} ; le fichier téléchargé était {target}.",
   "apw.wait.notListed": "Un appareil absent de votre liste est trouvé par le scan dès qu'il est sur votre réseau ; utilisez Rechercher à nouveau si cela tarde.",
-  "apw.wait.noId": "Le nom de ce point d'accès ne contient pas d'adresse MAC complète : ShellyLanMan ne sait pas de quel appareil il s'agit. Une fois la mise à jour terminée, appuyez sur Rechercher à nouveau dans la page Devices."
+  "apw.wait.noId": "Le nom de ce point d'accès ne contient pas d'adresse MAC complète : ShellyLanMan ne sait pas de quel appareil il s'agit. Une fois la mise à jour terminée, appuyez sur Rechercher à nouveau dans la page Devices.",
+  "apw.join.offGen1": "Le point d'accès de cet appareil est désactivé. ShellyLanMan ne l'active pas pour un appareil Gen1 : lors d'un test, une prise est sortie du réseau. Activez-le dans la page propre à l'appareil (Settings → Internet & Security → Wi-Fi mode), ou par une réinitialisation d'usine."
 }

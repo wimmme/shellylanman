@@ -67,3 +67,8 @@ export function apLabel(g: APGuide): string {
 export function apIsOff(g: APGuide | undefined): boolean {
   return !!g?.id && g.apEnabled === false;
 }
+
+/** The wizard may switch the access point on for Gen2 and newer; for Gen1 it only says how (DECISIONS P20-10). */
+export function canSwitchAPOn(g: APGuide | undefined): boolean {
+  return apIsOff(g) && g?.gen !== '1';
+}

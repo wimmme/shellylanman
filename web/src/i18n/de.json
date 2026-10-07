@@ -931,5 +931,6 @@
   "apw.wait.back": "{name} ist zurück.",
   "apw.wait.version": "Es läuft jetzt {current}; die heruntergeladene Datei war {target}.",
   "apw.wait.notListed": "Ein Gerät, das nicht in Ihrer Liste steht, wird vom Scan gefunden, sobald es in Ihrem Netz ist; nutzen Sie Neu suchen, wenn es lange dauert.",
-  "apw.wait.noId": "Der Name dieses Access Points enthält keine vollständige MAC-Adresse, daher weiß ShellyLanMan nicht, welches Gerät es ist. Drücken Sie nach dem Update auf der Seite Devices auf Neu suchen."
+  "apw.wait.noId": "Der Name dieses Access Points enthält keine vollständige MAC-Adresse, daher weiß ShellyLanMan nicht, welches Gerät es ist. Drücken Sie nach dem Update auf der Seite Devices auf Neu suchen.",
+  "apw.join.offGen1": "Der Access Point dieses Geräts ist ausgeschaltet. ShellyLanMan schaltet ihn bei einem Gen1-Gerät nicht ein: In einem Test fiel dadurch ein Stecker aus dem Netz. Schalten Sie ihn auf der eigenen Seite des Geräts ein (Settings → Internet & Security → Wi-Fi mode) oder per Werksreset."
 }

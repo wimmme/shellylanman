@@ -931,5 +931,6 @@
   "apw.wait.back": "{name} is terug.",
   "apw.wait.version": "Het draait nu {current}; het bestand dat je downloadde was {target}.",
   "apw.wait.notListed": "Een toestel dat niet in je lijst staat, wordt door de scan gevonden zodra het op je netwerk zit; gebruik Opnieuw zoeken als het lang duurt.",
-  "apw.wait.noId": "De naam van dit access point bevat geen volledig MAC-adres, dus ShellyLanMan weet niet welk toestel het is. Druk als de update klaar is op Opnieuw zoeken op de pagina Devices."
+  "apw.wait.noId": "De naam van dit access point bevat geen volledig MAC-adres, dus ShellyLanMan weet niet welk toestel het is. Druk als de update klaar is op Opnieuw zoeken op de pagina Devices.",
+  "apw.join.offGen1": "Het access point van dit toestel staat uit. ShellyLanMan zet het niet aan voor een Gen1-toestel: in een test viel een plug daardoor van het netwerk. Zet het aan in de eigen pagina van het toestel (Settings → Internet & Security → Wi-Fi mode), of via een fabrieksreset."
 }

@@ -377,7 +377,7 @@ const (
 	CheckEco      = "eco"      // Value: new state
 	CheckLED      = "led"      // Gen1
 	CheckLogs     = "logs"     // Gen1: file log on/off; Gen2+: Mode "socket" or "mqtt" toggled to Value
-	CheckAP       = "ap"       // Gen2+; Gen1 too (the wizards)
+	CheckAP       = "ap"       // Gen2+
 	CheckRoaming  = "roaming"  // Value: enable
 	CheckExtender = "extender" // Gen2+; Value: enable
 	CheckAutoFW   = "autofw"   // Gen2+; Mode: "stable", "beta" or "none"
@@ -448,10 +448,11 @@ func (m *Devices) checkAction(ctx context.Context, t cfgTarget, a ChecklistActio
 			return g2call(ctx, c, "Sys.SetConfig", map[string]any{"config": map[string]any{"debug": map[string]any{"mqtt": map[string]any{"enable": a.Value}}}})
 		}
 	case CheckAP:
-		if t.gen1 { // not in the original; the access-point wizards need the AP on (DECISIONS §29)
-			return g1cmd(ctx, c, "/settings/ap?enabled="+on)
+		// Gen2+ only, as in the original. Gen1 `/settings/ap?enabled=true` took a Gen1 plug off the
+		// LAN in a test (2026-10-07, DECISIONS P20-10): not offered.
+		if !t.gen1 {
+			return g2call(ctx, c, "WiFi.SetConfig", map[string]any{"config": map[string]any{"ap": map[string]any{"enable": a.Value}}})
 		}
-		return g2call(ctx, c, "WiFi.SetConfig", map[string]any{"config": map[string]any{"ap": map[string]any{"enable": a.Value}}})
 	case CheckRoaming:
 		if t.gen1 {
 			return g1cmd(ctx, c, "/settings?ap_roaming_enabled="+on)

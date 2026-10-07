@@ -931,5 +931,6 @@
   "apw.wait.back": "{name} is back.",
   "apw.wait.version": "It now runs {current}; the file you downloaded was {target}.",
   "apw.wait.notListed": "A device that is not in your list is found by the scan once it is on your network; use Rescan if it takes long.",
-  "apw.wait.noId": "This access point's name carries no full MAC address, so ShellyLanMan cannot tell which device it is. When the update is done, press Rescan on the Devices page."
+  "apw.wait.noId": "This access point's name carries no full MAC address, so ShellyLanMan cannot tell which device it is. When the update is done, press Rescan on the Devices page.",
+  "apw.join.offGen1": "The access point of this device is switched off. ShellyLanMan does not switch it on for a Gen1 device: in a test that took a plug off the network. Switch it on in the device's own page (Settings → Internet & Security → Wi-Fi mode), or by a factory reset."
 }

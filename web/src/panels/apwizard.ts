@@ -4,7 +4,7 @@
 // of an access point, so it also serves a Shelly ShellyLanMan does not know.
 import { ApiError, apApi, configApi, firmwareApi, localFwApi, type APGuide, type LocalLink, type ModelChoice } from '../api';
 import {
-  apIsOff, apLabel, canGoOn, cameBack, FIRMWARE_STEPS, neighbour, startWaiting, targetModel, watchedId,
+  apIsOff, apLabel, canGoOn, canSwitchAPOn, cameBack, FIRMWARE_STEPS, neighbour, startWaiting, targetModel, watchedId,
   type WizardState, type WizardStep, type Waiting,
 } from '../aplogic';
 import { allDevices, loadDevices, onDevicesChanged } from '../devices';
@@ -171,7 +171,9 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     const box = h('div', {});
     const draw = (): void => {
       const parts: Node[] = [h('p', { class: 'muted' }, t('apw.join.intro'))];
-      if (apIsOff(g)) {
+      if (apIsOff(g) && !canSwitchAPOn(g)) { // Gen1: only the way (DECISIONS P20-10)
+        parts.push(h('div', { class: 'banner warn', role: 'status' }, t('apw.join.offGen1')));
+      } else if (apIsOff(g)) {
         const on = h('button', { class: 'btn primary', onclick: async () => {
           on.setAttribute('disabled', '');
           try {

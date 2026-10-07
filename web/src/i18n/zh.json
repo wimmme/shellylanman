@@ -931,5 +931,6 @@
   "apw.wait.back": "{name} 已回来。",
   "apw.wait.version": "现在运行 {current}；您下载的文件是 {target}。",
   "apw.wait.notListed": "不在您列表中的设备一进入您的网络就会被扫描发现；如果很久没出现，请使用“重新扫描”。",
-  "apw.wait.noId": "此接入点的名称不含完整的 MAC 地址，因此 ShellyLanMan 无法判断是哪台设备。更新完成后，请在 Devices 页面点击“重新扫描”。"
+  "apw.wait.noId": "此接入点的名称不含完整的 MAC 地址，因此 ShellyLanMan 无法判断是哪台设备。更新完成后，请在 Devices 页面点击“重新扫描”。",
+  "apw.join.offGen1": "此设备的接入点已关闭。ShellyLanMan 不会为 Gen1 设备打开它：测试中有一个插座因此掉出了网络。请在设备自己的页面中打开（Settings → Internet & Security → Wi-Fi mode），或通过恢复出厂设置。"
 }
