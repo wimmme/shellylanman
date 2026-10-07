@@ -377,6 +377,7 @@ hand them out.
 [![Open the ShellyLanMan integration in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=wimmme&repository=shellylanman-ha&category=integration)
 
 Step by step: [`shellylanman-ha`](https://github.com/wimmme/shellylanman-ha#readme).
+Questions, ideas, feedback: the [thread on the Home Assistant Community](https://community.home-assistant.io/t/shellylanman-see-and-manage-every-shelly-on-your-lan-add-them-to-home-assistant-in-one-go/1027535).
 
 ## 🔒 Security
 
