@@ -83,6 +83,7 @@ func (s *server) deviceRoutes(mux router) {
 	s.backupRoutes(mux, h)
 	s.firmwareRoutes(mux, h)
 	s.apRoutes(mux, h)
+	s.profileRoutes(mux, h)
 	s.scriptRoutes(mux, h)
 	s.scheduleRoutes(mux, h)
 }

@@ -119,6 +119,10 @@ type configApplyBody struct {
 	IDs []string `json:"ids"`
 }
 
+type profileResult struct {
+	Steps []service.ProfileStep `json:"steps"`
+}
+
 var operations = []operation{
 	// ---- Status and settings ----
 	{method: "GET", path: "/healthz", id: "health", tag: "Status", summary: "Health check",
@@ -340,6 +344,27 @@ var operations = []operation{
 	{method: "GET", path: "/api/v1/ap/models", id: "apModels", tag: "Access point", summary: "Models to pick from when an access point's name does not say",
 		ok: okJSON(200, "The models, by name.", []model.ModelChoice{})},
 
+	// ---- Profiles ----
+	{method: "GET", path: "/api/v1/profiles", id: "listProfiles", tag: "Profiles", summary: "The profiles",
+		desc: "A profile is a set of settings a new Shelly gets once it has joined the network (name, login, MQTT, time server, cloud, the checklist's settings). Passwords are never returned: only whether they are set.",
+		ok:   okJSON(200, "The profiles.", []service.ProfileView{}), errs: e(503)},
+	{method: "POST", path: "/api/v1/profiles", id: "createProfile", tag: "Profiles", summary: "Make a profile",
+		desc: "A field that is absent is left alone on the device. `loginPassword` and `mqttPassword` are write-only and kept encrypted.",
+		body: service.ProfileInput{}, ok: okJSON(201, "The profile.", service.ProfileView{}), errs: e(503)},
+	{method: "PUT", path: "/api/v1/profiles/{id}", id: "updateProfile", tag: "Profiles", summary: "Change a profile",
+		desc: "The whole profile again. A password that is absent keeps what was stored; `\"\"` removes it.",
+		body: service.ProfileInput{}, ok: okJSON(200, "The profile.", service.ProfileView{}), errs: e(404, 503)},
+	{method: "DELETE", path: "/api/v1/profiles/{id}", id: "deleteProfile", tag: "Profiles", summary: "Delete a profile",
+		ok: done("Deleted, with its passwords."), errs: e(404, 503)},
+	{method: "GET", path: "/api/v1/profiles/{id}/plan", id: "profilePlan", tag: "Profiles", summary: "What a profile would do to a device",
+		desc:  "Changes nothing: the steps and the values they would set, in the order they run (the name pattern is worked out for this device).",
+		query: []paramSpec{{name: "device", typ: "string", desc: "The device's id.", required: true}},
+		ok:    okJSON(200, "The steps.", []service.PlanStep{}), errs: e(404, 503)},
+	{method: "POST", path: "/api/v1/profiles/{id}/apply", id: "applyProfile", tag: "Profiles", summary: "Set a profile on a device",
+		desc: "Sets the profile on a device that is on the network: every step is tried; a step the device has no setting for is `skipped`. The login comes last; the new login is kept for the device. It changes the device: needs `confirm: true`. The answer is `200` also when steps failed: look at each step.",
+		body: applyProfileBody{}, ok: okJSON(200, "One result per step.", profileResult{}),
+		errs: more(e(400, 403, 404, 502, 504), errSpec{409, "A BLU device has no such settings."}, eConfirm, errSpec{503, ""})},
+
 	// ---- Backup and restore ----
 	{method: "POST", path: "/api/v1/backup", id: "backup", tag: "Backup", summary: "Back up devices",
 		desc: "Writes a `.sbk` file per device on the server (ShellyScanner's format). Older ones beyond the `backupKeep` setting are deleted.",
@@ -406,6 +431,7 @@ var tagDocs = []struct{ name, desc string }{
 	{"Configuration", "Wi-Fi, login, MQTT, NTP, cloud — on one or many devices."},
 	{"Checklist", "The configuration checklist and deferred tasks."},
 	{"Firmware", "Checking and updating firmware."},
+	{"Profiles", "What a new Shelly gets once it has joined the network."},
 	{"Access point", "A device's own Wi-Fi access point, for the wizards that update firmware or set up a new Shelly through it."},
 	{"Backup", "Backup and restore (`.sbk`, ShellyScanner's format)."},
 	{"Scripts", "Scripts and the key-value store of Gen2+ devices."},

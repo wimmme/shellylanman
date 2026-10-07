@@ -77,6 +77,7 @@ type Devices struct {
 	// IPScanPort is the port probed by an IP scan (80; tests change it).
 	IPScanPort int
 
+	profMu    sync.Mutex // the profiles file (profiles.go)
 	mu        sync.Mutex
 	base      context.Context
 	runCancel context.CancelFunc

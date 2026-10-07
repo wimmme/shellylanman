@@ -57,6 +57,11 @@ type modelBody struct {
 	Key string `json:"key"`
 }
 
+type applyProfileBody struct {
+	Device  string `json:"device"`
+	Confirm bool   `json:"confirm"`
+}
+
 type scriptCreateBody struct {
 	Name string `json:"name"`
 }

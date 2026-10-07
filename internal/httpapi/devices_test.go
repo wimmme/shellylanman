@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -309,5 +310,71 @@ func TestAPEndpoints(t *testing.T) {
 		if r := do(t, "POST", srv.URL+"/api/v1/firmware/local", body, jsonHdr); r.StatusCode != want {
 			t.Errorf("POST firmware/local %s: %d, want %d", body, r.StatusCode, want)
 		}
+	}
+}
+
+// Profiles (DECISIONS §29): made, changed and removed through the API; passwords go in and never come out;
+// a plan changes nothing; applying needs confirm.
+func TestProfileEndpoints(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	api := srv.URL + "/api/v1"
+	var p struct {
+		ID               string `json:"id"`
+		Name             string `json:"name"`
+		LoginPasswordSet bool   `json:"loginPasswordSet"`
+		MQTTPasswordSet  bool   `json:"mqttPasswordSet"`
+	}
+	r := do(t, "POST", api+"/profiles", `{"name":"Home","namePattern":"{model} {mac4}","ntp":"pool.ntp.org","login":{"enabled":true,"user":"admin"},"loginPassword":"secret1"}`, jsonHdr)
+	if r.StatusCode != 201 {
+		t.Fatalf("create: %d", r.StatusCode)
+	}
+	b, _ := io.ReadAll(r.Body)
+	if strings.Contains(string(b), "secret1") {
+		t.Fatalf("the password came back: %s", b)
+	}
+	if err := json.Unmarshal(b, &p); err != nil || p.ID == "" || p.Name != "Home" || !p.LoginPasswordSet || p.MQTTPasswordSet {
+		t.Fatalf("created %+v %s", p, b)
+	}
+	var list []map[string]any
+	decode(t, do(t, "GET", api+"/profiles", "", nil), &list)
+	if len(list) != 1 || list[0]["loginPassword"] != nil {
+		t.Fatalf("list %v", list)
+	}
+	if r := do(t, "PUT", api+"/profiles/"+p.ID, `{"name":"Home 2","namePattern":"{model} {mac4}","ntp":"pool.ntp.org","login":{"enabled":true,"user":"admin"}}`, jsonHdr); r.StatusCode != 200 {
+		t.Fatalf("update keeps the password: %d", r.StatusCode)
+	}
+	for body, want := range map[string]int{
+		`{"name":""}`:                           400,
+		`{"name":"x","login":{"enabled":true}}`: 400,
+		`{"name":"x","unknown":1}`:              400,
+		`{"name":"x","autoFW":"yes"}`:           400,
+	} {
+		if r := do(t, "POST", api+"/profiles", body, jsonHdr); r.StatusCode != want {
+			t.Errorf("POST %s: %d, want %d", body, r.StatusCode, want)
+		}
+	}
+	if r := do(t, "PUT", api+"/profiles/nope", `{"name":"x"}`, jsonHdr); r.StatusCode != 404 {
+		t.Errorf("update unknown: %d", r.StatusCode)
+	}
+	var plan []map[string]string
+	decode(t, do(t, "GET", api+"/profiles/"+p.ID+"/plan?device=AABBCC000001", "", nil), &plan)
+	if len(plan) != 3 || plan[0]["step"] != "name" || plan[0]["value"] != "PlugS 0001" || plan[2]["step"] != "login" {
+		t.Fatalf("plan %v", plan)
+	}
+	if r := do(t, "GET", api+"/profiles/"+p.ID+"/plan?device=NOPE", "", nil); r.StatusCode != 404 {
+		t.Errorf("plan for an unknown device: %d", r.StatusCode)
+	}
+	if r := do(t, "POST", api+"/profiles/"+p.ID+"/apply", `{"device":"AABBCC000001"}`, jsonHdr); r.StatusCode != 428 {
+		t.Errorf("apply without confirm: %d", r.StatusCode)
+	}
+	// The test server's device is an archived (not reachable) plug: applying is refused, not half done.
+	if r := do(t, "POST", api+"/profiles/"+p.ID+"/apply", `{"device":"AABBCC000001","confirm":true}`, jsonHdr); r.StatusCode != 504 {
+		t.Errorf("apply to an unreachable device: %d", r.StatusCode)
+	}
+	if r := do(t, "DELETE", api+"/profiles/"+p.ID, "", nil); r.StatusCode != 204 {
+		t.Errorf("delete: %d", r.StatusCode)
+	}
+	if r := do(t, "DELETE", api+"/profiles/"+p.ID, "", nil); r.StatusCode != 404 {
+		t.Errorf("delete twice: %d", r.StatusCode)
 	}
 }
