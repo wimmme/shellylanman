@@ -33,6 +33,11 @@ Shared parts: reading an AP name (below), the two QR codes, and "wait for the de
   to verify on a device). The part before the last dash is a lower-case slug, not the type id
   (`SHPLG-S`): a table slug → type is needed, built from the host names of the fixtures and Shelly's
   firmware index, and checked against the original (ShellyScanner).
+- **Seen on the maintainer's devices (read only, 2026-10-07):** a Gen3 Plug S (`app: PlugSG3`) has the AP
+  `ShellyPlugSG3-54320467CBD4` = `Shelly` + app + `-` + MAC, and `is_open: true`. A Gen1 Plug S
+  (`/settings` → `wifi_ap`: `ssid` `shellyplug-s-80646F838136`, `key`, `enabled`) has an AP named like its host
+  name, `shellyplug-s-<MAC12>`, with the type `SHPLG-S`: so the slug is the host name's part before the MAC,
+  and `wifi_ap.key` exists. The AP of both is **switched off** (the checklist's AP column): see §6.
 - The wizard asks for the AP name as the phone shows it, or the MAC from the label, and shows
   *recognised as: Shelly Plus 2PM*; when it cannot tell (renamed AP, unknown model) the user picks
   the model from a list. For provisioning the model is only a nicety (the profile does not depend on
@@ -46,32 +51,23 @@ Shared parts: reading an AP name (below), the two QR codes, and "wait for the de
 - Everything the phone needs from ShellyLanMan is loaded **before** it joins the AP: once it is on
   the AP it has no internet and does not see ShellyLanMan.
 
-## 3. The password of the AP
+## 3. The AP stays open
 
-- The default is an **open** network. Gen2+ can protect it: `WiFi.SetConfig {config:{ap:{pass,…}}}`
-  (`pass` is write-only, `ap.is_open` says whether it is open); Gen1 has `/settings/ap?key=…`
-  (to verify). The Shelly docs give no rules for the length or characters; Wi-Fi's WPA2 itself takes
-  **8 to 63 printable ASCII characters**, which ShellyLanMan should enforce in the profile (and
-  test on a device).
-- A factory-new device has an open AP, so the AP password cannot be set *before* the setup: it is
-  part of the profile and goes onto the device in step 5, through the LAN.
-- The same password as the home Wi-Fi is *possible* but not a good default: the AP only serves
-  setup and the range extender, and one leaked password would then open both; the home network
-  may also have a passphrase the AP rules do not allow. Suggestion: a separate **AP password** in
-  the profile, with a generated suggestion; "same as the Wi-Fi" only as a visible choice.
+Decided: the wizards work with the AP **as it is from the factory, open**. No AP password in the
+profile or the wizards, so the join QR is always `WIFI:T:nopass;…`, there are no length or
+complexity rules to meet, and no password in a QR code. (Gen2+ could protect the AP with
+`WiFi.SetConfig {config:{ap:{pass,…}}}`; WPA2 would then need 8–63 printable ASCII characters. That is
+left alone, and a protected AP of a device is the user's own business: the join QR would not know
+its password.)
+
 - The home Wi-Fi's password is **not** kept in the profile and never sent to the browser (README,
-  *Security*: Wi-Fi passwords are write-only). The user types it in the device's page; the profile
-  may hold the SSID. Same for the device login: ShellyLanMan stores it encrypted, as it does now.
-- The wizard needs the AP password to build the join QR for a device that already has a protected
-  AP; ShellyLanMan cannot read it back from the device. It would come from the profile (when the
-  device was set up with it) or be typed. A QR with the password is generated on request, behind
-  the login, and not kept in the browser.
+  *Security*: Wi-Fi passwords are write-only). The user types it in the device's page; the profile may
+  hold the SSID. The device login is stored encrypted, as ShellyLanMan does now.
 
 ## 4. The profile
 
 Name pattern (`{model} {mac4}`-style), device login, MQTT, NTP, cloud on/off, and the checklist's
-eco/LED/AP/roaming/logs/auto-update settings, plus the AP password (§3) and, as a hint only, the
-home Wi-Fi's SSID. Applied with the code that applies these settings to known devices
+eco/LED/AP/roaming/logs/auto-update settings and, as a hint only, the home Wi-Fi's SSID. Applied with the code that applies these settings to known devices
 (`service.ConfigApply`, the checklist), in step 5, to the device that appears on the LAN with a MAC
 ShellyLanMan has not seen: `device.upsert` plus an "is new" mark; the user confirms before anything
 is written. The device's new login is stored as its device credentials, so ShellyLanMan keeps
@@ -80,14 +76,21 @@ reaching it.
 ## 5. Firmware 2.0 and the RED requirements (`docs/roadmap.md` §1)
 
 Devices shipped with 2.0+ may behave differently on the AP (a time-limited setup window, a
-protected AP, HTTPS). Read a device that is new in that sense, with the maintainer's say-so, before
-building the AP steps.
+protected AP, HTTPS). The maintainer's devices are updated ones, not shipped with 2.0: `Shelly.GetDeviceInfo`
+shows `provision: "complete"`, `enhanced_security: false`, an open AP; so what a *factory-new* 2.0 device
+does on its AP is still unknown and is looked at when one is at hand.
 
-## 6. Open questions
+## 6. What the wizards must handle
 
-1. A QR code that carries the AP password: acceptable (generated on request, behind the login), or
-   should the user type it?
-2. Gen1: does `/settings/ap` take a key, and what does a Gen1 AP name look like exactly?
-3. A new device without the profile's Wi-Fi: is "the user types the Wi-Fi password in the device's
-   page" good enough, or is a hybrid (the page on the phone sets it, when the phone still reaches
-   ShellyLanMan) worth trying later?
+- **The AP is off** on a device whose AP was switched off in the checklist (both test devices): the
+  firmware wizard has to start with "switch the AP on" for a device ShellyLanMan can still reach
+  (a write: `WiFi.SetConfig ap.enable`, Gen1 `/settings/ap?enabled=1`, with the usual confirmation),
+  and to say what to do for one it cannot reach.
+- A device on 2.0.1 reports `sys.restart_required: true` after an update (see the roadmap): the
+  wizard's "wait for the device" must not mistake that for "not finished".
+
+## 7. Answered
+
+1. No AP password (§3).
+2. Checked on a Gen1 and a Gen3 device (§1); the slug table is still to build.
+3. The user types the Wi-Fi password in the device's page; a hybrid may be tried later.
