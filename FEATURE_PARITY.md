@@ -174,6 +174,7 @@ Where marked "deferrable", an offline device gets a queued task (see §1.7).
 | A11 | Keyboard shortcuts (filter, tabs, pause, macOS cmd-C/V/X) | various | — | — | Web equivalents where sensible | 8 | ✅ |
 | A12 | **NEW**: optional UI password — one password, no user name, off by default; login page with *Stay logged in*, log out, Settings → Security with rules and a strength indicator; slowdown after wrong tries; not asked under Home Assistant ingress; the MCP token opens the API; reset with `SHELLYLANMAN_RESET_PASSWORD=1` | — (not in original: a desktop program) | — | — | `internal/auth`, `httpapi/login.go`, login page — `DECISIONS.md` §24 | 15 | ✅ |
 | A13 | **NEW**: page **Log** above Settings: ShellyLanMan's own log, last 1000 lines in memory (info and up), live over `/ws`, filter by level and text, pause, clear, copy; `GET /api/v1/log` | — (not in original: a desktop program, its log is the console) | — | — | `internal/logbuf`, `httpapi/log.go`, `web/src/pages/log.ts` — `DECISIONS.md` §27 | 18 | ✅ |
+| A14 | **NEW**: update arrow ↑ after the status of a device that reports a newer stable firmware (Gen1 `has_update`, Gen2+ `sys.available_updates.stable`), tooltip with the version, summary chip, selection, MCP `update_available` | `view/MainView` (the red update dot) | G1 `/status`, G2+ `Shelly.GetStatus` | G1–G4 | `parse` (UpdateAvailable), `web/src/devices.ts` `statusMarks` — `DECISIONS.md` §28 | 19 | ✅ |
 
 ### 1.11 Command line
 

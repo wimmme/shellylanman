@@ -888,5 +888,8 @@
   "log.clearTip": "Verberg de regels tot nu; nieuwe regels verschijnen wel",
   "log.count": "{shown} van {total} regels",
   "log.empty": "Geen logregels",
-  "log.emptyText": "Niets komt overeen met dit filter."
+  "log.emptyText": "Niets komt overeen met dit filter.",
+  "status.updateAvailable": "firmware-update beschikbaar: {version}",
+  "status.updateAvailableShort": "firmware-update beschikbaar",
+  "select.update": "Firmware-update beschikbaar"
 }

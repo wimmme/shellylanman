@@ -69,6 +69,10 @@ type Device struct {
 
 	RebootRequired bool `json:"rebootRequired"`
 
+	// The device says a newer stable firmware exists (DECISIONS P19-1).
+	UpdateAvailable bool   `json:"updateAvailable"`
+	UpdateVersion   string `json:"updateVersion,omitempty"`
+
 	// BLU devices live behind a Gen2+ gateway.
 	Parent  string   `json:"parent,omitempty"`  // gateway device ID
 	Parents []string `json:"parents,omitempty"` // other gateways that see it (hostnames)
@@ -118,5 +122,6 @@ func (d *Device) ApplyReadings(r parse.Readings) {
 	d.RSSI, d.CloudEnabled, d.CloudConnected = r.RSSI, r.CloudEnabled, r.CloudConnected
 	d.MQTTEnabled, d.MQTTConnected = r.MQTTEnabled, r.MQTTConnected
 	d.Uptime, d.LogMode, d.RebootRequired = r.Uptime, r.LogMode, r.RebootRequired
+	d.UpdateAvailable, d.UpdateVersion = r.UpdateAvailable, r.UpdateVersion
 	d.InternalTemp, d.Meters, d.Modules, d.Layout = r.InternalTemp, r.Meters, r.Modules, r.Layout
 }

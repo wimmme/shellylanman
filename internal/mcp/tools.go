@@ -234,6 +234,7 @@ type deviceSummary struct {
 	Cloud          string           `json:"cloud,omitempty"`
 	MQTT           string           `json:"mqtt,omitempty"`
 	RebootRequired bool             `json:"reboot_required,omitempty"`
+	Update         string           `json:"update_available,omitempty"` // newer stable firmware, as the device reports it
 	Channels       []parse.Module   `json:"channels,omitempty"`
 	Meters         []parse.MeterSet `json:"meters,omitempty"`
 	Keyword        string           `json:"keyword,omitempty"`
@@ -253,10 +254,22 @@ func onOff(enabled, connected bool) string {
 	return "off"
 }
 
+// updateText is the newer stable firmware the device reports: its version, "yes"
+// when the device does not say which, empty when there is none.
+func updateText(d model.Device) string {
+	switch {
+	case !d.UpdateAvailable:
+		return ""
+	case d.UpdateVersion == "":
+		return "yes"
+	}
+	return d.UpdateVersion
+}
+
 func summarize(d model.Device, full bool) deviceSummary {
 	s := deviceSummary{
 		ID: d.ID, Name: d.Name, Hostname: d.Hostname, Type: d.TypeName, Generation: d.Gen, IP: d.IP,
-		Status: d.Status, RSSI: d.RSSI, TemperatureC: d.InternalTemp, RebootRequired: d.RebootRequired,
+		Status: d.Status, RSSI: d.RSSI, TemperatureC: d.InternalTemp, RebootRequired: d.RebootRequired, Update: updateText(d),
 		Keyword: d.Keyword, Gateway: d.Parent, Error: d.Error,
 	}
 	if d.Uptime > 0 {

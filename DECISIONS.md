@@ -623,3 +623,9 @@ Technical choices made while building discovery, within the scope agreed above.
 | P18-2 | The server keeps what its log handler accepts and still writes the same lines to stdout (`docker logs`, the Home Assistant app's log). `GET /api/v1/log[?after=<seq>]` returns the lines; new lines arrive as `log.entry` events on `/ws` (only while a browser is connected) | Wim |
 | P18-3 | Level **info and up** (what the log has always held); debug lines are not kept. The page filters by level (information and up, warnings and errors, errors only) and by text, can pause, clear (hides what is there; the server keeps it) and copy | Wim |
 | P18-4 | No extra protection: behind the optional UI password like the rest of the UI, so without a password anyone on the LAN can read it, as with the rest of the UI | Wim |
+
+## 28. Update arrow and an OpenAPI description (2026-10-07, Wim; `docs/roadmap.md` §2.1, §2.2)
+
+| # | Decision | Source |
+|---|---|---|
+| P19-1 | A device that says a newer **stable** firmware exists gets **↑** after its status, next to ↻ (reboot needed); tooltip *firmware update available: <version>*; a summary chip *Updates*; a selection *Firmware update available*; the MCP device list says `update_available`. The device says it itself (Gen1 `has_update`/`update.new_version` in `/status`, Gen2+ `sys.available_updates.stable` in `Shelly.GetStatus`): no extra request, nothing leaves the LAN. Beta alone gives no arrow. The value is what the device last found (it checks now and then); the Firmware page's check refreshes it. New beyond ShellyScanner (its red dot) only in being shown in the status | Wim |

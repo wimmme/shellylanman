@@ -27,6 +27,15 @@ function changed(): void {
   else setTimeout(run, 0);
 }
 
+/**
+ * The marks after "online": ↻ when the device needs a restart, ↑ when it says a newer
+ * stable firmware exists (DECISIONS P19-1). Nothing for devices that are not online.
+ */
+export function statusMarks(d: Device): string {
+  if (d.status !== 'online') return '';
+  return (d.rebootRequired ? ' ↻' : '') + (d.updateAvailable ? ' ↑' : '');
+}
+
 export function onDevicesChanged(l: Listener): () => void {
   listeners.add(l);
   return () => listeners.delete(l);

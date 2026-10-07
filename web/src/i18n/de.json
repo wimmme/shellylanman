@@ -888,5 +888,8 @@
   "log.clearTip": "Die Zeilen bis jetzt ausblenden; neue Zeilen erscheinen weiterhin",
   "log.count": "{shown} von {total} Zeilen",
   "log.empty": "Keine Protokollzeilen",
-  "log.emptyText": "Nichts passt zu diesem Filter."
+  "log.emptyText": "Nichts passt zu diesem Filter.",
+  "status.updateAvailable": "Firmware-Update verfügbar: {version}",
+  "status.updateAvailableShort": "Firmware-Update verfügbar",
+  "select.update": "Firmware-Update verfügbar"
 }

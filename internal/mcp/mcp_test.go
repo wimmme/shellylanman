@@ -119,7 +119,7 @@ func newFake() *fake {
 		{ID: "A1", Name: "Kitchen", Hostname: "shellyplus1-a1", IP: "10.0.0.1", Gen: "2", Status: model.StatusOnline,
 			Modules: []parse.Module{{Kind: parse.KindRelay, Index: 0, Key: "switch:0", On: tru()}}},
 		{ID: "B2", Name: "Kitchen LED", Hostname: "shellyrgbw2-b2", IP: "10.0.0.2", Gen: "1", Status: model.StatusOnline,
-			Modules: []parse.Module{{Kind: parse.KindRGBW, Index: 0, Key: "color/0"}}},
+			Modules: []parse.Module{{Kind: parse.KindRGBW, Index: 0, Key: "color/0"}}, UpdateAvailable: true, UpdateVersion: "20240101/v1.15.0"},
 		{ID: "C3", Name: "Garage", IP: "10.0.0.3", Gen: "1", Status: model.StatusOffline},
 	}}
 }
@@ -286,6 +286,9 @@ func TestReadTools(t *testing.T) {
 	txt, isErr := c.tool("shelly_list_devices", map[string]any{"status": "online"})
 	if isErr || !strings.Contains(txt, `"count": 2`) || strings.Contains(txt, "Garage") {
 		t.Fatalf("list online: %s", txt)
+	}
+	if strings.Count(txt, `"update_available"`) != 1 || !strings.Contains(txt, `"update_available": "20240101/v1.15.0"`) {
+		t.Fatalf("only the device with a newer firmware says so: %s", txt)
 	}
 	if txt, _ = c.tool("shelly_list_devices", map[string]any{"query": "garage"}); !strings.Contains(txt, `"count": 1`) {
 		t.Fatalf("query: %s", txt)

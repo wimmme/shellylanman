@@ -888,5 +888,8 @@
   "log.clearTip": "Hide the lines up to now; new lines still appear",
   "log.count": "{shown} of {total} lines",
   "log.empty": "No log lines",
-  "log.emptyText": "Nothing matches this filter."
+  "log.emptyText": "Nothing matches this filter.",
+  "status.updateAvailable": "firmware update available: {version}",
+  "status.updateAvailableShort": "firmware update available",
+  "select.update": "Firmware update available"
 }

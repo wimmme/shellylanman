@@ -888,5 +888,8 @@
   "log.clearTip": "隐藏截至目前的行；新行仍会显示",
   "log.count": "{shown} / {total} 行",
   "log.empty": "没有日志行",
-  "log.emptyText": "没有符合此筛选条件的内容。"
+  "log.emptyText": "没有符合此筛选条件的内容。",
+  "status.updateAvailable": "有可用的固件更新：{version}",
+  "status.updateAvailableShort": "有可用的固件更新",
+  "select.update": "有可用的固件更新"
 }

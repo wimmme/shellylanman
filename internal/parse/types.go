@@ -133,6 +133,11 @@ type Readings struct {
 	Modules        []Module   `json:"modules,omitempty"`
 	Layout         string     `json:"layout,omitempty"`
 	AddonType      string     `json:"-"` // Gen2+ sys.device.addon_type
+
+	// UpdateAvailable: the device itself says a newer stable firmware exists
+	// (Gen1 has_update, Gen2+ sys.available_updates.stable); UpdateVersion is that version.
+	UpdateAvailable bool   `json:"updateAvailable"`
+	UpdateVersion   string `json:"updateVersion,omitempty"`
 }
 
 func ptr[T any](v T) *T { return &v }

@@ -888,5 +888,8 @@
   "log.clearTip": "Nascondi le righe fino ad ora; le nuove righe compaiono comunque",
   "log.count": "{shown} di {total} righe",
   "log.empty": "Nessuna riga di registro",
-  "log.emptyText": "Nulla corrisponde a questo filtro."
+  "log.emptyText": "Nulla corrisponde a questo filtro.",
+  "status.updateAvailable": "aggiornamento del firmware disponibile: {version}",
+  "status.updateAvailableShort": "aggiornamento del firmware disponibile",
+  "select.update": "Aggiornamento del firmware disponibile"
 }

@@ -197,3 +197,34 @@ func TestBTHomeInputs(t *testing.T) {
 		t.Fatalf("device input 2 %+v", m)
 	}
 }
+
+func TestUpdateAvailable(t *testing.T) { // DECISIONS P19-1: what the device itself says
+	cfg := []byte(`{}`)
+	g1 := func(status string) Readings {
+		return Gen1(Gen1Input{TypeID: "SHPLG-S", Settings: cfg, Status: []byte(status)})
+	}
+	g2 := func(status string) Readings {
+		return Gen2(Gen2Input{TypeID: "Plus1", Config: cfg, Status: []byte(status)})
+	}
+	if r := g1(`{"has_update":false,"update":{"has_update":false,"new_version":"20230913/v1.14.0"}}`); r.UpdateAvailable || r.UpdateVersion != "" {
+		t.Fatalf("Gen1 up to date: %+v", r)
+	}
+	if r := g1(`{"has_update":true,"update":{"has_update":true,"new_version":"20240101/v1.15.0"}}`); !r.UpdateAvailable || r.UpdateVersion != "20240101/v1.15.0" {
+		t.Fatalf("Gen1 update: %+v", r)
+	}
+	if r := g1(`{"update":{"has_update":true}}`); !r.UpdateAvailable || r.UpdateVersion != "" {
+		t.Fatalf("Gen1 update without version: %+v", r)
+	}
+	if r := g2(`{"sys":{"available_updates":{}}}`); r.UpdateAvailable {
+		t.Fatalf("Gen2 nothing available: %+v", r)
+	}
+	if r := g2(`{"sys":{"available_updates":{"beta":{"version":"1.5.0-beta1"}}}}`); r.UpdateAvailable {
+		t.Fatalf("a beta alone is no update arrow: %+v", r)
+	}
+	if r := g2(`{"sys":{"available_updates":{"stable":{"version":"1.4.4"},"beta":{"version":"1.5.0-beta1"}}}}`); !r.UpdateAvailable || r.UpdateVersion != "1.4.4" {
+		t.Fatalf("Gen2 stable update: %+v", r)
+	}
+	if r := g2(`{}`); r.UpdateAvailable {
+		t.Fatalf("Gen2 without sys: %+v", r)
+	}
+}

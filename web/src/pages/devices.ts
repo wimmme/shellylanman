@@ -1,7 +1,7 @@
 // The device table (ShellyScanner: MainView + DevicesTable).
 import { devicesApi, type Device, type DeviceStatus } from '../api';
 import { commandCell, interacting, whenIdle } from '../command';
-import { addressText, allDevices, archiveInUse, compareAddress, onDevicesChanged, scanState } from '../devices';
+import { addressText, allDevices, archiveInUse, compareAddress, onDevicesChanged, scanState, statusMarks } from '../devices';
 import { keepOrReplace, h, icon, ICONS, patch } from '../dom';
 import { dateTime, formatTemp, formatUptime, meterSetText, metersText, moduleText, prefs, uptimeTooltip } from '../format';
 import { t, type Key } from '../i18n';
@@ -53,6 +53,7 @@ const STATUS: Record<DeviceStatus, { cls: string; key: Key }> = {
 function statusTip(d: Device): string {
   const tip = [t(STATUS[d.status]?.key ?? 'status.error')];
   if (d.rebootRequired) tip.push(t('status.rebootRequired'));
+  if (d.updateAvailable) tip.push(d.updateVersion ? t('status.updateAvailable', { version: d.updateVersion }) : t('status.updateAvailableShort'));
   if (d.status === 'online' && isBLU(d) && d.lastSeen > 0) tip.push(t('status.bluSeen', { when: dateTime(new Date(d.lastSeen), true) }));
   if (d.status === 'searching') tip.push(t('status.searchingTip'));
   if ((d.status === 'offline' || d.status === 'ghost' || d.status === 'searching') && d.lastSeen > 0) tip.push(t('status.lastSeen', { when: dateTime(new Date(d.lastSeen), true) }));
@@ -65,7 +66,7 @@ function statusTip(d: Device): string {
 function statusPill(d: Device): HTMLElement {
   const s = STATUS[d.status] ?? STATUS.error;
   let label = t(s.key);
-  if (d.status === 'online' && d.rebootRequired) label += ' ↻';
+  label += statusMarks(d);
   if (d.status === 'online' && isBLU(d)) label = 'BLU ' + label;
   return h('span', { class: 'pill ' + s.cls }, label);
 }
@@ -224,6 +225,7 @@ function summary(list: Device[]): HTMLElement {
     ['devices.summary.offline', 'err', count((d) => d.status === 'offline' || d.status === 'error')],
     ['devices.summary.login', 'warn', count((d) => d.status === 'login')],
     ['devices.summary.reboot', 'warn', count((d) => d.rebootRequired)],
+    ['devices.summary.updates', 'warn', count((d) => !!d.updateAvailable)],
     ['devices.summary.stored', '', count((d) => d.status === 'ghost')],
   ];
   return h('div', { class: 'summary' }, ...stats.map(([k, cls, v]) =>
@@ -235,6 +237,7 @@ const SELECTORS: { label: Key; f: (d: Device) => boolean }[] = [
   { label: 'select.all', f: () => true },
   { label: 'select.online', f: (d) => d.status === 'online' },
   { label: 'select.reboot', f: (d) => d.status === 'online' && d.rebootRequired },
+  { label: 'select.update', f: (d) => d.status === 'online' && !!d.updateAvailable },
   { label: 'select.gen1', f: (d) => d.gen === '1' },
   { label: 'select.gen2', f: (d) => ['2', '3', '4'].includes(d.gen) },
   { label: 'select.wifi', f: (d) => ['1', '2', '3', '4'].includes(d.gen) },

@@ -58,6 +58,10 @@ func gen1Common(set_, st node) Readings {
 		r.Uptime = up.Int()
 	}
 	r.MQTTConnected = st.Path("mqtt", "connected").Bool()
+	if st.Path("update", "has_update").Bool() || st.Get("has_update").Bool() {
+		r.UpdateAvailable = true
+		r.UpdateVersion = st.Path("update", "new_version").Str("")
+	}
 	return r
 }
 

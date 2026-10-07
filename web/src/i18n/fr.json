@@ -888,5 +888,8 @@
   "log.clearTip": "Masquer les lignes jusqu'à maintenant ; les nouvelles lignes apparaissent quand même",
   "log.count": "{shown} sur {total} lignes",
   "log.empty": "Aucune ligne de journal",
-  "log.emptyText": "Rien ne correspond à ce filtre."
+  "log.emptyText": "Rien ne correspond à ce filtre.",
+  "status.updateAvailable": "mise à jour du firmware disponible : {version}",
+  "status.updateAvailableShort": "mise à jour du firmware disponible",
+  "select.update": "Mise à jour du firmware disponible"
 }

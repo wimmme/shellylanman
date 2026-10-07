@@ -84,6 +84,10 @@ func gen2Common(cfg, st node) Readings {
 		r.Uptime = up.Int()
 	}
 	r.RebootRequired = st.Path("sys", "restart_required").Bool()
+	if stable := st.Path("sys", "available_updates", "stable"); stable.Exists() {
+		r.UpdateAvailable = true
+		r.UpdateVersion = stable.Get("version").Str("")
+	}
 	r.MQTTConnected = st.Path("mqtt", "connected").Bool()
 	return r
 }

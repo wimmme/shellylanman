@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- A device with a newer stable firmware shows **↑** after its status (like ↻ for "reboot
+  needed"), with the version in the tooltip; a summary chip *Updates* and a selection
+  *Firmware update available*. The device reports it itself, so it costs no extra request.
+  The MCP device list says `update_available`.
+
 ## [0.9.4] - 2026-10-06
 
 A Log page: see ShellyLanMan's own log in the browser.

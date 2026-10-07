@@ -86,7 +86,7 @@ export interface Device {
   id: string; mac: string; gen: string; typeId: string; typeName: string;
   hostname: string; name: string; ip: string; port: number; status: DeviceStatus;
   managed: boolean; battery: boolean; error?: string; lastSeen: number; ssid?: string;
-  rebootRequired: boolean; parent?: string; parents?: string[]; note?: string; keyword?: string;
+  rebootRequired: boolean; updateAvailable?: boolean; updateVersion?: string; parent?: string; parents?: string[]; note?: string; keyword?: string;
   /** A BLU device a gateway only relays to the Shelly Cloud: read only (DECISIONS P14-1). */
   relay?: boolean; protected?: boolean;
   rssi: number; cloudEnabled: boolean; cloudConnected: boolean; mqttEnabled: boolean; mqttConnected: boolean;
