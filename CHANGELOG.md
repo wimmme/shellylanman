@@ -16,6 +16,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   the About page's "Release check off" link leads (it was at the bottom, between other settings).
 - README links to the Home Assistant Community thread.
 - The profile's name is marked as required in the editor.
+- In the Home Assistant app the release check looks at the app's releases (`shellylanman-ha`), where Home Assistant gets
+  its updates from, and links there; "Skip this version" is not offered in the app (it would only hide ShellyLanMan's
+  own line).
 
 ## [0.9.5] - 2026-10-07
 

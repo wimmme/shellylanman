@@ -25,6 +25,10 @@ const (
 // ReleasesURL lists the project's releases.
 const ReleasesURL = "https://api.github.com/repos/wimmme/shellylanman/releases?per_page=30"
 
+// AppReleasesURL lists the releases of the Home Assistant app (shellylanman-ha): an app is updated
+// through Home Assistant, which sees a new version only when that repository has one.
+const AppReleasesURL = "https://api.github.com/repos/wimmme/shellylanman-ha/releases?per_page=30"
+
 // Status is what the UI shows.
 type Status struct {
 	Mode    string `json:"mode"`
@@ -33,6 +37,7 @@ type Status struct {
 	URL     string `json:"url,omitempty"` // release notes
 	Newer   bool   `json:"newer"`         // newer than the running version and not skipped
 	Skipped bool   `json:"skipped,omitempty"`
+	App     bool   `json:"app,omitempty"`     // a Home Assistant app: the releases are the app's, "skip" does not apply
 	Checked int64  `json:"checked,omitempty"` // unix ms
 	Error   string `json:"error,omitempty"`
 }
@@ -46,6 +51,7 @@ type Checker struct {
 	Every    time.Duration
 	OnChange func(Status)
 
+	app  bool // Home Assistant app
 	mu   sync.Mutex
 	last Status
 	wake chan struct{}
@@ -55,6 +61,12 @@ type Checker struct {
 func New(st *store.Store, current string, onChange func(Status)) *Checker {
 	return &Checker{Store: st, Current: current, URL: ReleasesURL, HTTP: &http.Client{Timeout: 20 * time.Second},
 		Every: 24 * time.Hour, OnChange: onChange, wake: make(chan struct{}, 1)}
+}
+
+// HomeAssistantApp makes the checker look at the app's releases (shellylanman-ha); skipping a version
+// is not offered there, as Home Assistant keeps showing the update.
+func (c *Checker) HomeAssistantApp() {
+	c.URL, c.app = AppReleasesURL, true
 }
 
 // Run checks at start and then every c.Every while the setting is on; Wake
@@ -121,7 +133,7 @@ type release struct {
 // Check asks GitHub now.
 func (c *Checker) Check(ctx context.Context) Status {
 	st := c.Store.Settings()
-	s := Status{Mode: modeOf(st.UpdateCheck), Current: c.Current, Checked: time.Now().UnixMilli()}
+	s := Status{Mode: modeOf(st.UpdateCheck), Current: c.Current, Checked: time.Now().UnixMilli(), App: c.app}
 	if s.Mode == Never {
 		c.set(s)
 		return s
@@ -135,7 +147,7 @@ func (c *Checker) Check(ctx context.Context) Status {
 	if rel != nil {
 		s.Latest, s.URL = rel.Tag, rel.URL
 		newer := c.Current != "dev" && firmware.Compare(rel.Tag, c.Current) > 0
-		s.Skipped = newer && st.SkipVersion == rel.Tag
+		s.Skipped = newer && !c.app && st.SkipVersion == rel.Tag
 		s.Newer = newer && !s.Skipped
 	}
 	c.set(s)

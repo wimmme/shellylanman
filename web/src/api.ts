@@ -12,7 +12,7 @@ export function wsURL(path: string): string {
   return u.href;
 }
 export interface Settings { firstRunDone: boolean; language: string; updateCheck?: string; skipVersion?: string }
-export interface UpdateStatus { mode: string; current: string; latest?: string; url?: string; newer: boolean; skipped?: boolean; checked?: number; error?: string }
+export interface UpdateStatus { mode: string; current: string; latest?: string; url?: string; newer: boolean; skipped?: boolean; app?: boolean; checked?: number; error?: string }
 export interface Credit { name: string; author: string; url: string; license: string; what: string }
 export interface Dep { name: string; version: string; license: string }
 export interface About {

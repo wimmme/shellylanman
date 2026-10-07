@@ -93,7 +93,8 @@ function renderShell(): void {
     const latest = updateStatus.latest;
     const banner = h('div', { class: 'banner', role: 'note' }, t('update.available', { version: latest }),
       updateStatus.url ? h('a', { href: updateStatus.url, target: '_blank', rel: 'noopener' }, t('update.notes')) : null,
-      h('button', { class: 'btn close', onclick: async () => { await api.updateSettings({ skipVersion: latest }).catch(() => {}); banner.remove(); } }, t('update.skip')));
+      // A Home Assistant app is updated there: skipping would only hide this line (P21-5).
+      updateStatus.app ? null : h('button', { class: 'btn close', onclick: async () => { await api.updateSettings({ skipVersion: latest }).catch(() => {}); banner.remove(); } }, t('update.skip')));
     main.append(banner);
   }
   const content = h('div', { style: 'display:contents' }, loadingState());

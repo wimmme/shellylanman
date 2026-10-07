@@ -37,6 +37,17 @@ func TestCheck(t *testing.T) {
 	if s := c.Check(context.Background()); s.Newer || !s.Skipped {
 		t.Fatalf("skipped: %+v", s)
 	}
+	// A Home Assistant app: the app's releases, and skipping a version does not hide it.
+	app := New(st, "v1.1.0", nil)
+	app.URL = srv.URL
+	app.HomeAssistantApp()
+	if app.URL != AppReleasesURL {
+		t.Fatalf("the app looks at shellylanman-ha: %s", app.URL)
+	}
+	app.URL = srv.URL
+	if s := app.Check(context.Background()); !s.Newer || s.Skipped || !s.App {
+		t.Fatalf("app, skip does not apply: %+v", s)
+	}
 	dev := New(st, "dev", nil)
 	dev.URL = srv.URL
 	if s := dev.Check(context.Background()); s.Newer {

@@ -82,6 +82,9 @@ func run(log *slog.Logger, logs *logbuf.Buffer, port, dataDir string, origins []
 		h.Broadcast(hub.Event{Type: typ, Data: data})
 	}, log)
 	updates := update.New(st, version.Version, func(s update.Status) { h.Broadcast(hub.Event{Type: "update.status", Data: s}) })
+	if supervisor.FromEnv() != nil { // a Home Assistant app is updated through Home Assistant: look at the app's releases
+		updates.HomeAssistantApp()
+	}
 	logs.OnEntry(func(e logbuf.Entry) { // new lines to the Log page; nothing to do when no browser is open
 		if h.Clients() > 0 {
 			h.Broadcast(hub.Event{Type: "log.entry", Data: e})
