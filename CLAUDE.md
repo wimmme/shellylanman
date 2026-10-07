@@ -59,8 +59,11 @@ internal/fixture   fixture naming + scrubbing (public repo!)
   out why → document → only then implement. Do not assume generations share an
   API model (Gen1 REST, Gen2+ RPC, BLU via gateways).
 - **STOP → ANALYSE THE ORIGINAL → DOCUMENT → ASK OR IMPLEMENT.** Do not invent
-  features. Nothing beyond ShellyScanner + the firmware QR feature without
-  Wim's explicit approval.
+  features. ShellyScanner parity was the original scope; since 2026-10-07 Wim also
+  wants features beyond it (`docs/roadmap.md` §2, the MCP server, the Home Assistant
+  app, …). Those still start as Wim's idea or his explicit yes, get an analysis and a
+  decision in `DECISIONS.md` and a row in `FEATURE_PARITY.md`, and design questions are
+  asked. Do not add features nobody asked for.
 - **Ask instead of assume** on design questions. Unclear or buggy-looking
   original behaviour goes into `FEATURE_PARITY.md` §5 and is asked, not silently
   "fixed".

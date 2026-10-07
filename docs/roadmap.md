@@ -76,3 +76,51 @@ There is a precedent in the code for item 1: `internal/firmware/firmware.go` pin
 Out of scope unless asked: managing certificates or a private CA on the devices
 (`Shelly.PutHTTPServerCert` and friends) — that is a write to the device's security
 configuration.
+
+## 2. Ideas beyond ShellyScanner
+
+*Added 2026-10-07, agreed in principle by the maintainer; each still needs its analysis and
+decisions (`DECISIONS.md`) before it is built. Order is a suggestion.*
+
+### 2.1 An update arrow on the devices list
+
+A device with a newer firmware gets a small **↑** in its status, like the **↻** for "reboot
+needed" (`web/src/pages/devices.ts`): in the status label, a summary chip, a selection
+filter, a tooltip. ShellyScanner shows a red dot for this.
+
+- The device says it itself: Gen2+ `Sys.GetStatus` → `available_updates` (stable and
+  beta), Gen1 `/status` → `has_update`. Neither is read today (`internal/parse/gen2.go`
+  reads `restart_required` only). It costs no extra request and nothing leaves the LAN.
+- Open: stable only or beta too (the Firmware page shows both); how it relates to the
+  Firmware page, which compares with Shelly's index on the server.
+
+### 2.2 OpenAPI description of the REST API
+
+`/api/v1` described as OpenAPI, so other programs and AI tools can use it.
+
+- Reachable from other machines on the LAN like the rest of the API: the same address and
+  port. With a UI password set, calls need the session or the MCP token as a bearer
+  token (DECISIONS P15-3), the same as every other `/api/v1` call.
+- Open: serve the description itself open or behind the login; how it is kept equal to the
+  handlers (a test, as the README's compose file is); a page that shows it, or the JSON only
+  (an interactive viewer is a dependency and needs the CSP's nonce).
+
+### 2.3 Provisioning a new device through its access point, with profiles
+
+A new or reset Shelly opens its own Wi-Fi access point (`192.168.33.1`). ShellyLanMan
+sets it up from a stored **profile**: Wi-Fi, login, name pattern, MQTT, NTP, cloud off, …
+
+- The hard part is the network: the machine that talks to the access point must be on
+  that Wi-Fi, which a Docker host on the LAN usually is not. Options to analyse: the
+  server host joins the access point; or the **browser** on a phone or laptop that is on
+  the access point does it (Shelly sends CORS headers; a page served over HTTPS may not
+  call `http://192.168.33.1`); or a hybrid with the profile fetched first.
+- Ties in with the firmware 2.0 setup window of 15 minutes (section 1): a new device must
+  get its password quickly.
+- Open: what a profile holds; naming (`shellyplus1-<mac>`-style names to a chosen name);
+  the checklist after provisioning.
+
+### 2.4 Scheduled backups — only if it is easy
+
+Backups on a schedule, kept per device (`backupKeep` exists). The maintainer sees little
+use; do it only if it is a small step, otherwise leave it.
