@@ -64,6 +64,10 @@ function csvInput(): HTMLInputElement {
 }
 
 async function general(body: HTMLElement, onLanguageChange: () => void): Promise<void> {
+  // The release check comes first: the About page links here.
+  const upd = await api.settings();
+  body.append(field(t('update.setting'), select('updCheck', [{ value: 'never', label: t('update.never') }, { value: 'stable', label: t('update.stable') }, { value: 'all', label: t('update.all') }],
+    upd.updateCheck || 'never', (v) => void api.updateSettings({ updateCheck: v }).catch(() => {}))), h('p', { class: 'muted' }, t('update.help')));
   // ShellyScanner's General tab display options, kept per browser here.
   body.append(
     field(t('prefs.uptime'), select('prefUptime', [
@@ -83,9 +87,6 @@ async function general(body: HTMLElement, onLanguageChange: () => void): Promise
       prefs.chartExport(), (v) => prefs.setChartExport(v as 'H' | 'V'))),
     h('p', { class: 'muted' }, t('prefs.note')),
   );
-  const upd = await api.settings();
-  body.append(field(t('update.setting'), select('updCheck', [{ value: 'never', label: t('update.never') }, { value: 'stable', label: t('update.stable') }, { value: 'all', label: t('update.all') }],
-    upd.updateCheck || 'never', (v) => void api.updateSettings({ updateCheck: v }).catch(() => {}))), h('p', { class: 'muted' }, t('update.help')));
   body.append(await serverPort());
   const langs = LANGUAGES.map((l) => ({ value: l.id, label: l.label }));
   body.append(field(t('settings.language.browser'), select('langBrowser', langs, lang(), (v) => {

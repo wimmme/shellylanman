@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- *Check for new ShellyLanMan versions* is now the first setting under Settings → General, where
+  the About page's "Release check off" link leads (it was at the bottom, between other settings).
+- README links to the Home Assistant Community thread.
+
 ## [0.9.5] - 2026-10-07
 
 Two wizards for new Shellys (firmware through the device's own access point, and
