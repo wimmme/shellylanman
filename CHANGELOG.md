@@ -5,6 +5,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-10-07
+
+Two wizards for new Shellys (firmware through the device's own access point, and
+"Set up a new Shelly" with profiles), an update arrow, an OpenAPI description of the
+API — and two security fixes: the device log needs the login, and the raw RPC
+endpoint no longer runs anything it is given.
+
 ### Added
 - A device with a newer stable firmware shows **↑** after its status (like ↻ for "reboot
   needed"), with the version in the tooltip; a summary chip *Updates* and a selection
