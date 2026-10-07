@@ -3,6 +3,7 @@
 import { allDevices, loadDevices } from '../devices';
 import { h, ICONS } from '../dom';
 import { t } from '../i18n';
+import { openFirmwareWizard } from '../panels/apwizard';
 import { firmwarePanel, type FirmwarePanel } from '../panels/firmware';
 import { openingScope, selected, takeHashIds } from '../selection';
 import { toast } from '../toast';
@@ -38,7 +39,8 @@ export const firmwarePage: Page = {
       });
       scopeBox.replaceChildren(...(banner ? [banner] : []));
     };
-    const c = card(t('fw.title'), null, scopeBox, h('p', { class: 'muted' }, t('fw.intro')), panelBox, h('div', { class: 'row' }, update));
+    const c = card(t('fw.title'), null, scopeBox, h('p', { class: 'muted' }, t('fw.intro')), panelBox, h('div', { class: 'row' }, update,
+      h('button', { class: 'btn', title: t('apw.openTip'), onclick: () => openFirmwareWizard() }, t('apw.open'))));
     c.querySelector('.card-head')!.append(badge);
     main.append(c);
     show();

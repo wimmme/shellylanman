@@ -258,3 +258,56 @@ func TestRPCEndpointGuard(t *testing.T) {
 		}
 	}
 }
+
+// The wizards' endpoints (DECISIONS §29): the access point of an access point name or of a
+// device, the models to pick from, and the firmware link of a model.
+func TestAPEndpoints(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	var g struct {
+		SSID       string `json:"ssid"`
+		Gen        string `json:"gen"`
+		Key        string `json:"key"`
+		Model      string `json:"model"`
+		MAC        string `json:"mac"`
+		ID         string `json:"id"`
+		Recognised bool   `json:"recognised"`
+		JoinQR     string `json:"joinQR"`
+		PageQR     string `json:"pageQR"`
+		PageURL    string `json:"pageURL"`
+	}
+	decode(t, do(t, "GET", srv.URL+"/api/v1/ap/guide?name=ShellyPlugSG3-54320467CBD4", "", nil), &g)
+	if !g.Recognised || g.Gen != "2" || g.Key != "PlugSG3" || g.Model != "Plug S G3" || g.MAC != "54320467CBD4" || g.ID != "" ||
+		g.PageURL != "http://192.168.33.1" || g.JoinQR == "" || g.PageQR == "" {
+		t.Fatalf("by name: %+v", g)
+	}
+	// The archived Gen1 plug of the test server: its default name, assumed, and the device it is.
+	g.ID, g.SSID = "", ""
+	decode(t, do(t, "GET", srv.URL+"/api/v1/ap/guide?id=AABBCC000001", "", nil), &g)
+	if g.ID != "AABBCC000001" || g.SSID != "shellyplug-s-AABBCC000001" {
+		t.Fatalf("by id: %+v", g)
+	}
+	for url, want := range map[string]int{
+		"/api/v1/ap/guide":             400,
+		"/api/v1/ap/guide?id=NOPE":     404,
+		"/api/v1/ap/guide?name=%20":    400,
+		"/api/v1/ap/guide?name=Foo-12": 200,
+	} {
+		if r := do(t, "GET", srv.URL+url, "", nil); r.StatusCode != want {
+			t.Errorf("GET %s: %d, want %d", url, r.StatusCode, want)
+		}
+	}
+	var models []struct{ Gen, Key, Name string }
+	decode(t, do(t, "GET", srv.URL+"/api/v1/ap/models", "", nil), &models)
+	if len(models) < 60 || models[0].Name == "" {
+		t.Fatalf("models: %d", len(models))
+	}
+	for body, want := range map[string]int{
+		`{"gen":"3","key":"x"}`: 400,
+		`{"gen":"1","key":""}`:  400,
+		`{"gen":"1"}`:           400,
+	} {
+		if r := do(t, "POST", srv.URL+"/api/v1/firmware/local", body, jsonHdr); r.StatusCode != want {
+			t.Errorf("POST firmware/local %s: %d, want %d", body, r.StatusCode, want)
+		}
+	}
+}

@@ -158,6 +158,28 @@ func (m *Devices) LocalDownload(ctx context.Context, id, base string) (*LocalLin
 	if !ok {
 		return nil, ErrNoLocalFW
 	}
+	return m.localLink(ctx, gen, key, cur, descName(d), d.TypeName, base)
+}
+
+// LocalDownloadModel makes the link for a model, without a device in the list (a new
+// Shelly, or one ShellyLanMan does not know): gen is "1" or "2" (Gen2 and newer), key
+// the Gen1 type or the Gen2+ app.
+func (m *Devices) LocalDownloadModel(ctx context.Context, gen, key, base string) (*LocalLink, error) {
+	if (gen != "1" && gen != "2") || strings.TrimSpace(key) == "" {
+		return nil, invalid("gen is 1 or 2, key is the model")
+	}
+	name := key
+	for _, c := range model.ModelChoices() {
+		if c.Gen == gen && c.Key == key {
+			name = c.Name
+		}
+	}
+	return m.localLink(ctx, gen, key, "", name, name, base)
+}
+
+// localLink: the newest stable firmware of one model as a link and QR code. current is
+// the version the device runs ("" when there is no device): then there is no "up to date".
+func (m *Devices) localLink(ctx context.Context, gen, key, cur, name, modelName, base string) (*LocalLink, error) {
 	l, err := m.FirmwareSource().Latest(ctx, gen, key)
 	if err != nil {
 		return nil, err
@@ -179,7 +201,7 @@ func (m *Devices) LocalDownload(ctx context.Context, id, base string) (*LocalLin
 	}
 	return &LocalLink{
 		URL: u, QR: "data:image/png;base64," + base64.StdEncoding.EncodeToString(png),
-		Name: descName(d), Model: d.TypeName, Current: cur, Version: l.Version, Source: l.Source,
+		Name: name, Model: modelName, Current: cur, Version: l.Version, Source: l.Source,
 		FileName: l.FileName(), Expires: exp.UnixMilli(), Warning: baseWarning(base),
 	}, nil
 }

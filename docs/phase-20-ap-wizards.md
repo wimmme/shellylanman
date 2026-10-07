@@ -94,3 +94,12 @@ does on its AP is still unknown and is looked at when one is at hand.
 1. No AP password (§3).
 2. Checked on a Gen1 and a Gen3 device (§1); the slug table is still to build.
 3. The user types the Wi-Fi password in the device's page; a hybrid may be tried later.
+
+## 8. Built
+
+*The firmware wizard, 2026-10-07 (DECISIONS P20-7 to P20-9).* `model.ParseAPName` and the Gen1 slug table
+(`internal/model/apname.go`), `service.APGuide` / `LocalDownloadModel`, `GET /api/v1/ap/guide`,
+`GET /api/v1/ap/models`, `POST /api/v1/firmware/local`, and the wizard in the browser
+(`web/src/panels/apwizard.ts`, logic in `aplogic.ts`). Tested with unit tests, the route test of the
+OpenAPI description, and `tools/screenshots/check-apwizard.py` under the real CSP. The provisioning
+wizard and the profiles follow; they reuse the name reading, the QR codes and the wait.

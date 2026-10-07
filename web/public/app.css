@@ -384,3 +384,8 @@ a[target="_blank"]::after,.btn.ext::after{content:"↗";margin-left:.25em;font-s
 .server-ports h3{margin:18px 0 8px;font-size:.95rem}
 .server-ports table.data th{position:static;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--text-main);background:none;white-space:nowrap}
 .server-ports table.data td.muted{white-space:normal}
+.apw-steps{display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none;margin:0 0 14px;padding:0;counter-reset:apw}
+.apw-steps li{counter-increment:apw;color:var(--text-muted);font-size:.85rem}.apw-steps li::before{content:counter(apw) ". "}
+.apw-steps li.current{color:var(--text-main);font-weight:600}.apw-steps li.done{color:var(--accent-ok)}
+.apw-content{min-height:200px}.apw-result{margin-top:10px;display:grid;gap:8px}
+.lfw-info .btn.small{justify-self:start}

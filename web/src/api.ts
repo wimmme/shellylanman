@@ -232,6 +232,20 @@ export interface LocalLink {
 export const localFwApi = {
   index: (ids: string[]) => request<IndexRow[]>('GET', '/firmware/index' + (ids.length ? '?' + idsQuery(ids) : '')),
   link: (id: string) => request<LocalLink>('POST', `/firmware/${encodeURIComponent(id)}/local`),
+  /** For a model, when there is no device in the list (DECISIONS §29): gen "1", or "2" for Gen2 and newer. */
+  modelLink: (gen: string, key: string) => request<LocalLink>('POST', '/firmware/local', { gen, key }),
+};
+
+// ---- a device's own access point (DECISIONS §29) ----
+
+export interface APGuide {
+  ssid: string; assumed?: boolean; gen?: string; key?: string; model?: string; mac?: string; id?: string;
+  apEnabled?: boolean; open?: boolean; recognised: boolean; joinQR?: string; pageURL: string; pageQR: string;
+}
+export interface ModelChoice { gen: string; key: string; name: string }
+export const apApi = {
+  guide: (q: { id?: string; name?: string }) => request<APGuide>('GET', '/ap/guide?' + new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString()),
+  models: () => request<ModelChoice[]>('GET', '/ap/models'),
 };
 
 // ---- scripts and KVS (Phase 8) ----

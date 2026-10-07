@@ -14,6 +14,12 @@ versions follow [Semantic Versioning](https://semver.org/).
   About page): every operation with its parameters, bodies, answers and errors, for
   Postman, Swagger UI or a code generator. A test keeps it equal to the routes.
 
+- **Update firmware through a device's own access point**, a wizard with QR codes (Firmware
+  page): give the access point's name (or pick the device); the file goes to the phone, a QR code
+  joins the phone to the device's access point, another opens `192.168.33.1`, and ShellyLanMan waits
+  until the device is back and shows its version. It also serves a Shelly ShellyLanMan does not know.
+  Where the access point of a device is switched off, the wizard offers to switch it on (Gen1 too).
+
 ### Changed
 - The raw RPC endpoint behind the scheduler's *test method* button (`POST /api/v1/devices/{id}/rpc`)
   no longer runs anything it is given: methods that restart, update, delete, or replace code

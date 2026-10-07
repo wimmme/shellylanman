@@ -51,6 +51,12 @@ type firmwareUpdateBody struct {
 	Confirm bool                      `json:"confirm"`
 }
 
+// modelBody names a model by the key of the firmware index (a Gen1 type or a Gen2+ app).
+type modelBody struct {
+	Gen string `json:"gen"` // "1", or "2" for Gen2 and newer
+	Key string `json:"key"`
+}
+
 type scriptCreateBody struct {
 	Name string `json:"name"`
 }

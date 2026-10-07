@@ -328,6 +328,18 @@ var operations = []operation{
 		ok:   okText(200, "The firmware, a ZIP.", "application/zip"), auth: authNone,
 		errs: []errSpec{{410, "The link has expired."}, {502, "The file could not be fetched."}, {500, ""}}},
 
+	{method: "POST", path: "/api/v1/firmware/local", id: "localFirmwareModel", tag: "Firmware", summary: "A link and QR code to download the firmware of a model",
+		desc: "As `POST /api/v1/firmware/{id}/local`, but for a model: for a device that is not in the list (a new Shelly, reached through its own access point). `gen` is `1` or `2` (Gen2 and newer); `key` is the Gen1 type or Gen2+ app (`GET /api/v1/ap/models`, or read from the access point's name by `GET /api/v1/ap/guide`).",
+		body: modelBody{}, ok: okJSON(200, "The link.", service.LocalLink{}),
+		errs: []errSpec{{404, "The index has no firmware for that model."}, {502, "Shelly's index could not be read."}, {503, ""}}},
+	{method: "GET", path: "/api/v1/ap/guide", id: "apGuide", tag: "Access point", summary: "A device's own access point, with the QR codes to join it and to open its page",
+		desc:  "For the wizards that update firmware or set up a new Shelly through the device's own access point (the phone joins it and opens `http://192.168.33.1`). Give a device in the list (`id`: its access point is read from it when it can be reached, else its default name is assumed) or the name of an access point as a phone shows it (`name`: the model is read from it; a MAC of a device in the list also works).",
+		query: []paramSpec{{name: "id", typ: "string", desc: "A device in the list."}, {name: "name", typ: "string", desc: "An access point name (`ShellyPlus2PM-A8032AB636EC`, `shellyplug-s-80646F838136`) or a MAC."}},
+		ok:    okJSON(200, "The access point.", service.APGuide{}),
+		errs:  []errSpec{{404, "No such device."}, {409, "This device has no access point of its own (BLU, unmanaged)."}, {503, ""}}},
+	{method: "GET", path: "/api/v1/ap/models", id: "apModels", tag: "Access point", summary: "Models to pick from when an access point's name does not say",
+		ok: okJSON(200, "The models, by name.", []model.ModelChoice{})},
+
 	// ---- Backup and restore ----
 	{method: "POST", path: "/api/v1/backup", id: "backup", tag: "Backup", summary: "Back up devices",
 		desc: "Writes a `.sbk` file per device on the server (ShellyScanner's format). Older ones beyond the `backupKeep` setting are deleted.",
@@ -394,6 +406,7 @@ var tagDocs = []struct{ name, desc string }{
 	{"Configuration", "Wi-Fi, login, MQTT, NTP, cloud — on one or many devices."},
 	{"Checklist", "The configuration checklist and deferred tasks."},
 	{"Firmware", "Checking and updating firmware."},
+	{"Access point", "A device's own Wi-Fi access point, for the wizards that update firmware or set up a new Shelly through it."},
 	{"Backup", "Backup and restore (`.sbk`, ShellyScanner's format)."},
 	{"Scripts", "Scripts and the key-value store of Gen2+ devices."},
 	{"Scheduler", "Schedules of Gen2+ devices."},

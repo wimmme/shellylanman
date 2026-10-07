@@ -287,7 +287,7 @@ if you switch it on (off by default). No telemetry.
 | **Devices** | The live table of every device: status, type, name, IP, RSSI, cloud, MQTT, uptime, temperature, measurements and controls. Tick devices, then use the toolbar: Checklist and Firmware for the selection; web UI, settings, charts, backup, restore, reload and reboot for one or more devices; info, logs, scheduler, scripts and notes for one device. Refresh reads the devices' status, Rescan searches the network again. |
 | **Checklist** | One row per device with the settings worth checking — eco mode, LED, logs, Bluetooth, access point, roaming, Wi-Fi, range extender, scripts, automatic firmware update. Tick devices and switch a setting with the buttons (or right-click a cell). |
 | **Charts** | Power, energy, voltage, temperature, RSSI and more for the selected devices, with 24 hours of history, zoom, pause and CSV export. |
-| **Firmware** | Current, stable and beta firmware of the selected devices (or all), update with live progress, and the QR code for the local download. |
+| **Firmware** | Current, stable and beta firmware of the selected devices (or all), update with live progress, and a wizard with QR codes to update a device through its own access point (also one ShellyLanMan does not know). |
 | **Deferred** | Actions for offline devices, run when the device comes back. |
 | **Log** | ShellyLanMan's own log: the last 1000 lines of this run, live, with a filter by level and text, pause, clear and copy. Kept in memory only. |
 | **Settings** | Scan mode and IP ranges, archive, device credentials, backups, the ports in use and where they are set, script editor, appearance (palette, font, how device pages open) and language. |
