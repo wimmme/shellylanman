@@ -176,4 +176,52 @@ func TestApplyProfileErrors(t *testing.T) {
 	}
 }
 
+// A profile read from a device (DECISIONS §30): every setting it tells, the deviations from the
+// factory marked, no name, no passwords.
+func TestProfileFromDevice(t *testing.T) {
+	m, _, ctx := newService(t, nil)
+	g1 := plugS(t, m, ctx, nil, "AABBCC000001")
+	g2 := plus1(t, m, ctx, nil, nil)
+
+	d, err := m.ProfileFromDevice(ctx, "AABBCC000001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := d.Profile
+	if p.Name != "" || p.NamePattern != "" || p.WiFiSSID != "" {
+		t.Errorf("name, pattern and Wi-Fi are left empty: %+v", p)
+	}
+	if p.Eco == nil || *p.Eco || p.Cloud == nil || *p.Cloud || p.Roaming == nil || !*p.Roaming || p.AP != nil || p.AutoFW != "" {
+		t.Errorf("read values: eco=%v cloud=%v roaming=%v ap=%v autoFW=%q", p.Eco, p.Cloud, p.Roaming, p.AP, p.AutoFW)
+	}
+	if p.MQTT == nil || !p.MQTT.Enabled || !p.MQTT.NoPassword || p.Login == nil || p.Login.Enabled || p.NTP == "" {
+		t.Errorf("mqtt=%+v login=%+v ntp=%q", p.MQTT, p.Login, p.NTP)
+	}
+	got := strings.Join(d.Deviating, " ")
+	for _, want := range []string{"roaming", "ntp", "cloud", "mqtt"} { // Gen1: roaming on, other time server, cloud off, MQTT on
+		if !strings.Contains(" "+got+" ", " "+want+" ") {
+			t.Errorf("%q should deviate: %s", want, got)
+		}
+	}
+	for _, not := range []string{"eco", "login", "ledOff"} {
+		if strings.Contains(" "+got+" ", " "+not+" ") {
+			t.Errorf("%q is as from the factory: %s", not, got)
+		}
+	}
+
+	d2, err := m.ProfileFromDevice(ctx, "AABBCC000002")
+	if err != nil || d2.Profile.MQTT == nil || d2.Profile.MQTT.Server != "broker:1883" || d2.Profile.AP == nil {
+		t.Fatalf("Gen2+: %+v %v", d2, err)
+	}
+	// Only reads: nothing but GETs went to the devices.
+	for _, c := range append(g1.Calls(), g2.Calls()...) {
+		if strings.Contains(c, "POST") || strings.Contains(c, "enable=") && strings.Contains(c, "?") {
+			t.Errorf("a write: %s", c)
+		}
+	}
+	if _, err := m.ProfileFromDevice(ctx, "NOPE"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("unknown device: %v", err)
+	}
+}
+
 func readFile(p string) ([]byte, error) { return os.ReadFile(p) }

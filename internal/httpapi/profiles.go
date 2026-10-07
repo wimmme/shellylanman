@@ -10,6 +10,7 @@ import (
 // profileRoutes: the profiles a new Shelly gets (DECISIONS §29).
 func (s *server) profileRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET /api/v1/profiles", h(s.listProfiles))
+	mux.HandleFunc("GET /api/v1/profiles/from-device", h(s.profileFromDevice))
 	mux.HandleFunc("POST /api/v1/profiles", h(s.createProfile))
 	mux.HandleFunc("PUT /api/v1/profiles/{id}", h(s.updateProfile))
 	mux.HandleFunc("DELETE /api/v1/profiles/{id}", h(s.deleteProfile))
@@ -108,4 +109,14 @@ func (s *server) applyProfile(w http.ResponseWriter, r *http.Request) {
 		steps = []service.ProfileStep{}
 	}
 	writeJSON(w, http.StatusOK, profileResult{Steps: steps})
+}
+
+// profileFromDevice: the settings of ?device= as a draft profile (reads only).
+func (s *server) profileFromDevice(w http.ResponseWriter, r *http.Request) {
+	d, err := s.Devices.ProfileFromDevice(r.Context(), r.URL.Query().Get("device"))
+	if err != nil {
+		writeError(w, profileErrorCode(err), err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, d)
 }

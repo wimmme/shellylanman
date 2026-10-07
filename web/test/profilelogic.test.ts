@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Device, Profile } from '../src/api';
-import { boolOf, describe, emptyForm, formOf, inputOf, newlyOnline, snapshot, triOf } from '../src/profilelogic';
+import type { Device, Profile, ProfileDraft } from '../src/api';
+import { boolOf, describe, draftForm, draftLines, emptyForm, formOf, inputOf, newlyOnline, snapshot, triOf } from '../src/profilelogic';
 
 const dev = (id: string, extra: Partial<Device> = {}): Device => ({
   id, mac: id, gen: '3', typeId: 'PlugSG3', typeName: 'Plug S G3', hostname: '', name: '', ip: '10.0.0.5', port: 80,
@@ -77,4 +77,28 @@ test('devices that came onto the network since the wait began', () => {
   assert.deepEqual(newlyOnline([dev('OLD', { uptime: 12 })], b2).map((d) => d.id), ['OLD']);
   // the MAC from the access point's name comes first
   assert.deepEqual(newlyOnline(now, before, 'NEW').map((d) => d.id)[0], 'NEW');
+});
+
+const draft: ProfileDraft = {
+  device: { id: 'AABBCC000001', name: 'Plug' },
+  profile: { id: '', name: '', eco: false, cloud: false, roaming: true, ntp: 'ntp.local', mqtt: { enabled: true, server: 'broker:1883', user: 'mq' }, login: { enabled: false } },
+  deviating: ['cloud', 'ntp', 'mqtt'],
+};
+
+test('a profile made from a device lists what the device tells, the deviations marked', () => {
+  assert.deepEqual(draftLines(draft).map((l) => `${l.step}${l.deviates ? '*' : ''}`), ['eco', 'roaming', 'ntp*', 'cloud*', 'mqtt*', 'login']);
+});
+
+test('only the ticked settings reach the form; the name stays empty', () => {
+  const f = draftForm(draft, new Set(['cloud', 'mqtt']));
+  assert.equal(f.name, '');
+  assert.equal(f.cloud, 'off');
+  assert.equal(f.mqtt, 'on');
+  assert.equal(f.mqttServer, 'broker:1883');
+  assert.equal(f.mqttUser, 'mq');
+  assert.equal(f.eco, '');
+  assert.equal(f.ntp, '');
+  assert.equal(f.login, '');
+  assert.equal(f.mqttPassword, ''); // a device does not tell it
+  assert.deepEqual(inputOf({ ...f, name: 'Home' }), { id: '', name: 'Home', cloud: false, mqtt: { enabled: true, server: 'broker:1883', user: 'mq' } });
 });

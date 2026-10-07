@@ -1,7 +1,7 @@
 // The logic of the profiles (DECISIONS P20-11): the form's state to the API's input and back,
 // the lines that describe a profile, and which devices have just come onto the network.
 // Pure functions, tested without a browser.
-import type { Device, Profile, ProfileInput } from './api';
+import type { Device, Profile, ProfileDraft, ProfileInput } from './api';
 
 /** A switch the profile may leave alone. */
 export type Tri = '' | 'on' | 'off';
@@ -80,6 +80,29 @@ export function describe(p: Profile): [string, string][] {
   if (p.mqtt) out.push(['mqtt', p.mqtt.enabled ? p.mqtt.server || '' : 'off']);
   if (p.login) out.push(['login', p.login.enabled ? p.login.user || 'admin' : 'off']);
   return out;
+}
+
+/** One setting read from a device, as a line of the list with a tick; `deviates`: differs from the factory (ticked at first). */
+export interface DraftLine { step: string; value: string; deviates: boolean }
+
+export function draftLines(d: ProfileDraft): DraftLine[] {
+  return describe(d.profile).map(([step, value]) => ({ step, value, deviates: d.deviating.includes(step) }));
+}
+
+/** The editor's form with only the ticked settings; the name stays empty (the user must give one). */
+export function draftForm(d: ProfileDraft, ticked: ReadonlySet<string>): ProfileForm {
+  const full = formOf({ ...d.profile, id: '', name: '' });
+  const f = emptyForm();
+  if (ticked.has('eco')) f.eco = full.eco;
+  if (ticked.has('ledOff')) f.ledOff = full.ledOff;
+  if (ticked.has('ap')) f.ap = full.ap;
+  if (ticked.has('roaming')) f.roaming = full.roaming;
+  if (ticked.has('autoFW')) f.autoFW = full.autoFW;
+  if (ticked.has('ntp')) f.ntp = full.ntp;
+  if (ticked.has('cloud')) f.cloud = full.cloud;
+  if (ticked.has('mqtt')) { f.mqtt = full.mqtt; f.mqttServer = full.mqttServer; f.mqttUser = full.mqttUser; }
+  if (ticked.has('login')) { f.login = full.login; f.user = full.user; }
+  return f;
 }
 
 export interface Seen { status: string; uptime: number }

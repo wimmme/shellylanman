@@ -15,6 +15,7 @@ import { openScheduler, schedulerKind } from '../panels/scheduler';
 import { openScripts } from '../panels/scripts';
 import { openIdentify } from '../panels/bluidentify';
 import { openProvisionWizard } from '../panels/provwizard';
+import { openProfileFromDevice } from '../panels/profilefromdevice';
 import { download, toCSV } from '../csv';
 import { toast } from '../toast';
 import { selected } from '../selection';
@@ -346,6 +347,8 @@ export const devicesPage: Page = {
         act('action.scheduler', !!one && schedulerKind(one) !== null, () => openScheduler(O()), 'action.schedulerTip', (d) => schedulerKind(d) !== null, true),
         act('action.scripts', !!one && notGhost(one) && ['2', '3', '4'].includes(one.gen), () => void openScripts(O()), 'action.scriptsTip',
           (d) => notGhost(d) && ['2', '3', '4'].includes(d.gen), true),
+        act('action.profile', !!one && notGhost(one) && ['1', '2', '3', '4'].includes(one.gen), () => void openProfileFromDevice(O()), 'action.profileTip',
+          (d) => notGhost(d) && ['1', '2', '3', '4'].includes(d.gen), true),
         act('action.notes', !!one && archiveInUse(), () => openNotes(O()), archiveInUse() ? 'action.notesTip' : 'action.notesOff', undefined, true),
         sel.some((d) => d.relay) ? act('action.identify', !!one && !!one.relay, () => void openIdentify(O()), 'action.identifyTip', (d) => !!d.relay, true) : null,
       ].filter((x): x is HTMLElement => x !== null));

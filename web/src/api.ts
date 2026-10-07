@@ -261,9 +261,12 @@ export interface ProfileView extends Profile { loginPasswordSet: boolean; mqttPa
 export interface ProfileInput extends Profile { loginPassword?: string; mqttPassword?: string }
 export interface PlanStep { step: string; value: string }
 export interface ProfileStep { step: string; result: 'ok' | 'fail' | 'skipped'; message?: string }
+/** A profile read from a device: its settings, and which of them differ from the factory's. */
+export interface ProfileDraft { device: { id: string; name: string }; profile: Profile; deviating: string[] }
 const prof = (id: string): string => `/profiles/${encodeURIComponent(id)}`;
 export const profilesApi = {
   list: () => request<ProfileView[]>('GET', '/profiles'),
+  fromDevice: (device: string) => request<ProfileDraft>('GET', `/profiles/from-device?device=${encodeURIComponent(device)}`),
   create: (input: ProfileInput) => request<ProfileView>('POST', '/profiles', input),
   update: (id: string, input: ProfileInput) => request<ProfileView>('PUT', prof(id), input),
   remove: (id: string) => request<unknown>('DELETE', prof(id)),

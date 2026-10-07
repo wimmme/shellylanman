@@ -401,3 +401,92 @@ func (m *Devices) setName(ctx context.Context, t cfgTarget, name string) error {
 	}
 	return g2call(ctx, t.e.conn, "Sys.SetConfig", map[string]any{"config": map[string]any{"device": map[string]any{"name": name}}})
 }
+
+// ProfileDraft is a profile read from a device (DECISIONS P21-1..): everything the device
+// tells that a profile can hold, and which of it differs from a Shelly as it leaves the factory.
+// The UI lists the settings with a tick; the ticked ones (Deviating at first) become the profile.
+// The name, the name pattern and the Wi-Fi reminder are left empty on purpose; passwords are never
+// readable from a device, so the user enters them afterwards.
+type ProfileDraft struct {
+	Device    DeviceRef     `json:"device"`
+	Profile   store.Profile `json:"profile"`
+	Deviating []string      `json:"deviating"` // step names, as in PlanStep.Step
+}
+
+// factoryNTP is the time server of a Shelly as it leaves the factory.
+const factoryNTP = "time.google.com"
+
+// ProfileFromDevice reads a device's settings into a draft profile. Only reads.
+func (m *Devices) ProfileFromDevice(ctx context.Context, deviceID string) (ProfileDraft, error) {
+	ts, err := m.targets([]string{deviceID})
+	if err != nil {
+		return ProfileDraft{}, err
+	}
+	t := ts[0]
+	if t.blu {
+		return ProfileDraft{}, fmt.Errorf("%w: a BLU device has no such settings", ErrBadCommand)
+	}
+	if !t.usable() {
+		return ProfileDraft{}, ErrNoConnection
+	}
+	out := ProfileDraft{Device: ref(t), Deviating: []string{}}
+	p := &out.Profile
+	dev := func(step string, yes bool) {
+		if yes {
+			out.Deviating = append(out.Deviating, step)
+		}
+	}
+
+	rows := m.Checklist(ctx, []string{deviceID})
+	if len(rows) == 1 {
+		r := rows[0]
+		if b, ok := r.Eco.(bool); ok {
+			p.Eco = &b
+			dev("eco", b)
+		}
+		if b, ok := r.LED.(bool); ok {
+			p.LEDOff = &b
+			dev("ledOff", b)
+		}
+		if b, ok := r.AP.(bool); ok {
+			p.AP = &b
+			dev("ap", !b) // Gen2+: on from the factory
+		}
+		if s, ok := r.Roaming.(string); ok && s != NAStr { // ✗ or the threshold
+			on := s != FalseStr
+			p.Roaming = &on
+			dev("roaming", on == t.gen1) // Gen1: off from the factory; Gen2+: on
+		}
+		if s, ok := r.AutoFW.(string); ok && s != NAStr {
+			if s == FalseStr {
+				s = "none"
+			}
+			if s == "stable" || s == "beta" || s == "none" {
+				p.AutoFW = s
+				dev("autoFW", s != "none")
+			}
+		}
+	}
+	if ntp, _, err := readOthers(ctx, t); err == nil && ntp != "" {
+		p.NTP = ntp
+		dev("ntp", ntp != factoryNTP)
+	}
+	cloud := t.d.CloudEnabled
+	p.Cloud = &cloud
+	dev("cloud", !cloud)
+	if q, err := m.readMQTT(ctx, t); err == nil {
+		p.MQTT = &store.ProfileMQTT{Enabled: q.Enabled}
+		if q.Enabled {
+			p.MQTT.Server, p.MQTT.User, p.MQTT.NoPassword = q.Server, q.User, q.User == ""
+		}
+		dev("mqtt", q.Enabled)
+	}
+	if l, err := readLogin(ctx, t); err == nil {
+		p.Login = &store.ProfileLogin{Enabled: l.enabled}
+		if l.enabled && t.gen1 {
+			p.Login.User = l.user
+		}
+		dev("login", l.enabled)
+	}
+	return out, nil
+}

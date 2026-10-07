@@ -37,9 +37,10 @@ function row(label: string, control: HTMLElement, hint?: string): HTMLElement {
   return h('div', { class: 'field' }, h('label', { for: id }, label), control, hint ? h('p', { class: 'muted' }, hint) : null);
 }
 
-function editor(existing: ProfileView | null, saved: () => void): void {
-  const f: ProfileForm = existing ? formOf(existing) : emptyForm();
-  const text = (key: keyof ProfileForm, opts: Record<string, string | number> = {}): HTMLInputElement => {
+/** The editor; `prefill` (a profile made from a device) starts a new profile with these values. */
+export function openProfileEditor(existing: ProfileView | null, saved: (name: string) => void, prefill?: ProfileForm): void {
+  const f: ProfileForm = existing ? formOf(existing) : prefill ?? emptyForm();
+  const text = (key: keyof ProfileForm, opts: Record<string, string | number | boolean> = {}): HTMLInputElement => {
     const i = h('input', { type: 'text', value: String(f[key]), autocomplete: 'off', spellcheck: false, ...opts });
     i.addEventListener('input', () => { (f as unknown as Record<string, string>)[key] = i.value; });
     return i;
@@ -60,17 +61,17 @@ function editor(existing: ProfileView | null, saved: () => void): void {
   const drawSub = (): void => {
     loginBox.replaceChildren(...(f.login === 'on' ? [
       row(t('prof.loginUser'), text('user', { size: 14 })),
-      row(t('prof.password'), secret('loginPassword', !!existing?.loginPasswordSet), existing?.loginPasswordSet ? t('prof.passwordSet') : undefined)] : []));
+      row(t('prof.password'), secret('loginPassword', !!existing?.loginPasswordSet), existing?.loginPasswordSet ? t('prof.passwordSet') : prefill ? t('pfd.passwordHint') : undefined)] : []));
     mqttBox.replaceChildren(...(f.mqtt === 'on' ? [
       row(t('prof.mqttServer'), text('mqttServer', { size: 30, placeholder: 'broker:1883' })),
       row(t('prof.mqttUser'), text('mqttUser', { size: 20 })),
-      row(t('prof.password'), secret('mqttPassword', !!existing?.mqttPasswordSet), existing?.mqttPasswordSet ? t('prof.passwordSet') : undefined)] : []));
+      row(t('prof.password'), secret('mqttPassword', !!existing?.mqttPasswordSet), existing?.mqttPasswordSet ? t('prof.passwordSet') : prefill && f.mqttUser !== '' ? t('pfd.passwordHint') : undefined)] : []));
   };
   drawSub();
   const err = h('p', { class: 'sec-error', role: 'alert' });
 
   const body = h('div', { class: 'prof-form' },
-    row(t('prof.name'), text('name', { size: 30 })),
+    row(`${t('prof.name')} *`, text('name', { size: 30, required: true, 'aria-required': 'true' }), t('prof.nameRequired')),
     row(t('prof.namePattern'), text('namePattern', { size: 30, placeholder: '{model} {mac4}' }), t('prof.namePatternHint')),
     row(t('prof.wifi'), text('wifiSSID', { size: 30 }), t('prof.wifiHint')),
     row(t('prof.login'), tri('login', drawSub)), loginBox,
@@ -91,7 +92,7 @@ function editor(existing: ProfileView | null, saved: () => void): void {
         const input = inputOf(f, existing?.id);
         if (existing) await profilesApi.update(existing.id, input); else await profilesApi.create(input);
       } catch (e) { err.textContent = message(e); return false; }
-      saved();
+      saved(f.name.trim());
     } },
   ]);
 }
@@ -104,7 +105,7 @@ export async function profilesSettings(body: HTMLElement): Promise<void> {
     try { list = await profilesApi.list(); } catch (e) { box.replaceChildren(h('p', { class: 'sec-error' }, message(e))); return; }
     const items = list.map((p) => h('div', { class: 'card prof-item' },
       h('div', { class: 'row' }, h('strong', {}, p.name), h('div', { class: 'spacer' }),
-        h('button', { class: 'btn', onclick: () => editor(p, () => void draw()) }, t('prof.edit')),
+        h('button', { class: 'btn', onclick: () => openProfileEditor(p, () => void draw()) }, t('prof.edit')),
         h('button', { class: 'btn', onclick: async () => {
           if (!(await confirmDialog(t('prof.delete'), t('prof.deleteConfirm', { name: p.name }), t('prof.delete')))) return;
           try { await profilesApi.remove(p.id); void draw(); } catch (e) { toast(message(e)); }
@@ -113,7 +114,7 @@ export async function profilesSettings(body: HTMLElement): Promise<void> {
         ...(describe(p).map(([s, v]) => h('li', {}, stepText(s, v)))),
         p.wifiSSID ? h('li', { class: 'muted' }, `${t('prof.wifi')}: ${p.wifiSSID}`) : null)));
     box.replaceChildren(...(items.length ? items : [h('p', { class: 'muted' }, t('prof.none'))]),
-      h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: () => editor(null, () => void draw()) }, t('prof.new'))));
+      h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: () => openProfileEditor(null, () => void draw()) }, t('prof.new'))));
   };
   await draw();
 }

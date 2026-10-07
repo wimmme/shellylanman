@@ -5,10 +5,17 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Create profile…** (Devices page, one device selected): reads the device and lists the settings a profile can
+  take over, with a tick; those that differ from a Shelly as it leaves the factory are ticked at first. Then the
+  profile editor opens with them filled in; the profile's name is required and the passwords are typed (a
+  device does not tell them). `GET /api/v1/profiles/from-device`.
+
 ### Changed
 - *Check for new ShellyLanMan versions* is now the first setting under Settings → General, where
   the About page's "Release check off" link leads (it was at the bottom, between other settings).
 - README links to the Home Assistant Community thread.
+- The profile's name is marked as required in the editor.
 
 ## [0.9.5] - 2026-10-07
 
