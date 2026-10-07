@@ -269,3 +269,21 @@ func TestResetPassword(t *testing.T) {
 		t.Fatalf("sessions %v %v", saved, err)
 	}
 }
+
+// Every WebSocket is behind the password, also the device log relay under /ws/log/;
+// the page and the phones' firmware download are not (the app shows the login, the link carries a token).
+func TestWebSocketsNeedLogin(t *testing.T) {
+	srv, st := newTestServer(t, nil)
+	setPassword(t, st, "Secret pass")
+	for _, p := range []string{"/ws", "/ws/log/AABBCC", "/api/v1/devices"} {
+		if r := do(t, "GET", srv.URL+p, "", nil); r.StatusCode != http.StatusUnauthorized {
+			t.Fatalf("GET %s without login: %d", p, r.StatusCode)
+		}
+	}
+	if r := do(t, "GET", srv.URL+"/", "", nil); r.StatusCode != 200 {
+		t.Fatalf("page: %d", r.StatusCode)
+	}
+	if r := do(t, "GET", srv.URL+"/fw/token/x.zip", "", nil); r.StatusCode == http.StatusUnauthorized {
+		t.Fatal("the firmware link carries its own token")
+	}
+}

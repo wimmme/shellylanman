@@ -891,5 +891,6 @@
   "log.emptyText": "Нищо не съвпада с този филтър.",
   "status.updateAvailable": "налична актуализация на фърмуера: {version}",
   "status.updateAvailableShort": "налична актуализация на фърмуера",
-  "select.update": "Налична актуализация на фърмуера"
+  "select.update": "Налична актуализация на фърмуера",
+  "about.api": "Описание на REST API"
 }

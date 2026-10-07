@@ -36,7 +36,7 @@ first-time user, an MCP server for AI assistants, a Home Assistant app and integ
 eight languages. No desktop, no VNC, no Java, no cloud.
 
 [Why](#-why-shellylanman) · [Quick start](#-quick-start) · [Features](#-features) ·
-[Pages](#-pages) · [Screenshots](#-screenshots) · [AI assistants (MCP)](#-ai-assistants-mcp) · [Home Assistant](#-home-assistant) · [Security](#-security) ·
+[Pages](#-pages) · [Screenshots](#-screenshots) · [AI assistants (MCP)](#-ai-assistants-mcp) · [REST API](#-rest-api) · [Home Assistant](#-home-assistant) · [Security](#-security) ·
 [Configuration](#configuration) · [Development](#-development) · [Contributing](#-contributing) · [Support](#-support) · [Credits](#-credits)
 
 ## ✨ Why ShellyLanMan
@@ -343,6 +343,16 @@ Scenes are named lists of device actions stored in ShellyLanMan (`/data/scenes.j
 Off by default, read-only unless you choose otherwise, a bearer token on every
 request, browser requests from other sites refused, and every action that changes
 something written to the log. Devices are named by name, host name, IP or MAC.
+
+## 🔌 REST API
+
+Everything the web page does goes through a REST API under `/api/v1`, and anything you
+can do in the page you can do from a script. It is described in **OpenAPI 3.1** at
+`/api/v1/openapi.json` (also linked on the About page): import it into Postman, Swagger UI
+or a code generator. It is on the same address and port as the page, so any machine on
+your LAN can use it. With a UI password set, send the session cookie or the MCP token as
+`Authorization: Bearer <token>` (a read-only token may only read); without a password
+no login is needed. Changes are pushed over the WebSocket `/ws`.
 
 ## 🏠 Home Assistant
 

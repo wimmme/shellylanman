@@ -11,7 +11,7 @@ import (
 )
 
 // configRoutes: the settings dialog, the checklist and the deferred tasks (Phase 5).
-func (s *server) configRoutes(mux *http.ServeMux, h func(http.HandlerFunc) http.HandlerFunc) {
+func (s *server) configRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET /api/v1/config/{section}", h(s.getConfig))
 	mux.HandleFunc("POST /api/v1/config/{section}", h(s.applyConfig))
 	mux.HandleFunc("GET /api/v1/checklist", h(s.getChecklist))

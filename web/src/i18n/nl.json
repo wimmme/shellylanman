@@ -891,5 +891,6 @@
   "log.emptyText": "Niets komt overeen met dit filter.",
   "status.updateAvailable": "firmware-update beschikbaar: {version}",
   "status.updateAvailableShort": "firmware-update beschikbaar",
-  "select.update": "Firmware-update beschikbaar"
+  "select.update": "Firmware-update beschikbaar",
+  "about.api": "Beschrijving van de REST-API"
 }

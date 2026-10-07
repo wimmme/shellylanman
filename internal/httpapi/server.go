@@ -17,7 +17,7 @@ type ServerInfo struct {
 	Ports
 }
 
-func (s *server) serverRoutes(mux *http.ServeMux) {
+func (s *server) serverRoutes(mux router) {
 	mux.HandleFunc("GET /api/v1/server", s.getServer)
 }
 

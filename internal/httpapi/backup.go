@@ -15,7 +15,7 @@ import (
 const maxRestoreBody = 24 << 20
 
 // backupRoutes: backup and restore (Phase 6).
-func (s *server) backupRoutes(mux *http.ServeMux, h func(http.HandlerFunc) http.HandlerFunc) {
+func (s *server) backupRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("POST /api/v1/backup", h(s.backup))
 	mux.HandleFunc("GET /api/v1/backups", h(s.listBackups))
 	mux.HandleFunc("GET /api/v1/devices/{id}/backups/{name}", h(s.downloadBackup))
@@ -46,9 +46,7 @@ func readBigJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 }
 
 func (s *server) backup(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		IDs []string `json:"ids"`
-	}
+	var body idsBody
 	if !readJSON(w, r, &body) {
 		return
 	}
@@ -94,9 +92,7 @@ func restoreErrorCode(err error) int {
 }
 
 func (s *server) restoreCheck(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Source service.RestoreSource `json:"source"`
-	}
+	var body restoreCheckBody
 	if !readBigJSON(w, r, &body) {
 		return
 	}
@@ -109,11 +105,7 @@ func (s *server) restoreCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) restore(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Source  service.RestoreSource `json:"source"`
-		Answers sbk.Answers           `json:"answers"`
-		Confirm bool                  `json:"confirm"`
-	}
+	var body restoreBody
 	if !readBigJSON(w, r, &body) {
 		return
 	}
@@ -133,10 +125,7 @@ func (s *server) restore(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) restoreMulti(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		IDs     []string `json:"ids"`
-		Confirm bool     `json:"confirm"`
-	}
+	var body idsConfirmBody
 	if !readJSON(w, r, &body) {
 		return
 	}

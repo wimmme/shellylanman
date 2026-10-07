@@ -891,5 +891,6 @@
   "log.emptyText": "Nulla corrisponde a questo filtro.",
   "status.updateAvailable": "aggiornamento del firmware disponibile: {version}",
   "status.updateAvailableShort": "aggiornamento del firmware disponibile",
-  "select.update": "Aggiornamento del firmware disponibile"
+  "select.update": "Aggiornamento del firmware disponibile",
+  "about.api": "Descrizione dell'API REST"
 }

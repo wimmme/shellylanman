@@ -19,7 +19,7 @@ import (
 
 // deviceRoutes registers the device API. Without a Devices service (tests of
 // other endpoints) they answer 503.
-func (s *server) deviceRoutes(mux *http.ServeMux) {
+func (s *server) deviceRoutes(mux router) {
 	h := func(fn http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if s.Devices == nil {
@@ -36,10 +36,7 @@ func (s *server) deviceRoutes(mux *http.ServeMux) {
 		writeJSON(w, http.StatusOK, s.Devices.BLUGateways())
 	}))
 	mux.HandleFunc("POST /api/v1/blu/identify", h(func(w http.ResponseWriter, r *http.Request) {
-		var body struct {
-			Gateway  string `json:"gateway"`
-			Duration int    `json:"duration"`
-		}
+		var body identifyBLUBody
 		if !readJSON(w, r, &body) {
 			return
 		}
@@ -108,10 +105,7 @@ func (s *server) command(w http.ResponseWriter, r *http.Request) {
 
 // reboot restarts devices; destructive, so it needs confirm=true.
 func (s *server) reboot(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		IDs     []string `json:"ids"`
-		Confirm bool     `json:"confirm"`
-	}
+	var body idsConfirmBody
 	if !readJSON(w, r, &body) {
 		return
 	}
@@ -184,9 +178,7 @@ func (s *server) removeDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) refreshDevices(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		IDs []string `json:"ids"`
-	}
+	var body idsBody
 	if r.ContentLength != 0 && !readJSON(w, r, &body) {
 		return
 	}
@@ -318,9 +310,7 @@ func (s *server) logSnapshot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) pauseDevice(w http.ResponseWriter, r *http.Request) {
-	var b struct {
-		Paused bool `json:"paused"`
-	}
+	var b pauseBody
 	if !readJSON(w, r, &b) {
 		return
 	}
@@ -360,11 +350,7 @@ func (s *server) logStream(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) putNote(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Note    string  `json:"note"`
-		Keyword string  `json:"keyword"`
-		Name    *string `json:"name"` // relayed BLU devices only (DECISIONS P14-3)
-	}
+	var body noteBody
 	if !readJSON(w, r, &body) {
 		return
 	}

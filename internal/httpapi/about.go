@@ -79,7 +79,7 @@ var goLicences = map[string]string{
 	"github.com/skip2/go-qrcode": "MIT",
 }
 
-func (s *server) aboutRoutes(mux *http.ServeMux) {
+func (s *server) aboutRoutes(mux router) {
 	mux.HandleFunc("GET /api/v1/about", s.about)
 	mux.HandleFunc("GET /api/v1/about/changelog", text(shellylanman.Changelog))
 	mux.HandleFunc("GET /api/v1/about/license", text(shellylanman.License))

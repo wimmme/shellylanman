@@ -891,5 +891,6 @@
   "log.emptyText": "没有符合此筛选条件的内容。",
   "status.updateAvailable": "有可用的固件更新：{version}",
   "status.updateAvailableShort": "有可用的固件更新",
-  "select.update": "有可用的固件更新"
+  "select.update": "有可用的固件更新",
+  "about.api": "REST API 说明"
 }

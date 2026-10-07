@@ -84,6 +84,8 @@ decisions (`DECISIONS.md`) before it is built. Order is a suggestion.*
 
 ### 2.1 An update arrow on the devices list
 
+*Done 2026-10-07 (DECISIONS P19-1).*
+
 A device with a newer firmware gets a small **↑** in its status, like the **↻** for "reboot
 needed" (`web/src/pages/devices.ts`): in the status label, a summary chip, a selection
 filter, a tooltip. ShellyScanner shows a red dot for this.
@@ -95,6 +97,8 @@ filter, a tooltip. ShellyScanner shows a red dot for this.
   Firmware page, which compares with Shelly's index on the server.
 
 ### 2.2 OpenAPI description of the REST API
+
+*Done 2026-10-07 (DECISIONS P19-2, P19-3).*
 
 `/api/v1` described as OpenAPI, so other programs and AI tools can use it.
 

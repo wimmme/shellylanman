@@ -10,6 +10,13 @@ versions follow [Semantic Versioning](https://semver.org/).
   needed"), with the version in the tooltip; a summary chip *Updates* and a selection
   *Firmware update available*. The device reports it itself, so it costs no extra request.
   The MCP device list says `update_available`.
+- The REST API is described in **OpenAPI 3.1** at `/api/v1/openapi.json` (linked on the
+  About page): every operation with its parameters, bodies, answers and errors, for
+  Postman, Swagger UI or a code generator. A test keeps it equal to the routes.
+
+### Fixed
+- A device's live log (`/ws/log/…`) could be opened without the UI password; it is now
+  behind the login like the rest.
 
 ## [0.9.4] - 2026-10-06
 

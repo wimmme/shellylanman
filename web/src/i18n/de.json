@@ -891,5 +891,6 @@
   "log.emptyText": "Nichts passt zu diesem Filter.",
   "status.updateAvailable": "Firmware-Update verfügbar: {version}",
   "status.updateAvailableShort": "Firmware-Update verfügbar",
-  "select.update": "Firmware-Update verfügbar"
+  "select.update": "Firmware-Update verfügbar",
+  "about.api": "Beschreibung der REST-API"
 }

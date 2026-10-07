@@ -891,5 +891,6 @@
   "log.emptyText": "Nothing matches this filter.",
   "status.updateAvailable": "firmware update available: {version}",
   "status.updateAvailableShort": "firmware update available",
-  "select.update": "Firmware update available"
+  "select.update": "Firmware update available",
+  "about.api": "REST API description"
 }

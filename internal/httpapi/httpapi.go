@@ -52,16 +52,44 @@ type Config struct {
 
 type server struct {
 	Config
-	guard *guard
+	guard  *guard
+	routes []string // every pattern registered on the mux (the OpenAPI test compares them with the description)
+}
+
+// router is what the route registrations need from the mux.
+type router interface {
+	HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request))
+	Handle(pattern string, handler http.Handler)
+}
+
+// recorder is a ServeMux that remembers the patterns registered on it.
+type recorder struct {
+	*http.ServeMux
+	patterns []string
+}
+
+func (r *recorder) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	r.patterns = append(r.patterns, pattern)
+	r.ServeMux.HandleFunc(pattern, handler)
+}
+
+func (r *recorder) Handle(pattern string, handler http.Handler) {
+	r.patterns = append(r.patterns, pattern)
+	r.ServeMux.Handle(pattern, handler)
 }
 
 // New returns the complete HTTP handler.
 func New(cfg Config) http.Handler {
+	h, _ := build(cfg)
+	return h
+}
+
+func build(cfg Config) (http.Handler, *server) {
 	if cfg.Log == nil {
 		cfg.Log = slog.Default()
 	}
 	s := &server{Config: cfg, guard: newGuard(cfg.Store, cfg.Log)}
-	mux := http.NewServeMux()
+	mux := &recorder{ServeMux: http.NewServeMux()}
 	mux.HandleFunc("GET /healthz", s.health)
 	s.loginRoutes(mux)
 	s.aboutRoutes(mux)
@@ -72,10 +100,12 @@ func New(cfg Config) http.Handler {
 	s.deviceRoutes(mux)
 	s.serverRoutes(mux)
 	s.logRoutes(mux)
+	s.openapiRoutes(mux)
 	s.mcpRoutes(mux)
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)
-	return securityHeaders(s.sameOrigin(s.requireLogin(mux)))
+	s.routes = mux.patterns
+	return securityHeaders(s.sameOrigin(s.requireLogin(mux))), s
 }
 
 // health is unauthenticated by design and says nothing about the version.
@@ -115,17 +145,7 @@ func (s *server) getSettings(w http.ResponseWriter, r *http.Request) {
 
 // putSettings accepts a partial update: only fields present in the body change.
 func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
-	var patch struct {
-		FirstRunDone *bool                  `json:"firstRunDone"`
-		Language     *string                `json:"language"`
-		Scan         *store.ScanSettings    `json:"scan"`
-		Archive      *store.ArchiveSettings `json:"archive"`
-		MQTTSlow     *int                   `json:"mqttSlow"`
-		BackupKeep   *int                   `json:"backupKeep"`
-		PhoneBaseURL *string                `json:"phoneBaseURL"`
-		UpdateCheck  *string                `json:"updateCheck"`
-		SkipVersion  *string                `json:"skipVersion"`
-	}
+	var patch settingsPatch
 	if !readJSON(w, r, &patch) {
 		return
 	}

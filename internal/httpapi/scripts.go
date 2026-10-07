@@ -11,7 +11,7 @@ import (
 )
 
 // scriptRoutes: scripts and KVS of a Gen2+ device (Phase 8).
-func (s *server) scriptRoutes(mux *http.ServeMux, h func(http.HandlerFunc) http.HandlerFunc) {
+func (s *server) scriptRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET /api/v1/devices/{id}/scripts", h(s.getScripts))
 	mux.HandleFunc("POST /api/v1/devices/{id}/scripts", h(s.createScript))
 	mux.HandleFunc("PATCH /api/v1/devices/{id}/scripts/{sid}", h(s.updateScript))
@@ -55,9 +55,7 @@ func (s *server) getScripts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) createScript(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Name string `json:"name"`
-	}
+	var body scriptCreateBody
 	if r.ContentLength != 0 && !readJSON(w, r, &body) {
 		return
 	}
@@ -74,10 +72,7 @@ func (s *server) updateScript(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	var body struct {
-		Name   *string `json:"name"`
-		Enable *bool   `json:"enable"`
-	}
+	var body scriptUpdateBody
 	if !readJSON(w, r, &body) {
 		return
 	}
@@ -133,9 +128,7 @@ func (s *server) putScriptCode(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	var body struct {
-		Code string `json:"code"`
-	}
+	var body scriptCodeBody
 	if !readBigJSON(w, r, &body) {
 		return
 	}
@@ -147,10 +140,7 @@ func (s *server) putScriptCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) setKVS(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Key   string `json:"key"`
-		Value string `json:"value"`
-	}
+	var body kvsBody
 	if !readJSON(w, r, &body) {
 		return
 	}
@@ -185,9 +175,7 @@ func (s *server) scriptLogOn(w http.ResponseWriter, r *http.Request) {
 
 // backupScripts lists the scripts inside an uploaded .sbk (base64).
 func (s *server) backupScripts(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Upload string `json:"upload"`
-	}
+	var body uploadBody
 	if !readBigJSON(w, r, &body) {
 		return
 	}
@@ -205,7 +193,7 @@ func (s *server) backupScripts(w http.ResponseWriter, r *http.Request) {
 }
 
 // scheduleRoutes: the scheduler dialogs (Phase 8).
-func (s *server) scheduleRoutes(mux *http.ServeMux, h func(http.HandlerFunc) http.HandlerFunc) {
+func (s *server) scheduleRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("POST /api/v1/devices/{id}/rpc", h(s.deviceRPC))
 	mux.HandleFunc("GET /api/v1/devices/{id}/schedule/hints", h(s.scheduleHints))
 	mux.HandleFunc("POST /api/v1/sbk/json", h(s.backupJSON))
@@ -215,10 +203,7 @@ func (s *server) scheduleRoutes(mux *http.ServeMux, h func(http.HandlerFunc) htt
 }
 
 func (s *server) deviceRPC(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Method string          `json:"method"`
-		Params json.RawMessage `json:"params"`
-	}
+	var body rpcBody
 	if !readJSON(w, r, &body) {
 		return
 	}
@@ -243,9 +228,7 @@ func (s *server) scheduleHints(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) backupJSON(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Upload string `json:"upload"`
-	}
+	var body uploadBody
 	if !readBigJSON(w, r, &body) {
 		return
 	}

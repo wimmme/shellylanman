@@ -12,7 +12,7 @@ type LogResponse struct {
 	Entries []logbuf.Entry `json:"entries"`
 }
 
-func (s *server) logRoutes(mux *http.ServeMux) {
+func (s *server) logRoutes(mux router) {
 	mux.HandleFunc("GET /api/v1/log", s.getLog)
 }
 

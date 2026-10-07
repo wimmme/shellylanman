@@ -10,7 +10,7 @@ import (
 )
 
 // firmwareRoutes: the FW Update panel (Phase 7).
-func (s *server) firmwareRoutes(mux *http.ServeMux, h func(http.HandlerFunc) http.HandlerFunc) {
+func (s *server) firmwareRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET /api/v1/firmware", h(s.getFirmware))
 	mux.HandleFunc("POST /api/v1/firmware/update", h(s.updateFirmware))
 	mux.HandleFunc("GET /api/v1/firmware/index", h(s.firmwareIndex))
@@ -94,10 +94,7 @@ func (s *server) getFirmware(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) updateFirmware(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Items   []service.FirmwareRequest `json:"items"`
-		Confirm bool                      `json:"confirm"`
-	}
+	var body firmwareUpdateBody
 	if !readJSON(w, r, &body) {
 		return
 	}

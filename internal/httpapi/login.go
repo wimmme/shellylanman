@@ -51,7 +51,7 @@ func ResetPassword(st *store.Store) error {
 	return st.SaveJSON(SessionsFile, map[string]auth.Session{})
 }
 
-func (s *server) loginRoutes(mux *http.ServeMux) {
+func (s *server) loginRoutes(mux router) {
 	mux.HandleFunc("POST /api/v1/auth/login", s.login)
 	mux.HandleFunc("POST /api/v1/auth/logout", s.logout)
 	mux.HandleFunc("PUT /api/v1/auth/password", s.setPassword)
@@ -100,8 +100,8 @@ func (s *server) requireLogin(next http.Handler) http.Handler {
 		switch {
 		case viaIngress(r), p == "/healthz", p == "/mcp", p == "/api/v1/status",
 			p == "/api/v1/auth/login" && r.Method == http.MethodPost:
-		case !api && p != "/ws":
-			// The page and its files: the app shows the login itself.
+		case !api && p != "/ws" && !strings.HasPrefix(p, "/ws/"):
+			// The page and its files (and the phones' firmware download): the app shows the login itself.
 		case !s.authEnabled(), s.loggedIn(w, r), api && s.tokenAllows(r):
 		default:
 			writeError(w, http.StatusUnauthorized, "login required")
@@ -172,10 +172,7 @@ func (s *server) checkPassword(w http.ResponseWriter, r *http.Request, pw, hash 
 }
 
 func (s *server) login(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Password string `json:"password"`
-		Remember bool   `json:"remember"`
-	}
+	var body loginBody
 	if !readJSON(w, r, &body) {
 		return
 	}
@@ -211,10 +208,7 @@ func (s *server) logout(w http.ResponseWriter, r *http.Request) {
 // has no environment variable to reset a forgotten one (P15-9). Every session
 // ends; the browser that made the change gets a new one, so it stays logged in.
 func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Current  string `json:"current"`
-		Password string `json:"password"`
-	}
+	var body passwordBody
 	if !readJSON(w, r, &body) {
 		return
 	}

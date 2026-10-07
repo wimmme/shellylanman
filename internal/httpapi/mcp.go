@@ -14,7 +14,7 @@ import (
 
 // mcpRoutes: the MCP endpoint itself (/mcp, bearer token, package mcp) and the
 // settings API the UI uses to switch it on and make a token.
-func (s *server) mcpRoutes(mux *http.ServeMux) {
+func (s *server) mcpRoutes(mux router) {
 	srv := &mcp.Server{Config: s.mcpConfig, Version: version.Version, Log: s.Log}
 	if s.Devices != nil { // a nil *service.Devices must not become a non-nil interface
 		srv.Service = s.Devices
@@ -102,10 +102,7 @@ func (s *server) getMCP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Enabled *bool   `json:"enabled"`
-		Access  *string `json:"access"`
-	}
+	var body mcpPatchBody
 	if !readJSON(w, r, &body) {
 		return
 	}

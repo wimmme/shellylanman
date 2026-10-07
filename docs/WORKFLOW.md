@@ -74,6 +74,14 @@ Slow or failing devices: an optional `_behaviour.json` in a fixture directory
 delays or fails GET requests by URI, e.g.
 `{"/rpc/Script.GetCode?id=2": {"delayMs": 4000}, "/rpc/Script.GetCode?id=3": {"status": 500}}`.
 
+The OpenAPI description (`GET /api/v1/openapi.json`) is checked by `go test` against the
+routes. To look at it or to run an external validator over it:
+
+```sh
+OPENAPI_OUT=openapi.json go test -run DumpOpenAPI ./internal/httpapi
+pip install openapi-spec-validator && python -c "import json; from openapi_spec_validator import validate; validate(json.load(open('openapi.json')))"
+```
+
 ## 4. Translations
 
 Every UI string is in all eight catalogues `web/src/i18n/*.json` (a test checks equal

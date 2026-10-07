@@ -61,6 +61,7 @@ function system(a: About): HTMLElement {
       ...row('about.license', h('span', { class: 'mono' }, a.license), ' · ',
         h('button', { class: 'linkish', onclick: () => showText(t('about.licenseText'), 'api/v1/about/license') }, t('about.licenseText')), ' · ',
         h('button', { class: 'linkish', onclick: () => showText(t('about.notices'), 'api/v1/about/notices') }, t('about.notices'))),
+      ...row('about.api', link('api/v1/openapi.json', 'OpenAPI')),
     ));
 }
 
