@@ -892,5 +892,8 @@
   "status.updateAvailable": "Firmware-Update verfügbar: {version}",
   "status.updateAvailableShort": "Firmware-Update verfügbar",
   "select.update": "Firmware-Update verfügbar",
-  "about.api": "Beschreibung der REST-API"
+  "about.api": "Beschreibung der REST-API",
+  "sch.testConfirmTitle": "Diese Methode jetzt ausführen?",
+  "sch.testConfirm": "{method} startet {device} neu, aktualisiert oder ändert es auf eine Weise, die sich schwer rückgängig machen lässt. Jetzt ausführen?",
+  "sch.testRun": "Ausführen"
 }

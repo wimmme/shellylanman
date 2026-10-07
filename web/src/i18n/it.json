@@ -892,5 +892,8 @@
   "status.updateAvailable": "aggiornamento del firmware disponibile: {version}",
   "status.updateAvailableShort": "aggiornamento del firmware disponibile",
   "select.update": "Aggiornamento del firmware disponibile",
-  "about.api": "Descrizione dell'API REST"
+  "about.api": "Descrizione dell'API REST",
+  "sch.testConfirmTitle": "Eseguire questo metodo adesso?",
+  "sch.testConfirm": "{method} riavvia, aggiorna o modifica {device} in un modo difficile da annullare. Eseguirlo adesso?",
+  "sch.testRun": "Esegui"
 }

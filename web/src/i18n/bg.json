@@ -892,5 +892,8 @@
   "status.updateAvailable": "налична актуализация на фърмуера: {version}",
   "status.updateAvailableShort": "налична актуализация на фърмуера",
   "select.update": "Налична актуализация на фърмуера",
-  "about.api": "Описание на REST API"
+  "about.api": "Описание на REST API",
+  "sch.testConfirmTitle": "Да се изпълни ли този метод сега?",
+  "sch.testConfirm": "{method} рестартира, актуализира или променя {device} по начин, който трудно се отменя. Да се изпълни ли сега?",
+  "sch.testRun": "Изпълни"
 }

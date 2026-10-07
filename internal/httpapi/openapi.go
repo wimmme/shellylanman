@@ -239,8 +239,8 @@ var operations = []operation{
 		query: []paramSpec{{name: "file", typ: "integer", desc: "0 for `debug/log`, 1 for `debug/log1`."}},
 		ok:    okText(200, "The log.", "text/plain"), errs: more(eDevice, errSpec{503, ""})},
 	{method: "POST", path: "/api/v1/devices/{id}/rpc", id: "deviceRPC", tag: "Control", summary: "Call any RPC method on a Gen2+ device",
-		desc: "Sends one RPC call to a Gen2+ device (for a BLU TRV, through its gateway). **Any method**, also those that change the device or break it (`Shelly.FactoryReset`): no confirmation is asked. Needs a session or an MCP token with access level `control` or higher.",
-		body: rpcBody{}, ok: okJSON(200, "The device's answer.", resultBody{}), errs: more(eDevice, errSpec{409, "Not a Gen2+ device, or not connected."}, errSpec{503, ""})},
+		desc: "Sends one RPC call to a Gen2+ device (for a BLU TRV, through its gateway); the scheduler's calls and its *test method* button. Methods that read (`Get*`, `List*`, `Check*`) and ordinary changes pass. Methods that restart, update, delete, run or replace code, set credentials or replace a settings block (`Shelly.Reboot`, `Shelly.Update`, `Script.Eval`, `Sys.SetConfig`, any `*.Delete` except `Schedule.Delete`, …) need `confirm: true`. A factory reset, a Wi-Fi reset and the delete-all methods (`Shelly.FactoryReset`, `Shelly.ResetWiFiConfig`, `Schedule.DeleteAll`, …) are refused with `400`. Needs a session or an MCP token with access level `control` or higher.",
+		body: rpcBody{}, ok: okJSON(200, "The device's answer.", resultBody{}), errs: more(e(403, 404, 502, 504), errSpec{409, "Not a Gen2+ device, or not connected."}, errSpec{400, "Invalid request, or a method that is refused here (a factory reset and the like)."}, eConfirm, errSpec{503, ""})},
 	{method: "GET", path: "/api/v1/devices/{id}/schedule/hints", id: "scheduleHints", tag: "Scheduler", summary: "Methods a schedule can call",
 		desc: "The RPC methods a scheduler entry on this device can call, with example parameters (the scheduler dialog's suggestions).",
 		ok:   okJSON(200, "The hints.", []service.MethodHint{}), errs: more(eDevice, errSpec{409, "Not a Gen2+ device."}, errSpec{503, ""})},
@@ -435,7 +435,7 @@ const infoDescription = `The REST API of ShellyLanMan, the same API its web page
 
 **Requests.** Bodies are JSON with ` + "`Content-Type: application/json`" + `; unknown fields are refused (400). Lists of devices are ` + "`ids`" + ` in the body, or comma separated in the query. A device is named by its id (the MAC, upper case, no separators) as it is in ` + "`GET /api/v1/devices`" + `.
 
-**Confirmation.** Destructive actions (reboot, restore, firmware update, Wi-Fi settings, a circuit breaker) need ` + "`\"confirm\": true`" + ` in the body; without it the answer is ` + "`428`" + `. ` + "`POST /api/v1/devices/{id}/rpc`" + ` is the exception: it passes any RPC call to the device unasked.
+**Confirmation.** Destructive actions (reboot, restore, firmware update, Wi-Fi settings, a circuit breaker) need ` + "`\"confirm\": true`" + ` in the body; without it the answer is ` + "`428`" + `. ` + "`POST /api/v1/devices/{id}/rpc`" + ` asks for it with risky RPC methods and refuses factory resets.
 
 **Errors.** A failure is ` + "`{\"error\": \"…\"}`" + ` with a status code. For an operation on a device: ` + "`404`" + ` no such device, ` + "`403`" + ` the device wants a password ShellyLanMan does not have, ` + "`504`" + ` the device cannot be reached, ` + "`502`" + ` the device answered with an error.
 

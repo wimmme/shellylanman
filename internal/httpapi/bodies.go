@@ -75,8 +75,9 @@ type uploadBody struct {
 }
 
 type rpcBody struct {
-	Method string          `json:"method"`
-	Params json.RawMessage `json:"params"`
+	Method  string          `json:"method"`
+	Params  json.RawMessage `json:"params"`
+	Confirm bool            `json:"confirm"` // needed for risky methods (service.CheckRPC)
 }
 
 type loginBody struct {

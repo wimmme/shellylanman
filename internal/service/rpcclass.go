@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -42,4 +44,25 @@ func ClassifyRPC(method string) string {
 		return RPCRisky
 	}
 	return RPCWrite
+}
+
+// ErrRPCBlocked: the method may not be called through the raw RPC endpoint.
+var ErrRPCBlocked = errors.New("this method is not available here")
+
+// CheckRPC decides whether the raw RPC endpoint (the scheduler's calls and its
+// "test method" button) passes a method on (DECISIONS P19-5): reads and ordinary
+// changes always; restarts, updates, deletes, code, credentials and settings
+// blocks only with confirm; a factory reset, a Wi-Fi reset and the delete-all
+// methods never (they have their own, confirmed flows in the UI).
+func CheckRPC(method string, confirm bool) error {
+	switch ClassifyRPC(method) {
+	case RPCDataLoss:
+		return fmt.Errorf("%w: %s wipes the device", ErrRPCBlocked, method)
+	case RPCRisky:
+		// The scheduler removes its own entries like any edit: no question.
+		if !confirm && !strings.EqualFold(method, "Schedule.Delete") {
+			return ErrConfirm
+		}
+	}
+	return nil
 }

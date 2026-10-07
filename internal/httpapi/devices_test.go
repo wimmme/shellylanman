@@ -233,3 +233,28 @@ func TestDeviceCredentialsOnlyOnTrustedPaths(t *testing.T) {
 		}
 	}
 }
+
+// The raw RPC endpoint (DECISIONS P19-5): reads and ordinary changes pass, risky methods need
+// confirm, a factory reset and the like are refused. The device here is a Gen1 ghost, so a
+// call that gets through the guard ends at "Gen2+ only" (409), which is how the test sees it passed.
+func TestRPCEndpointGuard(t *testing.T) {
+	srv, _ := newDeviceServer(t)
+	call := func(body string) int {
+		return do(t, "POST", srv.URL+"/api/v1/devices/AABBCC000001/rpc", body, jsonHdr).StatusCode
+	}
+	for body, want := range map[string]int{
+		`{"method":"Shelly.GetStatus"}`:                       409, // read: passes
+		`{"method":"Switch.Set","params":{"id":0,"on":true}}`: 409, // ordinary change: passes
+		`{"method":"Schedule.Delete","params":{"id":1}}`:      409, // the scheduler's own editing
+		`{"method":"Shelly.Reboot"}`:                          428,
+		`{"method":"Shelly.Reboot","confirm":true}`:           409, // confirmed: passes
+		`{"method":"Script.Eval","params":{"code":"1"}}`:      428,
+		`{"method":"Shelly.FactoryReset"}`:                    400,
+		`{"method":"Shelly.FactoryReset","confirm":true}`:     400, // confirm does not unlock it
+		`{"method":"Schedule.DeleteAll","confirm":true}`:      400,
+	} {
+		if got := call(body); got != want {
+			t.Errorf("%s: %d, want %d", body, got, want)
+		}
+	}
+}

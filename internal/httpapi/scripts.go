@@ -207,6 +207,14 @@ func (s *server) deviceRPC(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body) {
 		return
 	}
+	if err := service.CheckRPC(body.Method, body.Confirm); err != nil {
+		code := http.StatusBadRequest
+		if errors.Is(err, service.ErrConfirm) {
+			code = http.StatusPreconditionRequired
+		}
+		writeError(w, code, err.Error())
+		return
+	}
 	res, err := s.Devices.DeviceRPC(r.Context(), r.PathValue("id"), body.Method, body.Params)
 	if err != nil {
 		writeError(w, scriptErrorCode(err), err.Error())

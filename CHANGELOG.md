@@ -14,6 +14,12 @@ versions follow [Semantic Versioning](https://semver.org/).
   About page): every operation with its parameters, bodies, answers and errors, for
   Postman, Swagger UI or a code generator. A test keeps it equal to the routes.
 
+### Changed
+- The raw RPC endpoint behind the scheduler's *test method* button (`POST /api/v1/devices/{id}/rpc`)
+  no longer runs anything it is given: methods that restart, update, delete, or replace code
+  or a settings block ask for confirmation (a dialog, or `confirm: true` in the API); a
+  factory reset, a Wi-Fi reset and the delete-all methods are refused there.
+
 ### Fixed
 - A device's live log (`/ws/log/…`) could be opened without the UI password; it is now
   behind the login like the rest.

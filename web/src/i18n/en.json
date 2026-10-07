@@ -892,5 +892,8 @@
   "status.updateAvailable": "firmware update available: {version}",
   "status.updateAvailableShort": "firmware update available",
   "select.update": "Firmware update available",
-  "about.api": "REST API description"
+  "about.api": "REST API description",
+  "sch.testConfirmTitle": "Run this method now?",
+  "sch.testConfirm": "{method} restarts, updates or changes {device} in a way that is hard to undo. Run it now?",
+  "sch.testRun": "Run"
 }

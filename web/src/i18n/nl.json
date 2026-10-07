@@ -892,5 +892,8 @@
   "status.updateAvailable": "firmware-update beschikbaar: {version}",
   "status.updateAvailableShort": "firmware-update beschikbaar",
   "select.update": "Firmware-update beschikbaar",
-  "about.api": "Beschrijving van de REST-API"
+  "about.api": "Beschrijving van de REST-API",
+  "sch.testConfirmTitle": "Deze methode nu uitvoeren?",
+  "sch.testConfirm": "{method} herstart, update of wijzigt {device} op een manier die moeilijk ongedaan te maken is. Nu uitvoeren?",
+  "sch.testRun": "Uitvoeren"
 }

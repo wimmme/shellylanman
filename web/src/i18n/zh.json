@@ -892,5 +892,8 @@
   "status.updateAvailable": "有可用的固件更新：{version}",
   "status.updateAvailableShort": "有可用的固件更新",
   "select.update": "有可用的固件更新",
-  "about.api": "REST API 说明"
+  "about.api": "REST API 说明",
+  "sch.testConfirmTitle": "现在运行此方法？",
+  "sch.testConfirm": "{method} 会重启、更新或更改 {device}，且难以撤销。现在运行吗？",
+  "sch.testRun": "运行"
 }

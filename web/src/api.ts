@@ -259,8 +259,9 @@ export const scriptsApi = {
 
 export interface MethodHint { name: string; method?: string; params?: string }
 export const scheduleApi = {
-  rpc: async (id: string, method: string, params: unknown): Promise<unknown> =>
-    (await request<{ result: unknown }>('POST', `/devices/${encodeURIComponent(id)}/rpc`, { method, params })).result,
+  /** `confirm`: for methods that restart, update or delete (the server answers 428 without it, DECISIONS P19-5). */
+  rpc: async (id: string, method: string, params: unknown, confirm = false): Promise<unknown> =>
+    (await request<{ result: unknown }>('POST', `/devices/${encodeURIComponent(id)}/rpc`, confirm ? { method, params, confirm: true } : { method, params })).result,
   hints: (id: string) => request<MethodHint[]>('GET', `/devices/${encodeURIComponent(id)}/schedule/hints`),
   backupJSON: (upload: string) => request<Record<string, unknown>>('POST', '/sbk/json', { upload }),
 };

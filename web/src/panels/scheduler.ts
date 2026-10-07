@@ -218,7 +218,12 @@ function g2Panel(d: Device): { el: HTMLElement; apply(): Promise<boolean>; refre
         if (!m.value.trim()) return;
         let params: unknown = {};
         try { params = JSON.parse('{' + p.value + '}'); } catch { toast(t('sch.err.params')); return; }
-        try { await scheduleApi.rpc(d.id, m.value, params); toast(t('sch.testOk'), 'info'); } catch (e) { toast(msg(e)); }
+        try { await scheduleApi.rpc(d.id, m.value, params); toast(t('sch.testOk'), 'info'); } catch (e) {
+          if (!(e instanceof ApiError && e.status === 428)) { toast(msg(e)); return; }
+          // A method that restarts, updates or deletes: ask first (DECISIONS P19-5).
+          if (!(await confirmDialog(t('sch.testConfirmTitle'), t('sch.testConfirm', { method: m.value.trim(), device: d.name || d.hostname }), t('sch.testRun')))) return;
+          try { await scheduleApi.rpc(d.id, m.value, params, true); toast(t('sch.testOk'), 'info'); } catch (e2) { toast(msg(e2)); }
+        }
       }, system);
       const row = h('div', { class: 'row sch-call' }, m, p,
         iconBtn('+', 'sch.addMethod', () => addCall('', '', rows.findIndex((r) => r.row === row) + 1), system),
