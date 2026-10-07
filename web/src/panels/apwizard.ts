@@ -14,8 +14,16 @@ import { t, type Key } from '../i18n';
 import { openFrame } from '../modal';
 import { toast } from '../toast';
 
-const msg = (e: unknown): string => (e instanceof ApiError || e instanceof Error ? e.message : String(e));
+export const msg = (e: unknown): string => (e instanceof ApiError || e instanceof Error ? e.message : String(e));
 const k = (key: string): Key => key as Key;
+
+export const loading = (): HTMLElement => h('div', { class: 'state' }, h('div', { class: 'spinner', role: 'status', 'aria-label': t('state.loading') }), t('state.loading'));
+export const fail = (e: unknown): HTMLElement => h('div', { class: 'banner warn', role: 'alert' }, msg(e));
+export const qr = (src: string, alt: Key): HTMLElement => h('img', { class: 'lfw-qr', src, alt: t(alt), width: 320, height: 320 });
+export const copyBtn = (text: string): HTMLElement => h('button', { class: 'btn small', onclick: async () => {
+  try { await navigator.clipboard.writeText(text); toast(t('lfw.copied'), 'info'); } catch { /* the text is shown: select it */ }
+} }, t('common.copy'));
+export const badge = (label: Key, v: string): HTMLElement => h('div', { class: 'lfw-badge' }, h('span', { class: 'muted' }, t(label)), h('strong', {}, v));
 
 /** Open the firmware wizard, for a device in the list (id) or from the name of an access point. */
 export function openFirmwareWizard(opts: { id?: string } = {}): void {
@@ -54,14 +62,6 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     next.classList.toggle('hidden', step === 'wait');
     next.toggleAttribute('disabled', !canGoOn(step, st));
   };
-
-  const loading = (): HTMLElement => h('div', { class: 'state' }, h('div', { class: 'spinner', role: 'status', 'aria-label': t('state.loading') }), t('state.loading'));
-  const fail = (e: unknown): HTMLElement => h('div', { class: 'banner warn', role: 'alert' }, msg(e));
-  const qr = (src: string, alt: Key): HTMLElement => h('img', { class: 'lfw-qr', src, alt: t(alt), width: 320, height: 320 });
-  const copyBtn = (text: string): HTMLElement => h('button', { class: 'btn small', onclick: async () => {
-    try { await navigator.clipboard.writeText(text); toast(t('lfw.copied'), 'info'); } catch { /* the text is shown: select it */ }
-  } }, t('common.copy'));
-  const badge = (label: Key, v: string): HTMLElement => h('div', { class: 'lfw-badge' }, h('span', { class: 'muted' }, t(label)), h('strong', {}, v));
 
   async function show(): Promise<void> {
     drawSteps();

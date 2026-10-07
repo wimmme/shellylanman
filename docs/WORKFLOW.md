@@ -68,7 +68,7 @@ failing read (HTTP 500). Run it after changes to the CSP, the editor or its
 libraries; unit tests do not render under the real CSP. The same goes for
 `check-blu.py` (relayed BLU rows and the Identify wizard, "Living room" relays a
 BLU device, `tools/screenshots/blu/`) and `check-nav.py` (full and minimal sidebar) and `check-login.py` (the UI password:
-Settings → Security, login, log out, switching off) and `check-log.py` (the Log page: live lines, level filter, search, pause, clear, copy) and `check-apwizard.py` (the firmware wizard through the access point).
+Settings → Security, login, log out, switching off) and `check-log.py` (the Log page: live lines, level filter, search, pause, clear, copy) and `check-apwizard.py` (the firmware wizard through the access point) and `check-provision.py` (profiles and the wizard *Set up a new Shelly*; applying is tried on a simulator).
 
 Slow or failing devices: an optional `_behaviour.json` in a fixture directory
 delays or fails GET requests by URI, e.g.

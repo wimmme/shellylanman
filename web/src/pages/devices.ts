@@ -14,6 +14,7 @@ import { openNotes } from '../panels/notes';
 import { openScheduler, schedulerKind } from '../panels/scheduler';
 import { openScripts } from '../panels/scripts';
 import { openIdentify } from '../panels/bluidentify';
+import { openProvisionWizard } from '../panels/provwizard';
 import { download, toCSV } from '../csv';
 import { toast } from '../toast';
 import { selected } from '../selection';
@@ -361,7 +362,8 @@ export const devicesPage: Page = {
         // Refresh follows the selection, Rescan is always the whole network (P12-6).
         h('button', { class: 'btn', onclick: () => { const s = S(); void devicesApi.refresh(s.length ? s.map((d) => d.id) : undefined); }, title: t('action.refreshTip') },
           icon(ICONS.refresh, 16), sel.length ? t('action.refreshN', { n: sel.length }) : t('action.refresh')),
-        h('button', { class: 'btn', onclick: () => devicesApi.rescan(), title: t('action.rescanTip') }, icon(ICONS.radar, 16), t('action.rescan'))]);
+        h('button', { class: 'btn', onclick: () => devicesApi.rescan(), title: t('action.rescanTip') }, icon(ICONS.radar, 16), t('action.rescan')),
+        h('button', { class: 'btn', onclick: () => openProvisionWizard(), title: t('prov.openTip') }, t('prov.open'))]);
 
       badge.textContent = String(all.length);
       statusLine.textContent = filterText

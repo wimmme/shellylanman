@@ -22,6 +22,12 @@ func TestParseAPName(t *testing.T) {
 		{"shelly1l-E8DB84A1F0B7", true, "1", "SHSW-L", "E8DB84A1F0B7", "Shelly 1L"},
 		{"shellyrgbw2-A894A1", true, "1", "SHRGBW2", "", "Shelly RGBW2"},
 		{"shellyix3-98CDAC24F7D1", true, "1", "SHIX3-1", "98CDAC24F7D1", "Shelly I3"},
+		// the slugs of Shelly's knowledge base (Device identification), 6 digits as it writes them
+		{"shelly1pm-3AC4B2", true, "1", "SHSW-PM", "", "Shelly 1PM"},
+		{"shellyswitch25-A1B2C3", true, "1", "SHSW-25", "", "Shelly 2.5"},
+		{"shellyht-ABCDEF", true, "1", "SHHT-1", "", "Shelly H&T"},
+		{"shellytrv-123456", true, "1", "SHTRV-01", "", "TRV"},
+		{"shellymotion2-ABCDEF", true, "1", "SHMOS-02", "", "Motion"},
 		// not readable
 		{"", false, "", "", "", ""},
 		{"HomeWifi", false, "", "", "", ""},

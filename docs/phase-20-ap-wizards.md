@@ -28,7 +28,8 @@ Shared parts: reading an AP name (below), the two QR codes, and "wait for the de
   AP name is the device id; it can be changed (`ap.ssid`, up to 29 characters), and then it says
   nothing. `<App>` is the `app` of `Shelly.GetDeviceInfo` (`Plus2PM`, `DimmerG3`, `Mini1PMG4`), which
   ShellyLanMan's model list is keyed by: the model follows from the name, case-insensitively.
-- **Gen1**: the host name style, `shelly1-BA6201`, `shellyplug-s-80646F838136`, `shellyrgbw2-A894A1`
+- **Gen1** (Shelly's knowledge base, *Device identification*, confirms `shelly1`, `shelly1l`, `shelly1pm`,
+  `shellyswitch25`, `shellyht`, `shellytrv`, `shellymotion2`; the other pages do not say): the host name style, `shelly1-BA6201`, `shellyplug-s-80646F838136`, `shellyrgbw2-A894A1`
   (observed as the host names of the maintainer's devices; the AP name is the same by default —
   to verify on a device). The part before the last dash is a lower-case slug, not the type id
   (`SHPLG-S`): a table slug → type is needed, built from the host names of the fixtures and Shelly's
@@ -104,3 +105,10 @@ does on its AP is still unknown and is looked at when one is at hand.
 (`web/src/panels/apwizard.ts`, logic in `aplogic.ts`). Tested with unit tests, the route test of the
 OpenAPI description, and `tools/screenshots/check-apwizard.py` under the real CSP. The provisioning
 wizard and the profiles follow; they reuse the name reading, the QR codes and the wait.
+
+*The provisioning wizard and the profiles, 2026-10-07 (DECISIONS P20-11, P20-12).* `store.Profile`,
+`service/profiles.go` (`SaveProfile`, `ApplyProfile`, `ProfilePlan`), `/api/v1/profiles`, Settings →
+Profiles (`web/src/pages/settings-profiles.ts`, logic in `profilelogic.ts`) and
+`web/src/panels/provwizard.ts`. Tested with unit tests (service, API, web logic) and
+`tools/screenshots/check-provision.py`; not yet with a real, factory-new device (a new device's
+behaviour on its access point under firmware 2.0 is still to be looked at, section 5).

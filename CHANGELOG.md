@@ -20,6 +20,14 @@ versions follow [Semantic Versioning](https://semver.org/).
   until the device is back and shows its version. It also serves a Shelly ShellyLanMan does not know.
   Where the access point of a Gen2+ device is switched off, the wizard offers to switch it on; for Gen1 it says how to do it in the device's page.
 
+- **Set up a new Shelly**: a wizard (button on the Devices page) with **profiles** (Settings →
+  Profiles). A profile says what a new device gets: a name made from a pattern, login, MQTT, time
+  server, cloud and the checklist's settings (eco, LED, access point, roaming, automatic firmware
+  update), and a reminder of your Wi-Fi's name (its password is never kept). The phone joins the new
+  device's own access point (QR code), opens its page (QR code) and you enter your Wi-Fi there; when the
+  device is on your network ShellyLanMan shows what the profile would do and, after your go, does it.
+  Passwords in a profile are stored encrypted and are never shown again. `GET/POST /api/v1/profiles` and more.
+
 ### Changed
 - The raw RPC endpoint behind the scheduler's *test method* button (`POST /api/v1/devices/{id}/rpc`)
   no longer runs anything it is given: methods that restart, update, delete, or replace code

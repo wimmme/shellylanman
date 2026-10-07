@@ -12,10 +12,11 @@ import (
 //	Gen2+: Shelly<App>-<MAC>   ShellyPlus2PM-A8032AB636EC   (the default name; it can be changed)
 //	Gen1:  <slug>-<MAC>        shellyplug-s-80646F838136     (the host name, MAC of 6 or 12 hex digits)
 
-// gen1Slugs maps the host-name slug of a Gen1 device to its type. Seen on real
-// devices: shelly1, shelly1l, shellyuni, shellyix3, shellyrgbw2, shellyplug-s;
-// the others are from Shelly's Gen1 documentation and not yet seen here. A slug
-// that is missing or wrong only means "not recognised": the user then picks the model.
+// gen1Slugs maps the host-name slug of a Gen1 device to its type. Confirmed: seen on the
+// maintainer's devices (shelly1, shelly1l, shellyuni, shellyix3, shellyrgbw2, shellyplug-s) and in
+// Shelly's knowledge base, "Device identification" (shelly1, shelly1l, shelly1pm, shellyswitch25,
+// shellyht, shellytrv, shellymotion2). The rest is from memory and not confirmed: a slug that is
+// missing or wrong only means "not recognised", and the user then picks the model.
 var gen1Slugs = map[string]string{
 	"shelly1": "SHSW-1", "shelly1pm": "SHSW-PM", "shelly1l": "SHSW-L",
 	"shellyswitch": "SHSW-21", "shellyswitch25": "SHSW-25",

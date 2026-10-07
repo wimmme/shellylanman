@@ -248,6 +248,30 @@ export const apApi = {
   models: () => request<ModelChoice[]>('GET', '/ap/models'),
 };
 
+// ---- profiles for new devices (DECISIONS P20-11) ----
+
+export interface Profile {
+  id: string; name: string; namePattern?: string; wifiSSID?: string;
+  login?: { enabled: boolean; user?: string };
+  mqtt?: { enabled: boolean; server?: string; user?: string; noPassword?: boolean };
+  ntp?: string; cloud?: boolean; eco?: boolean; ledOff?: boolean; ap?: boolean; roaming?: boolean; autoFW?: string;
+}
+export interface ProfileView extends Profile { loginPasswordSet: boolean; mqttPasswordSet: boolean }
+/** Passwords are write-only: absent keeps the stored one, "" removes it. */
+export interface ProfileInput extends Profile { loginPassword?: string; mqttPassword?: string }
+export interface PlanStep { step: string; value: string }
+export interface ProfileStep { step: string; result: 'ok' | 'fail' | 'skipped'; message?: string }
+const prof = (id: string): string => `/profiles/${encodeURIComponent(id)}`;
+export const profilesApi = {
+  list: () => request<ProfileView[]>('GET', '/profiles'),
+  create: (input: ProfileInput) => request<ProfileView>('POST', '/profiles', input),
+  update: (id: string, input: ProfileInput) => request<ProfileView>('PUT', prof(id), input),
+  remove: (id: string) => request<unknown>('DELETE', prof(id)),
+  plan: (id: string, device: string) => request<PlanStep[]>('GET', `${prof(id)}/plan?device=${encodeURIComponent(device)}`),
+  apply: async (id: string, device: string): Promise<ProfileStep[]> =>
+    (await request<{ steps: ProfileStep[] }>('POST', `${prof(id)}/apply`, { device, confirm: true })).steps,
+};
+
 // ---- scripts and KVS (Phase 8) ----
 
 export interface ScriptInfo { id: number; name: string; enable: boolean; running: boolean }

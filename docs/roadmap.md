@@ -111,7 +111,7 @@ filter, a tooltip. ShellyScanner shows a red dot for this.
 
 ### 2.3 Provisioning a new device through its access point, with profiles
 
-*Analysed 2026-10-07: two wizards, `docs/phase-20-ap-wizards.md`, DECISIONS §29. The firmware wizard is built (P20-7 to P20-9); provisioning and profiles are next.*
+*Analysed 2026-10-07: two wizards, `docs/phase-20-ap-wizards.md`, DECISIONS §29. Both wizards and the profiles are built (P20-7 to P20-12); what is left is a try with a factory-new device.*
 
 A new or reset Shelly opens its own Wi-Fi access point (`192.168.33.1`). ShellyLanMan
 sets it up from a stored **profile**: Wi-Fi, login, name pattern, MQTT, NTP, cloud off, …
