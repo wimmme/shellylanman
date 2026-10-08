@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-10-08
+
+Create a profile from a Shelly you already set up, and a release check that fits the Home Assistant app.
+
 ### Added
 - **Create profile…** (Devices page, one device selected): reads the device and lists the settings a profile can
   take over, with a tick; those that differ from a Shelly as it leaves the factory are ticked at first. Then the
