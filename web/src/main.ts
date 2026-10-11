@@ -16,7 +16,7 @@ import { logPage, wireLogEvents } from './pages/log';
 import { wireFirmwareEvents } from './panels/firmware';
 import { wireBLUEvents } from './panels/bluidentify';
 import { settingsPage } from './pages/settings';
-import { EventSocket, type ConnState } from './socket';
+import { EventSocket, newServer, type ConnState } from './socket';
 import { loadDevices, setArchiveInUse, wireDeviceEvents } from './devices';
 
 const pages: Page[] = [
@@ -84,6 +84,7 @@ function renderShell(): void {
   app.replaceChildren(shell);
   document.title = `${t(page.title)} · ${t('app.name')}`;
 
+  if (serverChanged) main.append(serverChangedBanner());
   if (!status.authEnabled && !status.ingress && !noAuthDismissed()) { // behind Home Assistant's login under ingress
     const banner = h('div', { class: 'banner warn', role: 'note' }, t('banner.noAuth'),
       h('button', { class: 'btn close', onclick: () => { dismiss(); banner.remove(); } }, t('banner.dismiss')));
@@ -103,6 +104,13 @@ function renderShell(): void {
     .then(() => { const frag = h('div', { style: 'display:contents' }); return Promise.resolve(page.render(frag)).then(() => frag); })
     .then((frag) => content.replaceWith(frag))
     .catch((err) => content.replaceChildren(errorState(err)));
+}
+
+// ShellyLanMan was updated while this page was open: its API may have changed (DECISIONS P22-2).
+let serverChanged = false;
+function serverChangedBanner(): HTMLElement {
+  return h('div', { class: 'banner warn', role: 'alert' }, t('banner.newServer'),
+    h('button', { class: 'btn', onclick: () => location.reload() }, t('banner.reload')));
 }
 
 // Dismissed once per browser: the warning is also in the first-run dialog and the server log.
@@ -166,6 +174,12 @@ async function boot(): Promise<void> {
   wireFirmwareEvents(socket);
   wireBLUEvents(socket);
   wireLogEvents(socket);
+  socket.on('hello', (ev) => {
+    if (!serverChanged && newServer(version, (ev.data as { version?: string } | undefined)?.version)) {
+      serverChanged = true;
+      document.getElementById('main')?.prepend(serverChangedBanner());
+    }
+  });
   socket.on('update.status', (ev) => { updateStatus = ev.data as UpdateStatus; renderShell(); });
   void api.update().then((u) => { updateStatus = u; if (u.newer) renderShell(); }).catch(() => {});
   socket.connect();

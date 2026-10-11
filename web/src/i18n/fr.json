@@ -15,6 +15,8 @@
   "conn.down": "Déconnecté – nouvelle tentative",
   "banner.noAuth": "L'authentification de l'interface est désactivée : quiconque atteint cette adresse peut utiliser ShellyLanMan. Définissez un mot de passe dans Paramètres → Sécurité, ou gardez-le sur un réseau de confiance.",
   "banner.dismiss": "Masquer",
+  "banner.newServer": "ShellyLanMan a été mis à jour. Rechargez cette page pour utiliser la nouvelle version.",
+  "banner.reload": "Recharger",
   "state.loading": "Chargement…",
   "state.error": "Chargement impossible : {msg}",
   "state.notYet": "Pas encore disponible dans cette version.",

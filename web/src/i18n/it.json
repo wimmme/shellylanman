@@ -15,6 +15,8 @@
   "conn.down": "Disconnesso – nuovo tentativo",
   "banner.noAuth": "L'autenticazione dell'interfaccia è disattivata: chiunque raggiunga questo indirizzo può usare ShellyLanMan. Imposta una password in Impostazioni → Sicurezza, o usalo solo in una rete fidata.",
   "banner.dismiss": "Nascondi",
+  "banner.newServer": "ShellyLanMan è stato aggiornato. Ricarica questa pagina per usare la nuova versione.",
+  "banner.reload": "Ricarica",
   "state.loading": "Caricamento…",
   "state.error": "Impossibile caricare: {msg}",
   "state.notYet": "Non ancora disponibile in questa versione.",

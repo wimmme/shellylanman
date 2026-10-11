@@ -15,6 +15,8 @@
   "conn.down": "已断开 – 正在重试",
   "banner.noAuth": "界面认证已关闭：任何能访问此地址的人都能使用 ShellyLanMan。请在“设置 → 安全”中设置密码，或仅在可信网络中使用。",
   "banner.dismiss": "关闭",
+  "banner.newServer": "ShellyLanMan 已更新。请重新加载此页面以使用新版本。",
+  "banner.reload": "重新加载",
   "state.loading": "加载中…",
   "state.error": "无法加载：{msg}",
   "state.notYet": "此版本尚不可用。",

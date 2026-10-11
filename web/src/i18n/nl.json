@@ -15,6 +15,8 @@
   "conn.down": "Verbinding verbroken – opnieuw proberen",
   "banner.noAuth": "Authenticatie van de UI staat uit: iedereen die dit adres kan bereiken, kan ShellyLanMan gebruiken. Stel een wachtwoord in onder Instellingen → Beveiliging, of gebruik het enkel op een vertrouwd netwerk.",
   "banner.dismiss": "Sluiten",
+  "banner.newServer": "ShellyLanMan is bijgewerkt. Laad deze pagina opnieuw om de nieuwe versie te gebruiken.",
+  "banner.reload": "Opnieuw laden",
   "state.loading": "Laden…",
   "state.error": "Laden mislukt: {msg}",
   "state.notYet": "Nog niet beschikbaar in deze versie.",

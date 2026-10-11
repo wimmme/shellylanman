@@ -15,6 +15,8 @@
   "conn.down": "Getrennt – neuer Versuch",
   "banner.noAuth": "Die UI-Anmeldung ist aus: Jeder, der diese Adresse erreicht, kann ShellyLanMan benutzen. Ein Passwort unter Einstellungen → Sicherheit setzen oder nur in einem vertrauenswürdigen Netz betreiben.",
   "banner.dismiss": "Ausblenden",
+  "banner.newServer": "ShellyLanMan wurde aktualisiert. Diese Seite neu laden, um die neue Version zu verwenden.",
+  "banner.reload": "Neu laden",
   "state.loading": "Wird geladen…",
   "state.error": "Laden fehlgeschlagen: {msg}",
   "state.notYet": "In dieser Version noch nicht verfügbar.",

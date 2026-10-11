@@ -45,6 +45,13 @@ export class EventSocket {
   }
 }
 
+/** The server that answers after a reconnect is another version than the one this page came from:
+ * its API may have changed, so the page must be loaded again (main.ts asks, it does not reload by itself:
+ * a script being edited would be lost). */
+export function newServer(seen: string | undefined, now: string | undefined): boolean {
+  return !!seen && !!now && seen !== now;
+}
+
 /** 1 s, 2 s, 4 s … capped at 30 s. */
 export function backoff(attempt: number): number {
   return Math.min(30_000, 1000 * 2 ** Math.min(attempt, 5));
