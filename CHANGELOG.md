@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-10-12
+
+Groundwork for 1.0: a version in every data file and REST errors with a code, plus a Create profile… dialog that
+shows it is working. Before release, the changes were checked with an automated code review (Claude Code's
+*ultrareview*); what it found is fixed in this release.
+
 ### Changed
 - **Create profile…** opens its dialog at once and shows that the device is being read; a device that does not
   answer is shown in the dialog instead of as a message at the bottom.
