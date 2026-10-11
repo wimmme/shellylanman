@@ -1,7 +1,9 @@
 package httpapi
 
 import (
+	"encoding/json"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/wimmme/shellylanman/internal/service"
@@ -77,6 +79,27 @@ func TestErrorShape(t *testing.T) {
 		}
 		if r.StatusCode >= 400 && r.Header.Get("Content-Type") != "application/json" {
 			t.Errorf("%s: content type %q", c.path, r.Header.Get("Content-Type"))
+		}
+	}
+}
+
+// The texts of the OpenAPI description name only codes that exist ("`code: wrong_password`", "`password_no_capital`").
+func TestOpenAPINamesKnownCodes(t *testing.T) {
+	b, err := json.Marshal(buildSpec())
+	if err != nil {
+		t.Fatal(err)
+	}
+	listed := map[string]bool{}
+	for _, c := range errorCodes {
+		listed[c.code] = true
+	}
+	bq := "`" // the codes are quoted with backticks: (`code: a`, `b`)
+	codeRef := regexp.MustCompile(`\(` + bq + `code: ([A-Za-z_]+)` + bq + `(?:, ` + bq + `([A-Za-z_]+)` + bq + `)*\)`)
+	for _, m := range codeRef.FindAllStringSubmatch(string(b), -1) {
+		for _, c := range m[1:] {
+			if c != "" && !listed[c] {
+				t.Errorf("the OpenAPI description names an unknown code %q", c)
+			}
 		}
 	}
 }

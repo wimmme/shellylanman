@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net"
 	"net/http"
@@ -42,14 +43,29 @@ func loadSessions(st *store.Store) (map[string]auth.Session, error) {
 	if _, err := st.LoadJSON(SessionsFile, &raw); err != nil || raw == nil {
 		return nil, err
 	}
-	if _, ok := raw["version"]; !ok { // the bare map of 0.9.6 and earlier
-		var old map[string]auth.Session
-		_, err := st.LoadJSON(SessionsFile, &old)
-		return old, err
+	v, ok := raw["version"]
+	if !ok { // the bare map of 0.9.6 and earlier: hashed id → session
+		old := make(map[string]auth.Session, len(raw))
+		for id, s := range raw {
+			var sess auth.Session
+			if err := json.Unmarshal(s, &sess); err != nil {
+				return nil, fmt.Errorf("parse %s: %w", SessionsFile, err)
+			}
+			old[id] = sess
+		}
+		return old, nil
 	}
 	var f sessionsFile
-	if _, err := st.LoadVersioned(SessionsFile, store.SessionsVersion, &f); err != nil {
+	if err := json.Unmarshal(v, &f.Version); err != nil {
+		return nil, fmt.Errorf("parse %s: %w", SessionsFile, err)
+	}
+	if err := store.CheckVersion(SessionsFile, f.Version, store.SessionsVersion); err != nil {
 		return nil, err
+	}
+	if s, ok := raw["sessions"]; ok {
+		if err := json.Unmarshal(s, &f.Sessions); err != nil {
+			return nil, fmt.Errorf("parse %s: %w", SessionsFile, err)
+		}
 	}
 	return f.Sessions, nil
 }

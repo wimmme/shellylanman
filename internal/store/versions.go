@@ -40,6 +40,14 @@ var versioned = []struct {
 // ErrNewerFile: a file was written by a newer ShellyLanMan.
 var ErrNewerFile = errors.New("written by a newer ShellyLanMan")
 
+// CheckVersion is the error for a file of version have when this build understands up to max.
+func CheckVersion(name string, have, max int) error {
+	if have > max {
+		return newerFile(name, have, max)
+	}
+	return nil
+}
+
 func newerFile(name string, have, max int) error {
 	return fmt.Errorf("%s is version %d, this build understands up to %d (%w)", name, have, max, ErrNewerFile)
 }
