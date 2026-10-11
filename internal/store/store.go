@@ -207,6 +207,9 @@ func Open(dir string) (*Store, error) {
 	if err := s.load(); err != nil {
 		return nil, err
 	}
+	if err := s.checkVersions(); err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 
@@ -262,7 +265,7 @@ func (s *Store) load() error {
 		return fmt.Errorf("parse %s: %w", settingsFile, err)
 	}
 	if s.data.Version > fileVersion {
-		return fmt.Errorf("%s is version %d, this build understands up to %d", settingsFile, s.data.Version, fileVersion)
+		return newerFile(settingsFile, s.data.Version, fileVersion)
 	}
 	s.data.Version = fileVersion
 	return nil

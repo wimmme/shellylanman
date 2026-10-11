@@ -138,12 +138,9 @@ Nothing open. (*Create profile…* showing that it loads: done for 0.9.7.)
 ## 4. Before v1.0.0
 
 *Added 2026-10-11, from a code review.* Version 1.0.0 promises compatibility, so these two
-are cheap now and breaking changes afterwards. Not decided yet.
+are cheap now and breaking changes afterwards. Wim agreed to both on 2026-10-12 (DECISIONS §31).
 
-- **A version field in every file under `/data`.** `settings.json` and the archive have one
-  (the archive refuses a newer version); deferred tasks and scenes write `version: 1` but
-  do not check it on load; `profiles.json` has none. Sessions can simply be dropped on a
-  mismatch. Then a newer file is refused or migrated, never silently misread.
+- ~~**A version field in every file under `/data`.**~~ Done for 0.9.7 (DECISIONS P22-1).
 - **A machine-readable error shape in the REST API.** Today `{"error": "text"}`
   (`internal/httpapi/httpapi.go`). Something like `{"error": {"code": "device_offline",
   "message": "…"}}` lets the Home Assistant integration and other OpenAPI clients react to

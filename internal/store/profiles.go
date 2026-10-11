@@ -42,13 +42,14 @@ type ProfileMQTT struct {
 }
 
 type profilesFile struct {
+	Version  int       `json:"version"` // none before 0.9.7: read as version 0, the same layout
 	Profiles []Profile `json:"profiles"`
 }
 
 // LoadProfiles reads the profiles (none when the file is not there).
 func (s *Store) LoadProfiles() ([]Profile, error) {
 	var f profilesFile
-	if _, err := s.LoadJSON(ProfilesFile, &f); err != nil {
+	if _, err := s.LoadVersioned(ProfilesFile, ProfilesVersion, &f); err != nil {
 		return nil, err
 	}
 	return f.Profiles, nil
@@ -56,5 +57,5 @@ func (s *Store) LoadProfiles() ([]Profile, error) {
 
 // SaveProfiles writes the profiles.
 func (s *Store) SaveProfiles(list []Profile) error {
-	return s.SaveJSON(ProfilesFile, profilesFile{Profiles: list})
+	return s.SaveJSON(ProfilesFile, profilesFile{Version: ProfilesVersion, Profiles: list})
 }

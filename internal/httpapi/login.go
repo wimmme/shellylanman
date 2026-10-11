@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"net"
@@ -29,14 +30,43 @@ type guard struct {
 	limiter  *auth.Limiter
 }
 
+// sessionsFile is sessions.json on disk. Before 0.9.7 the file was the bare map.
+type sessionsFile struct {
+	Version  int                     `json:"version"`
+	Sessions map[string]auth.Session `json:"sessions"`
+}
+
+// loadSessions reads the saved sessions. A file from a newer build is not misread: its
+// sessions are dropped and everyone logs in again.
+func loadSessions(st *store.Store) (map[string]auth.Session, error) {
+	var raw map[string]json.RawMessage
+	if _, err := st.LoadJSON(SessionsFile, &raw); err != nil || raw == nil {
+		return nil, err
+	}
+	if _, ok := raw["version"]; !ok { // the bare map of 0.9.6 and earlier
+		var old map[string]auth.Session
+		_, err := st.LoadJSON(SessionsFile, &old)
+		return old, err
+	}
+	var f sessionsFile
+	if _, err := st.LoadVersioned(SessionsFile, store.SessionsVersion, &f); err != nil {
+		return nil, err
+	}
+	return f.Sessions, nil
+}
+
+func saveSessions(st *store.Store, m map[string]auth.Session) error {
+	return st.SaveJSON(SessionsFile, sessionsFile{Version: store.SessionsVersion, Sessions: m})
+}
+
 func newGuard(st *store.Store, log *slog.Logger) *guard {
-	var saved map[string]auth.Session
-	if _, err := st.LoadJSON(SessionsFile, &saved); err != nil {
-		log.Warn("sessions", "err", err)
+	saved, err := loadSessions(st)
+	if err != nil {
+		log.Warn("sessions dropped", "err", err)
 	}
 	g := &guard{sessions: auth.NewSessions(saved), limiter: auth.NewLimiter()}
 	g.sessions.Save = func(m map[string]auth.Session) {
-		if err := st.SaveJSON(SessionsFile, m); err != nil {
+		if err := saveSessions(st, m); err != nil {
 			log.Warn("sessions", "err", err)
 		}
 	}
@@ -48,7 +78,7 @@ func ResetPassword(st *store.Store) error {
 	if err := st.SetSecret(auth.PasswordSecret, ""); err != nil {
 		return err
 	}
-	return st.SaveJSON(SessionsFile, map[string]auth.Session{})
+	return saveSessions(st, map[string]auth.Session{})
 }
 
 func (s *server) loginRoutes(mux router) {

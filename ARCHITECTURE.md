@@ -322,6 +322,7 @@ proxies).
 | `/data/firmware/` | cached firmware files + small index cache (for the QR download feature) | no |
 | `/data/users.json` or a field in settings | only if authentication is enabled: password hash (scrypt/argon2id) | yes |
 
+Every JSON file there carries a version; a build refuses to start on a newer one (DECISIONS P22-1).
 Nothing else is written. Logs go to stdout. Chart samples are held in an in-memory ring buffer (Q7), not on disk. Honest note for `SECURITY.md`:
 the key lives in the same volume as the data it protects; encryption at rest protects copies of
 `settings.json` (e.g. in a support request or a backup of just that file), not someone who has the

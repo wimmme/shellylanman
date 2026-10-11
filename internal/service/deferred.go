@@ -68,7 +68,7 @@ type deferredQueue struct {
 
 func (m *Devices) loadDeferred() {
 	var f deferredFile
-	if _, err := m.store.LoadJSON(store.DeferredFile, &f); err != nil {
+	if _, err := m.store.LoadVersioned(store.DeferredFile, store.DeferredVersion, &f); err != nil {
 		m.log.Error("deferred", "err", err)
 	}
 	q := &m.deferred
@@ -91,7 +91,7 @@ func (m *Devices) saveDeferred() {
 	q.mu.Lock()
 	list := append([]DeferredTask(nil), q.tasks...)
 	q.mu.Unlock()
-	if err := m.store.SaveJSON(store.DeferredFile, deferredFile{Version: 1, Tasks: list}); err != nil {
+	if err := m.store.SaveJSON(store.DeferredFile, deferredFile{Version: store.DeferredVersion, Tasks: list}); err != nil {
 		m.log.Error("deferred save", "err", err)
 	}
 	m.emit(EventDeferred, publicDeferred(list))

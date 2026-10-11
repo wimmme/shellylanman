@@ -1,8 +1,11 @@
 package httpapi
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -255,7 +258,7 @@ func TestResetPassword(t *testing.T) {
 		t.Fatal(err)
 	}
 	setPassword(t, st, "Secret pass")
-	if err := st.SaveJSON(SessionsFile, map[string]auth.Session{"x": {LastUsed: 1}}); err != nil {
+	if err := saveSessions(st, map[string]auth.Session{"x": {LastUsed: 1}}); err != nil {
 		t.Fatal(err)
 	}
 	if err := ResetPassword(st); err != nil {
@@ -264,8 +267,7 @@ func TestResetPassword(t *testing.T) {
 	if h, set, _ := st.Secret(auth.PasswordSecret); set || h != "" {
 		t.Fatal("password still set")
 	}
-	var saved map[string]auth.Session
-	if _, err := st.LoadJSON(SessionsFile, &saved); err != nil || len(saved) != 0 {
+	if saved, err := loadSessions(st); err != nil || len(saved) != 0 {
 		t.Fatalf("sessions %v %v", saved, err)
 	}
 }
@@ -285,5 +287,36 @@ func TestWebSocketsNeedLogin(t *testing.T) {
 	}
 	if r := do(t, "GET", srv.URL+"/fw/token/x.zip", "", nil); r.StatusCode == http.StatusUnauthorized {
 		t.Fatal("the firmware link carries its own token")
+	}
+}
+
+// sessions.json carries a version since 0.9.7; the bare map of earlier releases is still read,
+// and a file from a newer build drops the sessions instead of misreading them.
+func TestSessionsFileVersion(t *testing.T) {
+	st, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := st.SaveJSON(SessionsFile, map[string]auth.Session{"old": {LastUsed: 7}}); err != nil {
+		t.Fatal(err)
+	}
+	if m, err := loadSessions(st); err != nil || m["old"].LastUsed != 7 {
+		t.Fatalf("bare map of 0.9.6: %v %v", m, err)
+	}
+	if err := saveSessions(st, map[string]auth.Session{"new": {LastUsed: 8}}); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := os.ReadFile(filepath.Join(st.Dir(), SessionsFile))
+	if !strings.Contains(string(b), `"version": 1`) {
+		t.Fatalf("written without a version:\n%s", b)
+	}
+	if m, err := loadSessions(st); err != nil || m["new"].LastUsed != 8 || len(m) != 1 {
+		t.Fatalf("versioned file: %v %v", m, err)
+	}
+	if err := st.SaveJSON(SessionsFile, map[string]any{"version": 2, "sessions": map[string]auth.Session{"x": {}}}); err != nil {
+		t.Fatal(err)
+	}
+	if m, err := loadSessions(st); !errors.Is(err, store.ErrNewerFile) || len(m) != 0 {
+		t.Fatalf("newer file: %v %v", m, err)
 	}
 }

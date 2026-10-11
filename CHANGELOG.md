@@ -8,6 +8,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 - **Create profile…** opens its dialog at once and shows that the device is being read; a device that does not
   answer is shown in the dialog instead of as a message at the bottom.
+- Every JSON file under `/data` carries a version (`profiles.json` and `sessions.json` did not; the deferred
+  tasks and scenes did not check theirs). An older ShellyLanMan started on data written by a newer one stops
+  with a message naming the file, instead of misreading it and writing over it; saved logins are the
+  exception and are simply dropped. Files from earlier releases are read as before.
 
 ## [0.9.6] - 2026-10-08
 

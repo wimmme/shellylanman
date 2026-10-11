@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/wimmme/shellylanman/internal/parse"
+	"github.com/wimmme/shellylanman/internal/store"
 )
 
 // Scenes are named, ordered lists of device actions that run on request
@@ -19,7 +20,7 @@ import (
 // the data directory. Not part of ShellyScanner.
 
 // SceneFile is the scenes' file in the data directory.
-const SceneFile = "scenes.json"
+const SceneFile = store.ScenesFile
 
 // Scene limits.
 const (
@@ -83,7 +84,7 @@ func (m *Devices) loadScenes() error {
 		return nil
 	}
 	var f sceneFile
-	if _, err := m.store.LoadJSON(SceneFile, &f); err != nil {
+	if _, err := m.store.LoadVersioned(SceneFile, store.ScenesVersion, &f); err != nil {
 		return err
 	}
 	m.scenes.list, m.scenes.loaded = f.Scenes, true
@@ -91,7 +92,7 @@ func (m *Devices) loadScenes() error {
 }
 
 func (m *Devices) saveScenes(list []Scene) error {
-	if err := m.store.SaveJSON(SceneFile, sceneFile{Version: 1, Scenes: list}); err != nil {
+	if err := m.store.SaveJSON(SceneFile, sceneFile{Version: store.ScenesVersion, Scenes: list}); err != nil {
 		return err
 	}
 	m.scenes.list = list

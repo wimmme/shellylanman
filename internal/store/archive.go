@@ -55,7 +55,7 @@ func (s *Store) LoadArchive() ([]ArchivedDevice, error) {
 		return nil, fmt.Errorf("parse %s: %w", archiveFile, err)
 	}
 	if a.Version > archiveVersion {
-		return nil, fmt.Errorf("%s is version %d, this build understands up to %d", archiveFile, a.Version, archiveVersion)
+		return nil, newerFile(archiveFile, a.Version, archiveVersion)
 	}
 	return a.Devices, nil
 }
