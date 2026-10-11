@@ -84,7 +84,9 @@ func (m *Devices) loadScenes() error {
 		return nil
 	}
 	var f sceneFile
-	if _, err := m.store.LoadVersioned(SceneFile, store.ScenesVersion, &f); err != nil {
+	if _, err := m.store.LoadVersioned(SceneFile, store.ScenesVersion, &f); errors.Is(err, store.ErrUnreadable) {
+		m.log.Error("scenes", "err", err) // moved aside: go on without scenes
+	} else if err != nil {
 		return err
 	}
 	m.scenes.list, m.scenes.loaded = f.Scenes, true

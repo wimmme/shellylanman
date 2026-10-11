@@ -5,6 +5,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- A data file that cannot be read (the archive with your notes, the deferred tasks, scenes, profiles) is moved
+  aside as `<name>.broken-<time>` instead of being written over at the next save; the log says where it went.
+  A file that cannot be read at all is left alone.
+- When an older ShellyLanMan refuses data written by a newer one, the message says which version runs and what
+  to do.
+
 ## [0.9.7] - 2026-10-12
 
 Groundwork for 1.0: a version in every data file and REST errors with a code, plus a Create profile… dialog that

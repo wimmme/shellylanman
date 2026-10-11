@@ -62,6 +62,10 @@ func (m *Devices) saveArchive() {
 		return
 	}
 	m.mu.Lock()
+	if m.archiveKeep {
+		m.mu.Unlock()
+		return
+	}
 	next := map[string]store.ArchivedDevice{}
 	for id, e := range m.devs {
 		d := e.dev

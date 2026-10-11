@@ -72,6 +72,10 @@ func run(log *slog.Logger, logs *logbuf.Buffer, port, dataDir string, origins []
 	log.Info("starting ShellyLanMan", "version", version.Version, "commit", version.Commit, "data", dataDir)
 
 	st, err := store.Open(dataDir)
+	if errors.Is(err, store.ErrNewerFile) {
+		return fmt.Errorf("%w. This is ShellyLanMan %s and the data was written by a newer version: "+
+			"install that version again, or restore a backup of %s made with this one", err, version.Version, dataDir)
+	}
 	if err != nil {
 		return err
 	}

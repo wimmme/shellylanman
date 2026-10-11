@@ -87,10 +87,12 @@ type Devices struct {
 	inflight  map[string]bool
 	archive   map[string]store.ArchivedDevice
 	dirty     bool
-	viewers   bool
-	wake      chan struct{}
-	done      chan struct{} // closed when the final archive save is done
-	scan      ScanState
+	// archiveKeep: archive.json could not be read and is still there; it is not written over.
+	archiveKeep bool
+	viewers     bool
+	wake        chan struct{}
+	done        chan struct{} // closed when the final archive save is done
+	scan        ScanState
 
 	deferred deferredQueue // tasks for devices that were off line (Phase 5)
 	fw       fwState       // firmware updates being followed (Phase 7)
@@ -161,7 +163,13 @@ func (m *Devices) Start(ctx context.Context) {
 	m.base = ctx
 	m.mu.Unlock()
 	if arc, err := m.store.LoadArchive(); err != nil {
-		m.log.Error("archive", "err", err)
+		// Moved aside (ErrUnreadable): start empty. Anything else (the file could not even be read):
+		// never write over it in this run.
+		keep := !errors.Is(err, store.ErrUnreadable)
+		m.mu.Lock()
+		m.archiveKeep = keep
+		m.mu.Unlock()
+		m.log.Error("archive", "err", err, "saving", !keep)
 	} else {
 		m.mu.Lock()
 		for _, a := range arc {

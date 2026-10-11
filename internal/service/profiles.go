@@ -73,7 +73,7 @@ func (m *Devices) viewOf(p store.Profile) ProfileView {
 func (m *Devices) Profiles() ([]ProfileView, error) {
 	m.profMu.Lock()
 	defer m.profMu.Unlock()
-	list, err := m.store.LoadProfiles()
+	list, err := m.loadProfiles()
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +84,19 @@ func (m *Devices) Profiles() ([]ProfileView, error) {
 	return out, nil
 }
 
-func (m *Devices) profile(id string) (store.Profile, error) {
+// loadProfiles reads the profiles; a file that could not be read was moved aside by the store:
+// say so in the log and go on without profiles.
+func (m *Devices) loadProfiles() ([]store.Profile, error) {
 	list, err := m.store.LoadProfiles()
+	if errors.Is(err, store.ErrUnreadable) {
+		m.log.Error("profiles", "err", err)
+		return nil, nil
+	}
+	return list, err
+}
+
+func (m *Devices) profile(id string) (store.Profile, error) {
+	list, err := m.loadProfiles()
 	if err != nil {
 		return store.Profile{}, err
 	}
@@ -147,7 +158,7 @@ func (in *ProfileInput) validate(hadLoginPw, hadMQTTPw bool) error {
 func (m *Devices) SaveProfile(in ProfileInput) (ProfileView, error) {
 	m.profMu.Lock()
 	defer m.profMu.Unlock()
-	list, err := m.store.LoadProfiles()
+	list, err := m.loadProfiles()
 	if err != nil {
 		return ProfileView{}, err
 	}
@@ -206,7 +217,7 @@ func (m *Devices) SaveProfile(in ProfileInput) (ProfileView, error) {
 func (m *Devices) DeleteProfile(id string) error {
 	m.profMu.Lock()
 	defer m.profMu.Unlock()
-	list, err := m.store.LoadProfiles()
+	list, err := m.loadProfiles()
 	if err != nil {
 		return err
 	}

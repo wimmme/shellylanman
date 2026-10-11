@@ -3,7 +3,6 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -41,21 +40,12 @@ type archiveFileFormat struct {
 	Devices []ArchivedDevice `json:"dev"`
 }
 
-// LoadArchive returns the archived devices; a missing file is an empty archive.
+// LoadArchive returns the archived devices; a missing file is an empty archive. A newer one is
+// ErrNewerFile; one that cannot be read is moved aside (ErrUnreadable) and the archive starts empty.
 func (s *Store) LoadArchive() ([]ArchivedDevice, error) {
-	b, err := os.ReadFile(filepath.Join(s.dir, archiveFile))
-	if errors.Is(err, fs.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("read archive: %w", err)
-	}
 	var a archiveFileFormat
-	if err := json.Unmarshal(b, &a); err != nil {
-		return nil, fmt.Errorf("parse %s: %w", archiveFile, err)
-	}
-	if a.Version > archiveVersion {
-		return nil, newerFile(archiveFile, a.Version, archiveVersion)
+	if _, err := s.loadVersioned(archiveFile, "ver", archiveVersion, &a); err != nil {
+		return nil, err
 	}
 	return a.Devices, nil
 }

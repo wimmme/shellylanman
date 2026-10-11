@@ -7,6 +7,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -64,15 +65,19 @@ type deferredQueue struct {
 	mu    sync.Mutex
 	tasks []DeferredTask
 	seq   int
+	keep  bool // the file could not be read: do not write over it
 }
 
 func (m *Devices) loadDeferred() {
 	var f deferredFile
-	if _, err := m.store.LoadVersioned(store.DeferredFile, store.DeferredVersion, &f); err != nil {
-		m.log.Error("deferred", "err", err)
-	}
+	_, err := m.store.LoadVersioned(store.DeferredFile, store.DeferredVersion, &f)
 	q := &m.deferred
 	q.mu.Lock()
+	if err != nil {
+		// Moved aside (ErrUnreadable): start empty. Anything else: never write over the file in this run.
+		q.keep = !errors.Is(err, store.ErrUnreadable)
+		m.log.Error("deferred", "err", err, "saving", !q.keep)
+	}
 	for i := range f.Tasks {
 		if f.Tasks[i].Status == DefRunning { // interrupted by a restart
 			f.Tasks[i].Status, f.Tasks[i].Message = DefFail, "interrupted"
@@ -90,7 +95,12 @@ func (m *Devices) saveDeferred() {
 	q := &m.deferred
 	q.mu.Lock()
 	list := append([]DeferredTask(nil), q.tasks...)
+	keep := q.keep
 	q.mu.Unlock()
+	if keep {
+		m.emit(EventDeferred, publicDeferred(list))
+		return
+	}
 	if err := m.store.SaveJSON(store.DeferredFile, deferredFile{Version: store.DeferredVersion, Tasks: list}); err != nil {
 		m.log.Error("deferred save", "err", err)
 	}

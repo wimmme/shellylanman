@@ -83,3 +83,53 @@ func TestLoadVersioned(t *testing.T) {
 		t.Fatalf("known version: %v %v %+v", ok, err, v)
 	}
 }
+
+// A file that cannot be read is moved aside, so the next save does not overwrite it (P22-3);
+// a newer one stays where it is.
+func TestUnreadableFileMovedAside(t *testing.T) {
+	for _, body := range []string{`{"profiles": [`, `{"version": "2", "profiles": []}`, `{"profiles": 7}`} {
+		dir := t.TempDir()
+		path := filepath.Join(dir, ProfilesFile)
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		s, err := Open(dir)
+		if err != nil {
+			t.Fatalf("%s: Open: %v", body, err)
+		}
+		list, err := s.LoadProfiles()
+		if !errors.Is(err, ErrUnreadable) || list != nil {
+			t.Fatalf("%s: %v %v, want ErrUnreadable", body, list, err)
+		}
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			t.Fatalf("%s: still in place", body)
+		}
+		moved, _ := filepath.Glob(path + ".broken-*")
+		if len(moved) != 1 {
+			t.Fatalf("%s: moved aside as %v", body, moved)
+		}
+		if b, _ := os.ReadFile(moved[0]); string(b) != body {
+			t.Fatalf("%s: content changed: %s", body, b)
+		}
+		if list, err := s.LoadProfiles(); err != nil || list != nil {
+			t.Fatalf("%s: after moving: %v %v", body, list, err)
+		}
+	}
+}
+
+func TestBrokenArchiveMovedAside(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, archiveFile), []byte(`{"ver": 1, "dev": [{"mac": `), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.LoadArchive(); !errors.Is(err, ErrUnreadable) {
+		t.Fatalf("err = %v", err)
+	}
+	if moved, _ := filepath.Glob(filepath.Join(dir, archiveFile+".broken-*")); len(moved) != 1 {
+		t.Fatalf("moved %v", moved)
+	}
+}

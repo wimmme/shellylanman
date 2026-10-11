@@ -37,37 +37,24 @@ type sessionsFile struct {
 }
 
 // loadSessions reads the saved sessions. A file from a newer build is not misread: its
-// sessions are dropped and everyone logs in again.
+// sessions are dropped and everyone logs in again (as with a file that cannot be read).
 func loadSessions(st *store.Store) (map[string]auth.Session, error) {
 	var raw map[string]json.RawMessage
-	if _, err := st.LoadJSON(SessionsFile, &raw); err != nil || raw == nil {
+	if _, err := st.LoadVersioned(SessionsFile, store.SessionsVersion, &raw); err != nil || raw == nil {
 		return nil, err
 	}
-	v, ok := raw["version"]
-	if !ok { // the bare map of 0.9.6 and earlier: hashed id → session
-		old := make(map[string]auth.Session, len(raw))
-		for id, s := range raw {
-			var sess auth.Session
-			if err := json.Unmarshal(s, &sess); err != nil {
-				return nil, fmt.Errorf("parse %s: %w", SessionsFile, err)
-			}
-			old[id] = sess
-		}
-		return old, nil
+	sessions, ok := raw["sessions"]
+	if _, versioned := raw["version"]; !versioned { // the bare map of 0.9.6 and earlier: hashed id → session
+		b, _ := json.Marshal(raw)
+		sessions, ok = b, true
 	}
-	var f sessionsFile
-	if err := json.Unmarshal(v, &f.Version); err != nil {
-		return nil, fmt.Errorf("parse %s: %w", SessionsFile, err)
-	}
-	if err := store.CheckVersion(SessionsFile, f.Version, store.SessionsVersion); err != nil {
-		return nil, err
-	}
-	if s, ok := raw["sessions"]; ok {
-		if err := json.Unmarshal(s, &f.Sessions); err != nil {
+	var m map[string]auth.Session
+	if ok {
+		if err := json.Unmarshal(sessions, &m); err != nil {
 			return nil, fmt.Errorf("parse %s: %w", SessionsFile, err)
 		}
 	}
-	return f.Sessions, nil
+	return m, nil
 }
 
 func saveSessions(st *store.Store, m map[string]auth.Session) error {
