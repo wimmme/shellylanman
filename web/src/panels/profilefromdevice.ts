@@ -13,20 +13,22 @@ import { draftForm, draftLines } from '../profilelogic';
 
 export async function openProfileFromDevice(device: Device): Promise<void> {
   const name = device.name || device.hostname || device.id;
-  let gone = false;
-  const frame = openFrame(t('pfd.title', { name }), () => { gone = true; }, false);
+  const reading = new AbortController(); // closing the dialog stops reading the device
+  const frame = openFrame(t('pfd.title', { name }), { onClose: () => reading.abort(), size: 'normal' });
   const next = h('button', { class: 'btn primary', disabled: true }, t('pfd.next'));
-  frame.footer.append(h('button', { class: 'btn', onclick: () => frame.close() }, t('common.cancel')), next);
+  const cancel = h('button', { class: 'btn', onclick: () => frame.close() }, t('common.cancel'));
+  frame.footer.append(cancel, next);
   frame.body.append(loadingState());
+  cancel.focus();
 
   let draft: ProfileDraft;
   try {
-    draft = await profilesApi.fromDevice(device.id);
+    draft = await profilesApi.fromDevice(device.id, reading.signal);
   } catch (e) {
-    if (!gone) frame.body.replaceChildren(errorState(e));
+    if (!reading.signal.aborted) frame.body.replaceChildren(errorState(e));
     return;
   }
-  if (gone) return;
+  if (reading.signal.aborted) return;
   const lines = draftLines(draft);
   const ticked = new Set(lines.filter((l) => l.deviates).map((l) => l.step));
 

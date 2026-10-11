@@ -35,7 +35,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
   let models: ModelChoice[] | null = null;
   let gone = false;
 
-  const frame = openFrame(t('apw.title'), () => { gone = true; unsub?.(); });
+  const frame = openFrame(t('apw.title'), { onClose: () => { gone = true; unsub?.(); } });
   const stepper = h('ol', { class: 'apw-steps' });
   const content = h('div', { class: 'apw-content' });
   frame.body.append(stepper, content);

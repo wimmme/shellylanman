@@ -59,7 +59,8 @@ export function confirmDialog(title: string, message: string, action: string, da
  * An empty dialog that draws its own content and buttons (a wizard, a dialog that loads first): the body
  * and footer to fill, and close(). Escape and the backdrop close it like openModal.
  */
-export function openFrame(title: string, onClose?: () => void, wide = true): { body: HTMLElement; footer: HTMLElement; close: () => void } {
+export function openFrame(title: string, opts: { onClose?: () => void; size?: 'wide' | 'normal' } = {}): { body: HTMLElement; footer: HTMLElement; close: () => void } {
+  const { onClose, size = 'wide' } = opts;
   const id = `modal${++seq}`;
   const close = (): void => {
     back.remove();
@@ -69,7 +70,7 @@ export function openFrame(title: string, onClose?: () => void, wide = true): { b
   const onKey = (e: KeyboardEvent): void => { if (e.key === 'Escape') close(); };
   const body = h('div', { class: 'body' });
   const footer = h('footer', {});
-  const back = h('div', { class: 'modal-back' }, h('div', { class: wide ? 'modal wide' : 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id }, h('header', { id }, title), body, footer));
+  const back = h('div', { class: 'modal-back' }, h('div', { class: size === 'wide' ? 'modal wide' : 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id }, h('header', { id }, title), body, footer));
   back.addEventListener('mousedown', (e) => { if (e.target === back) close(); });
   document.addEventListener('keydown', onKey);
   document.body.append(back);
