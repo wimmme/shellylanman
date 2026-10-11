@@ -22,7 +22,7 @@ import (
 // BluTrv.Call {id, method, params} (BluTRV.getTRVJSON).
 func (m *Devices) DeviceRPC(ctx context.Context, id, method string, params json.RawMessage) (json.RawMessage, error) {
 	if strings.TrimSpace(method) == "" {
-		return nil, invalid("method")
+		return nil, invalidField("method")
 	}
 	if len(params) == 0 || string(params) == "null" {
 		params = json.RawMessage("{}")

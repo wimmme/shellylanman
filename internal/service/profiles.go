@@ -113,18 +113,18 @@ func (in *ProfileInput) validate(hadLoginPw, hadMQTTPw bool) error {
 	p := &in.Profile
 	p.Name = strings.TrimSpace(p.Name)
 	if p.Name == "" {
-		return invalid("name")
+		return invalidField("name")
 	}
 	p.NamePattern = strings.TrimSpace(p.NamePattern)
 	if utf8.RuneCountInString(p.NamePattern) > maxNameLen {
-		return invalid("namePattern")
+		return invalidField("namePattern")
 	}
 	p.WiFiSSID = strings.TrimSpace(p.WiFiSSID)
 	p.NTP = strings.TrimSpace(p.NTP)
 	switch p.AutoFW {
 	case "", "stable", "beta", "none":
 	default:
-		return invalid("autoFW")
+		return invalidField("autoFW")
 	}
 	if l := p.Login; l != nil {
 		l.User = strings.TrimSpace(l.User)
@@ -133,13 +133,13 @@ func (in *ProfileInput) validate(hadLoginPw, hadMQTTPw bool) error {
 			pw = *in.LoginPassword != ""
 		}
 		if l.Enabled && !pw {
-			return invalid("loginPassword")
+			return invalidField("loginPassword")
 		}
 	}
 	if q := p.MQTT; q != nil {
 		q.Server, q.User = strings.TrimSpace(q.Server), strings.TrimSpace(q.User)
 		if q.Enabled && q.Server == "" {
-			return invalid("mqttServer")
+			return invalidField("mqttServer")
 		}
 		if q.Enabled && !q.NoPassword && q.User != "" {
 			pw := hadMQTTPw
@@ -147,7 +147,7 @@ func (in *ProfileInput) validate(hadLoginPw, hadMQTTPw bool) error {
 				pw = *in.MQTTPassword != ""
 			}
 			if !pw {
-				return invalid("mqttPassword")
+				return invalidField("mqttPassword")
 			}
 		}
 	}
@@ -405,7 +405,7 @@ func (m *Devices) ApplyProfile(ctx context.Context, profileID, deviceID string) 
 // setName sets the device's own name (the one the Name column shows).
 func (m *Devices) setName(ctx context.Context, t cfgTarget, name string) error {
 	if name == "" {
-		return invalid("name")
+		return invalidField("name")
 	}
 	if t.gen1 {
 		return g1cmd(ctx, t.e.conn, "/settings?name="+q(name))

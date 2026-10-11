@@ -173,13 +173,13 @@ var operations = []operation{
 	{method: "POST", path: "/api/v1/auth/login", id: "login", tag: "Authentication", summary: "Log in",
 		desc: "Only when a UI password is set. Sets the session cookie `slm_session`. After 5 wrong passwords from one address the answers wait 1 s, 2 s, 4 s … up to 60 s (`429`, `Retry-After`). Programs do not need this: they send the MCP token as a bearer token.",
 		body: loginBody{}, ok: done("Logged in; the session cookie is set."), auth: authNone,
-		errs: []errSpec{{401, "Wrong password (`code: wrong_password`)."}, {409, "No password is set (`code: no_password`)."}, {429, "Too many wrong passwords: wait `retryAfter` seconds (`code: too_many_tries`)."}}},
+		errs: []errSpec{{401, "Wrong password" + codeNote(CodeWrongPassword)}, {409, "No password is set" + codeNote(CodeNoPassword)}, {429, "Too many wrong passwords: wait `retryAfter` seconds" + codeNote(CodeTooManyTries)}}},
 	{method: "POST", path: "/api/v1/auth/logout", id: "logout", tag: "Authentication", summary: "Log out",
 		ok: done("The session ended.")},
 	{method: "PUT", path: "/api/v1/auth/password", id: "setPassword", tag: "Authentication", summary: "Set, change or remove the UI password",
 		desc: "An empty `password` removes it. Needs `current` when a password is set (not under Home Assistant ingress). Every session ends; the caller gets a new one. A password has at least 8 characters and one capital letter.",
 		body: passwordBody{}, ok: okJSON(200, "Whether a password is set now.", authEnabledBody{}),
-		errs: []errSpec{{400, "The password is too short or has no capital letter (`code: password_too_short`, `password_no_capital`)."}, {401, "`current` is wrong (`code: wrong_password`)."}, {429, "Too many wrong passwords (`code: too_many_tries`)."}}},
+		errs: []errSpec{{400, "The password is too short or has no capital letter" + codeNote(CodePasswordTooShort, CodePasswordNoCapital)}, {401, "`current` is wrong" + codeNote(CodeWrongPassword)}, {429, "Too many wrong passwords" + codeNote(CodeTooManyTries)}}},
 
 	// ---- MCP ----
 	{method: "GET", path: "/api/v1/mcp", id: "getMCP", tag: "MCP", summary: "MCP server settings",
@@ -619,6 +619,12 @@ func (g *schemaGen) configApply() map[string]any {
 	return map[string]any{"allOf": []any{ids, map[string]any{"oneOf": one}}}
 }
 
+// codeNote ends an error description with its codes: " (`code: a`, `b`)." Taking the constants
+// keeps a renamed code from living on in the texts.
+func codeNote(codes ...string) string {
+	return " (`code: " + strings.Join(codes, "`, `") + "`)."
+}
+
 // errorSchema describes errorBody with the complete list of codes (DECISIONS P22-2).
 func errorSchema() map[string]any {
 	codes := make([]string, len(errorCodes))
@@ -635,6 +641,7 @@ func errorSchema() map[string]any {
 				"code": map[string]any{"type": "string", "enum": codes,
 					"description": "What went wrong, for programs. New codes may be added; a client treats an unknown one by the HTTP status." + lines},
 				"message":    map[string]any{"type": "string", "description": "What went wrong, for people. May change between versions."},
+				"field":      map[string]any{"type": "string", "description": "With `invalid`, when known: the value that does not pass (e.g. `name`, `mqttServer`)."},
 				"retryAfter": map[string]any{"type": "integer", "description": "Seconds to wait (`too_many_tries`, `wrong_password` after several tries)."},
 			},
 		}},

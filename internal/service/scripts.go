@@ -304,7 +304,7 @@ func (m *Devices) kvsList(ctx context.Context, c *shelly.Conn) ([]KVItem, error)
 // KVSSet adds or edits an item (KVS.Set) and returns it with its new etag.
 func (m *Devices) KVSSet(ctx context.Context, id, key, value string) (KVItem, error) {
 	if key == "" {
-		return KVItem{}, invalid("key")
+		return KVItem{}, invalidField("key")
 	}
 	c, _, err := m.g2conn(id)
 	if err != nil {

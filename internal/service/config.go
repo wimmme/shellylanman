@@ -51,6 +51,15 @@ var (
 
 func invalid(msg string) error { return fmt.Errorf("%w: %s", ErrInvalid, msg) }
 
+// FieldError is a value that does not pass validation; Field names it ("name", "mqttServer"), so a
+// client does not have to read it from the message. It is an ErrInvalid.
+type FieldError struct{ Field string }
+
+func (e *FieldError) Error() string        { return "invalid: " + e.Field }
+func (e *FieldError) Is(target error) bool { return target == ErrInvalid }
+
+func invalidField(field string) error { return &FieldError{Field: field} }
+
 // DeviceRef names a device in results and exclusion lists.
 type DeviceRef struct {
 	ID   string `json:"id"`
@@ -297,17 +306,17 @@ func validateWiFi(a WiFiApply, single bool) error {
 	}
 	for _, c := range []struct{ v, msg string }{{a.IP, "wrongIP"}, {a.Gateway, "wrongGW"}, {a.Netmask, "wrongMask"}, {a.DNS, "wrongDNS"}} {
 		if c.v != "" && !ipv4Re.MatchString(c.v) {
-			return invalid(c.msg)
+			return invalidField(c.msg)
 		}
 	}
 	if a.Mode == "static" && single && a.IP == "" {
-		return invalid("staticIPRequired")
+		return invalidField("staticIPRequired")
 	}
 	if (a.Mode == "static" || a.Mode == "keep") && (a.Netmask == "" || a.Gateway == "") {
-		return invalid("staticMaskGWRequired")
+		return invalidField("staticMaskGWRequired")
 	}
 	if a.SSID == "" || a.Password == "" {
-		return invalid("ssidRequired")
+		return invalidField("ssidRequired")
 	}
 	return nil
 }
@@ -484,7 +493,7 @@ func (m *Devices) applyLogin(ctx context.Context, ts []cfgTarget, a LoginApply) 
 		a.User = shelly.DigestUser
 	}
 	if a.Enabled && (a.User == "" || a.Password == "") {
-		return nil, invalid("userRequired")
+		return nil, invalidField("userRequired")
 	}
 	var out []ResultLine
 	for _, t := range ts {
@@ -698,19 +707,19 @@ func (m *Devices) applyMQTT(ctx context.Context, ts []cfgTarget, a MQTTApply) ([
 	a.Server, a.User, a.Password = strings.TrimSpace(a.Server), strings.TrimSpace(a.User), strings.TrimSpace(a.Password)
 	if a.Enabled {
 		if a.Server == "" {
-			return nil, invalid("mqttServerRequired")
+			return nil, invalidField("mqttServerRequired")
 		}
 		if !a.NoPassword && (a.User == "" || a.Password == "") {
-			return nil, invalid("mqttUserRequired")
+			return nil, invalidField("mqttUserRequired")
 		}
 	}
 	for _, p := range []*int{a.ReconnectMax, a.ReconnectMin, a.KeepAlive, a.UpdatePeriod} {
 		if p != nil && (*p < 0 || *p > 65535) {
-			return nil, invalid("mqttRange")
+			return nil, invalidField("mqttRange")
 		}
 	}
 	if a.QoS != nil && (*a.QoS < 0 || *a.QoS > 2) {
-		return nil, invalid("mqttRange")
+		return nil, invalidField("mqttRange")
 	}
 	a.Variant, a.Multi = mqttVariant(ts), len(ts) > 1
 	slow := time.Duration(m.store.Settings().MQTTSlow) * 100 * time.Millisecond
@@ -920,21 +929,21 @@ func (m *Devices) applyOthers(ctx context.Context, ts []cfgTarget, a OthersApply
 	switch a.Part {
 	case "ntp":
 		if a.NTP == "" {
-			return nil, invalid("ntpRequired")
+			return nil, invalidField("ntpRequired")
 		}
 		task = TaskNTP
 	case "cloud":
 		if a.Enable == nil {
-			return nil, invalid("cloudRequired")
+			return nil, invalidField("cloudRequired")
 		}
 		task = TaskCloud
 	case "reset":
 		if a.Enable == nil {
-			return nil, invalid("resetRequired")
+			return nil, invalidField("resetRequired")
 		}
 		task = TaskInputReset
 	default:
-		return nil, invalid("part")
+		return nil, invalidField("part")
 	}
 	var out []ResultLine
 	for _, t := range ts {
@@ -986,7 +995,7 @@ func setOthers(ctx context.Context, t cfgTarget, a OthersApply) error {
 		}
 		return last
 	}
-	return invalid("part")
+	return invalidField("part")
 }
 
 // ---- entry points ------------------------------------------------------------------------
@@ -1008,7 +1017,7 @@ func (m *Devices) ConfigForm(ctx context.Context, ids []string, section string) 
 	case SectionOthers:
 		f = m.othersForm(ctx, ts)
 	default:
-		return nil, invalid("section")
+		return nil, invalidField("section")
 	}
 	if len(f.Excluded) == len(ts) {
 		return nil, ErrAllExcluded
@@ -1027,7 +1036,7 @@ func (m *Devices) ConfigApply(ctx context.Context, ids []string, section string,
 	switch a := body.(type) {
 	case WiFiApply:
 		if section != SectionWiFi1 && section != SectionWiFi2 {
-			return nil, invalid("section")
+			return nil, invalidField("section")
 		}
 		out, err = m.applyWiFi(ctx, ts, section, a)
 	case LoginApply:
@@ -1037,7 +1046,7 @@ func (m *Devices) ConfigApply(ctx context.Context, ids []string, section string,
 	case OthersApply:
 		out, err = m.applyOthers(ctx, ts, a)
 	default:
-		return nil, invalid("section")
+		return nil, invalidField("section")
 	}
 	if err == nil {
 		for _, t := range ts {

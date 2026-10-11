@@ -28,7 +28,7 @@ export interface ServerInfo {
 export interface MCPInfo { enabled: boolean; access: 'read' | 'control' | 'configure'; hasToken: boolean; token?: string }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string, public code?: string, public retryAfter?: number) {
+  constructor(public status: number, message: string, public code?: string, public retryAfter?: number, public field?: string) {
     super(message);
   }
 }
@@ -38,13 +38,14 @@ let loginRequired: () => void = () => {};
 export function onLoginRequired(fn: () => void): void { loginRequired = fn; }
 
 /** The error of an answer: {"error": {"code", "message", "retryAfter"}} (DECISIONS P22-2). */
-export function errorOf(data: unknown): { code?: string; message?: string; retryAfter?: number } {
+export interface ErrorBody { code?: string; message?: string; retryAfter?: number; field?: string }
+export function errorOf(data: unknown): ErrorBody {
   const e = (data as { error?: unknown } | null)?.error;
-  return e && typeof e === 'object' ? e as { code?: string; message?: string; retryAfter?: number } : {};
+  return e && typeof e === 'object' ? e as ErrorBody : {};
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const init: RequestInit = { method, headers: {} };
+async function request<T>(method: string, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+  const init: RequestInit = { method, headers: {}, signal };
   if (body !== undefined) {
     init.body = JSON.stringify(body);
     (init.headers as Record<string, string>)['Content-Type'] = 'application/json';
@@ -54,7 +55,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (!resp.ok) {
     const e = errorOf(data);
     if (resp.status === 401 && e.code === 'login_required') loginRequired();
-    throw new ApiError(resp.status, e.message || resp.statusText, e.code, e.retryAfter);
+    throw new ApiError(resp.status, e.message || resp.statusText, e.code, e.retryAfter, e.field);
   }
   return data as T;
 }
@@ -157,7 +158,7 @@ export const devicesApi = {
     const r = await fetch(`api/v1/devices/${encodeURIComponent(id)}/log?file=${file}`);
     const text = await r.text();
     if (!r.ok) {
-      let e: ReturnType<typeof errorOf> = {};
+      let e: ErrorBody = {};
       try { e = errorOf(JSON.parse(text)); } catch { /* not JSON */ }
       throw new ApiError(r.status, e.message || text, e.code);
     }
@@ -276,7 +277,8 @@ export interface ProfileDraft { device: { id: string; name: string }; profile: P
 const prof = (id: string): string => `/profiles/${encodeURIComponent(id)}`;
 export const profilesApi = {
   list: () => request<ProfileView[]>('GET', '/profiles'),
-  fromDevice: (device: string) => request<ProfileDraft>('GET', `/profiles/from-device?device=${encodeURIComponent(device)}`),
+  fromDevice: (device: string, signal?: AbortSignal) =>
+    request<ProfileDraft>('GET', `/profiles/from-device?device=${encodeURIComponent(device)}`, undefined, signal),
   create: (input: ProfileInput) => request<ProfileView>('POST', '/profiles', input),
   update: (id: string, input: ProfileInput) => request<ProfileView>('PUT', prof(id), input),
   remove: (id: string) => request<unknown>('DELETE', prof(id)),

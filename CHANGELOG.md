@@ -11,6 +11,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   A file that cannot be read at all is left alone.
 - When an older ShellyLanMan refuses data written by a newer one, the message says which version runs and what
   to do.
+- REST errors: a validation error names its field (`error.field`), so clients and the web UI no longer read it
+  from the message; only codes from the published list are sent.
+- A page left open while ShellyLanMan is updated shows a banner to reload it, instead of failing on the new API.
+- *Create profile…* stops reading the device when the dialog is closed, and puts the keyboard focus in the dialog.
 
 ## [0.9.7] - 2026-10-12
 

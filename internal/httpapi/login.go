@@ -170,7 +170,7 @@ func clearSessionCookie(w http.ResponseWriter, r *http.Request) {
 func (s *server) tooMany(w http.ResponseWriter, wait time.Duration) {
 	secs := int((wait + time.Second - 1) / time.Second)
 	w.Header().Set("Retry-After", strconv.Itoa(secs))
-	writeCoded(w, http.StatusTooManyRequests, apiError{Code: "too_many_tries", Message: "too many wrong passwords, wait", RetryAfter: secs})
+	writeCoded(w, http.StatusTooManyRequests, apiError{Code: CodeTooManyTries, Message: "too many wrong passwords, wait", RetryAfter: secs})
 }
 
 // checkPassword verifies pw against the stored hash with the slowdown for
@@ -184,7 +184,7 @@ func (s *server) checkPassword(w http.ResponseWriter, r *http.Request, pw, hash 
 	if !auth.Verify(pw, hash) {
 		n, wait := s.guard.limiter.Fail(client)
 		s.Log.Warn("wrong UI password", "from", client, "tries", n)
-		e := apiError{Code: "wrong_password", Message: auth.ErrWrong.Error()}
+		e := apiError{Code: CodeWrongPassword, Message: auth.ErrWrong.Error()}
 		if wait > 0 {
 			e.RetryAfter = int((wait + time.Second - 1) / time.Second)
 			w.Header().Set("Retry-After", strconv.Itoa(e.RetryAfter))
@@ -203,7 +203,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	hash := s.passwordHash()
 	if hash == "" {
-		writeCoded(w, http.StatusConflict, apiError{Code: "no_password", Message: "no password is set"})
+		writeCoded(w, http.StatusConflict, apiError{Code: CodeNoPassword, Message: "no password is set"})
 		return
 	}
 	if !s.checkPassword(w, r, body.Password, hash) {

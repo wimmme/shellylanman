@@ -16,9 +16,8 @@ export function stepText(step: string, value: string): string {
 }
 
 function message(err: unknown): string {
-  if (err instanceof ApiError && err.message.startsWith('invalid: ')) {
-    const code = err.message.slice('invalid: '.length);
-    const key = 'prof.err.' + code;
+  if (err instanceof ApiError && err.code === 'invalid' && err.field) {
+    const key = 'prof.err.' + err.field;
     return t(k(key)) === key ? err.message : t(k(key));
   }
   return err instanceof Error ? err.message : String(err);

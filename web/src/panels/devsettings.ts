@@ -21,11 +21,10 @@ const TABS: { id: SettingsTab; label: Key }[] = [
 
 const IPV4 = /^((0|1\d?\d?|2[0-4]?\d?|25[0-5]?|[3-9]\d?)\.){3}(0|1\d?\d?|2[0-4]?\d?|25[0-5]?|[3-9]\d?)$/;
 
-/** A server validation error "invalid: key" in the user's language. */
+/** A server validation error (code invalid, field key) in the user's language. */
 export function errorText(e: unknown): string {
   if (e instanceof ApiError) {
-    const m = /^invalid: (\w+)$/.exec(e.message);
-    if (m) return t(('cfg.err.' + m[1]) as Key);
+    if (e.code === 'invalid' && e.field) return t(('cfg.err.' + e.field) as Key);
     if (e.status === 409) return t('cfg.allExcluded');
     return e.message;
   }

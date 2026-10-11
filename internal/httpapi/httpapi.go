@@ -307,7 +307,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 		if errors.As(err, &tooBig) {
 			writeError(w, http.StatusRequestEntityTooLarge, "request body too large")
 		} else {
-			writeCoded(w, http.StatusBadRequest, apiError{Code: "invalid_json", Message: "invalid JSON: " + err.Error()})
+			writeCoded(w, http.StatusBadRequest, apiError{Code: CodeInvalidJSON, Message: "invalid JSON: " + err.Error()})
 		}
 		return false
 	}

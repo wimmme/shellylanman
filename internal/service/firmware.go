@@ -338,7 +338,7 @@ func (m *Devices) FirmwareUpdate(ctx context.Context, reqs []FirmwareRequest) ([
 	var out []ResultLine
 	for _, r := range reqs {
 		if r.Stage != StageStable && r.Stage != StageBeta && r.Stage != StageAny {
-			return nil, invalid("stage")
+			return nil, invalidField("stage")
 		}
 		e, err := m.entryFor(r.ID)
 		if err != nil {
