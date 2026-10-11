@@ -139,3 +139,18 @@ use; do it only if it is a small step, otherwise leave it.
   loading state (`loadingState()` / the `state.loading` spinner) and fill the list when the answer is in.
   The second is probably better: the user sees at once that something is happening, and a failure is
   shown in the dialog instead of a toast. (`web/src/panels/profilefromdevice.ts`.)
+
+## 4. Before v1.0.0
+
+*Added 2026-10-11, from a code review.* Version 1.0.0 promises compatibility, so these two
+are cheap now and breaking changes afterwards. Not decided yet.
+
+- **A version field in every file under `/data`.** `settings.json` and the archive have one
+  (the archive refuses a newer version); deferred tasks and scenes write `version: 1` but
+  do not check it on load; `profiles.json` has none. Sessions can simply be dropped on a
+  mismatch. Then a newer file is refused or migrated, never silently misread.
+- **A machine-readable error shape in the REST API.** Today `{"error": "text"}`
+  (`internal/httpapi/httpapi.go`). Something like `{"error": {"code": "device_offline",
+  "message": "…"}}` lets the Home Assistant integration and other OpenAPI clients react to
+  a code instead of a sentence. Changing it after 1.0 breaks those clients; the
+  integration in `shellylanman-ha` would change in the same release.
