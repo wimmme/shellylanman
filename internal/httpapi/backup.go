@@ -38,7 +38,7 @@ func readBigJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 		if errors.As(err, &tooBig) {
 			writeError(w, http.StatusRequestEntityTooLarge, "request body too large")
 		} else {
-			writeError(w, http.StatusBadRequest, "invalid JSON: "+err.Error())
+			writeCoded(w, http.StatusBadRequest, apiError{Code: "invalid_json", Message: "invalid JSON: " + err.Error()})
 		}
 		return false
 	}
@@ -56,7 +56,7 @@ func (s *server) backup(w http.ResponseWriter, r *http.Request) {
 	}
 	lines, err := s.Devices.Backup(r.Context(), body.IDs)
 	if err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"results": lines})
@@ -74,7 +74,7 @@ func (s *server) downloadBackup(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
 	b, err := s.Devices.BackupData(r.PathValue("id"), name)
 	if err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/octet-stream")
@@ -98,7 +98,7 @@ func (s *server) restoreCheck(w http.ResponseWriter, r *http.Request) {
 	}
 	plan, err := s.Devices.RestoreCheck(r.Context(), r.PathValue("id"), body.Source)
 	if err != nil {
-		writeError(w, restoreErrorCode(err), err.Error())
+		writeErr(w, restoreErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, plan)
@@ -110,7 +110,7 @@ func (s *server) restore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !body.Confirm {
-		writeError(w, http.StatusPreconditionRequired, service.ErrConfirm.Error())
+		writeErr(w, http.StatusPreconditionRequired, service.ErrConfirm)
 		return
 	}
 	if body.Answers == nil {
@@ -118,7 +118,7 @@ func (s *server) restore(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := s.Devices.Restore(r.Context(), r.PathValue("id"), body.Source, body.Answers)
 	if err != nil {
-		writeError(w, restoreErrorCode(err), err.Error())
+		writeErr(w, restoreErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, res)
@@ -134,12 +134,12 @@ func (s *server) restoreMulti(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !body.Confirm {
-		writeError(w, http.StatusPreconditionRequired, service.ErrConfirm.Error())
+		writeErr(w, http.StatusPreconditionRequired, service.ErrConfirm)
 		return
 	}
 	lines, err := s.Devices.RestoreMulti(r.Context(), body.IDs)
 	if err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"results": lines})

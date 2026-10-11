@@ -115,7 +115,7 @@ func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 	// Switching on without a token would refuse every client: make one.
@@ -123,7 +123,7 @@ func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
 	if info.Enabled && !info.HasToken {
 		tok, err := s.makeMCPToken()
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, err.Error())
+			writeErr(w, http.StatusInternalServerError, err)
 			return
 		}
 		info.HasToken, info.Token = true, tok
@@ -139,7 +139,7 @@ func (s *server) newMCPToken(w http.ResponseWriter, r *http.Request) {
 	}
 	tok, err := s.makeMCPToken()
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	info := s.mcpInfo()

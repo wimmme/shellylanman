@@ -50,7 +50,7 @@ func (s *server) getConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	f, err := s.Devices.ConfigForm(r.Context(), ids, r.PathValue("section"))
 	if err != nil {
-		writeError(w, configErrorCode(err), err.Error())
+		writeErr(w, configErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, f)
@@ -59,7 +59,7 @@ func (s *server) getConfig(w http.ResponseWriter, r *http.Request) {
 func (s *server) applyConfig(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(io.LimitReader(r.Body, 64<<10))
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 	var sel struct {
@@ -95,12 +95,12 @@ func (s *server) applyConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if derr != nil {
-		writeError(w, http.StatusBadRequest, derr.Error())
+		writeErr(w, http.StatusBadRequest, derr)
 		return
 	}
 	lines, err := s.Devices.ConfigApply(r.Context(), sel.IDs, section, apply)
 	if err != nil {
-		writeError(w, configErrorCode(err), err.Error())
+		writeErr(w, configErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"results": lines})
@@ -121,7 +121,7 @@ func (s *server) checklistAction(w http.ResponseWriter, r *http.Request) {
 	}
 	lines, rows, err := s.Devices.ChecklistApply(r.Context(), a)
 	if err != nil {
-		writeError(w, configErrorCode(err), err.Error())
+		writeErr(w, configErrorCode(err), err)
 		return
 	}
 	if lines == nil {
@@ -140,7 +140,7 @@ func (s *server) cancelDeferred(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, service.ErrNotFound) {
 			code = http.StatusNotFound
 		}
-		writeError(w, code, err.Error())
+		writeErr(w, code, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

@@ -2,7 +2,6 @@ package httpapi
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net"
 	"net/http"
@@ -165,17 +164,10 @@ func clearSessionCookie(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: "/", HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: isHTTPS(r), MaxAge: -1})
 }
 
-// authError carries a code the UI translates, and the wait after wrong tries.
-type authError struct {
-	Error      string `json:"error"`
-	Code       string `json:"code"`
-	RetryAfter int    `json:"retryAfter,omitempty"` // seconds
-}
-
 func (s *server) tooMany(w http.ResponseWriter, wait time.Duration) {
 	secs := int((wait + time.Second - 1) / time.Second)
 	w.Header().Set("Retry-After", strconv.Itoa(secs))
-	writeJSON(w, http.StatusTooManyRequests, authError{Error: "too many wrong passwords, wait", Code: "wait", RetryAfter: secs})
+	writeCoded(w, http.StatusTooManyRequests, apiError{Code: "too_many_tries", Message: "too many wrong passwords, wait", RetryAfter: secs})
 }
 
 // checkPassword verifies pw against the stored hash with the slowdown for
@@ -189,12 +181,12 @@ func (s *server) checkPassword(w http.ResponseWriter, r *http.Request, pw, hash 
 	if !auth.Verify(pw, hash) {
 		n, wait := s.guard.limiter.Fail(client)
 		s.Log.Warn("wrong UI password", "from", client, "tries", n)
-		e := authError{Error: auth.ErrWrong.Error(), Code: "wrong"}
+		e := apiError{Code: "wrong_password", Message: auth.ErrWrong.Error()}
 		if wait > 0 {
 			e.RetryAfter = int((wait + time.Second - 1) / time.Second)
 			w.Header().Set("Retry-After", strconv.Itoa(e.RetryAfter))
 		}
-		writeJSON(w, http.StatusUnauthorized, e)
+		writeCoded(w, http.StatusUnauthorized, e)
 		return false
 	}
 	s.guard.limiter.Succeed(client)
@@ -208,7 +200,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	hash := s.passwordHash()
 	if hash == "" {
-		writeError(w, http.StatusConflict, "no password is set")
+		writeCoded(w, http.StatusConflict, apiError{Code: "no_password", Message: "no password is set"})
 		return
 	}
 	if !s.checkPassword(w, r, body.Password, hash) {
@@ -216,7 +208,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := s.guard.sessions.Create(body.Remember)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	setSessionCookie(w, r, id, body.Remember)
@@ -247,7 +239,7 @@ func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	if body.Password == "" {
 		if err := s.Store.SetSecret(auth.PasswordSecret, ""); err != nil {
-			writeError(w, http.StatusInternalServerError, err.Error())
+			writeErr(w, http.StatusInternalServerError, err)
 			return
 		}
 		s.guard.sessions.EndAll()
@@ -257,11 +249,7 @@ func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := auth.CheckPolicy(body.Password); err != nil {
-		code := "tooShort"
-		if errors.Is(err, auth.ErrNoCapital) {
-			code = "noCapital"
-		}
-		writeJSON(w, http.StatusBadRequest, authError{Error: err.Error(), Code: code})
+		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 	hash, err := auth.Hash(body.Password)
@@ -269,7 +257,7 @@ func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 		err = s.Store.SetSecret(auth.PasswordSecret, hash)
 	}
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	s.guard.sessions.EndAll()

@@ -35,7 +35,7 @@ func profileErrorCode(err error) int {
 func (s *server) listProfiles(w http.ResponseWriter, r *http.Request) {
 	list, err := s.Devices.Profiles()
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, list)
@@ -49,7 +49,7 @@ func (s *server) createProfile(w http.ResponseWriter, r *http.Request) {
 	in.ID = "" // a new one
 	v, err := s.Devices.SaveProfile(in)
 	if err != nil {
-		writeError(w, profileErrorCode(err), err.Error())
+		writeErr(w, profileErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusCreated, v)
@@ -63,7 +63,7 @@ func (s *server) updateProfile(w http.ResponseWriter, r *http.Request) {
 	in.ID = r.PathValue("id")
 	v, err := s.Devices.SaveProfile(in)
 	if err != nil {
-		writeError(w, profileErrorCode(err), err.Error())
+		writeErr(w, profileErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, v)
@@ -71,7 +71,7 @@ func (s *server) updateProfile(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) deleteProfile(w http.ResponseWriter, r *http.Request) {
 	if err := s.Devices.DeleteProfile(r.PathValue("id")); err != nil {
-		writeError(w, profileErrorCode(err), err.Error())
+		writeErr(w, profileErrorCode(err), err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -81,7 +81,7 @@ func (s *server) deleteProfile(w http.ResponseWriter, r *http.Request) {
 func (s *server) profilePlan(w http.ResponseWriter, r *http.Request) {
 	plan, err := s.Devices.ProfilePlan(r.PathValue("id"), r.URL.Query().Get("device"))
 	if err != nil {
-		writeError(w, profileErrorCode(err), err.Error())
+		writeErr(w, profileErrorCode(err), err)
 		return
 	}
 	if plan == nil {
@@ -97,12 +97,12 @@ func (s *server) applyProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !body.Confirm {
-		writeError(w, http.StatusPreconditionRequired, service.ErrConfirm.Error())
+		writeErr(w, http.StatusPreconditionRequired, service.ErrConfirm)
 		return
 	}
 	steps, err := s.Devices.ApplyProfile(r.Context(), r.PathValue("id"), body.Device)
 	if err != nil {
-		writeError(w, profileErrorCode(err), err.Error())
+		writeErr(w, profileErrorCode(err), err)
 		return
 	}
 	if steps == nil {
@@ -115,7 +115,7 @@ func (s *server) applyProfile(w http.ResponseWriter, r *http.Request) {
 func (s *server) profileFromDevice(w http.ResponseWriter, r *http.Request) {
 	d, err := s.Devices.ProfileFromDevice(r.Context(), r.URL.Query().Get("device"))
 	if err != nil {
-		writeError(w, profileErrorCode(err), err.Error())
+		writeErr(w, profileErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, d)

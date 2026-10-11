@@ -48,7 +48,7 @@ func sid(w http.ResponseWriter, r *http.Request) (int, bool) {
 func (s *server) getScripts(w http.ResponseWriter, r *http.Request) {
 	v, err := s.Devices.Scripts(r.Context(), r.PathValue("id"))
 	if err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, v)
@@ -61,7 +61,7 @@ func (s *server) createScript(w http.ResponseWriter, r *http.Request) {
 	}
 	sc, err := s.Devices.ScriptCreate(r.Context(), r.PathValue("id"), body.Name)
 	if err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, sc)
@@ -77,7 +77,7 @@ func (s *server) updateScript(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.ScriptUpdate(r.Context(), r.PathValue("id"), n, body.Name, body.Enable); err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -89,7 +89,7 @@ func (s *server) deleteScript(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.ScriptDelete(r.Context(), r.PathValue("id"), n); err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -103,7 +103,7 @@ func (s *server) runScript(run bool) http.HandlerFunc {
 		}
 		withLog := r.URL.Query().Get("log") == "true"
 		if err := s.Devices.ScriptRun(r.Context(), r.PathValue("id"), n, run, withLog); err != nil {
-			writeError(w, scriptErrorCode(err), err.Error())
+			writeErr(w, scriptErrorCode(err), err)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
@@ -117,7 +117,7 @@ func (s *server) getScriptCode(w http.ResponseWriter, r *http.Request) {
 	}
 	code, err := s.Devices.ScriptCode(r.Context(), r.PathValue("id"), n)
 	if err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"code": code})
@@ -133,7 +133,7 @@ func (s *server) putScriptCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.ScriptPutCode(r.Context(), r.PathValue("id"), n, body.Code); err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -146,7 +146,7 @@ func (s *server) setKVS(w http.ResponseWriter, r *http.Request) {
 	}
 	it, err := s.Devices.KVSSet(r.Context(), r.PathValue("id"), body.Key, body.Value)
 	if err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, it)
@@ -159,7 +159,7 @@ func (s *server) deleteKVS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.KVSDelete(r.Context(), r.PathValue("id"), key); err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -167,7 +167,7 @@ func (s *server) deleteKVS(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) scriptLogOn(w http.ResponseWriter, r *http.Request) {
 	if err := s.Devices.ScriptLogOn(r.Context(), r.PathValue("id")); err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -186,7 +186,7 @@ func (s *server) backupScripts(w http.ResponseWriter, r *http.Request) {
 	}
 	list, err := service.ScriptsInBackup(data)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, list)
@@ -212,12 +212,12 @@ func (s *server) deviceRPC(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, service.ErrConfirm) {
 			code = http.StatusPreconditionRequired
 		}
-		writeError(w, code, err.Error())
+		writeErr(w, code, err)
 		return
 	}
 	res, err := s.Devices.DeviceRPC(r.Context(), r.PathValue("id"), body.Method, body.Params)
 	if err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	if len(res) == 0 {
@@ -229,7 +229,7 @@ func (s *server) deviceRPC(w http.ResponseWriter, r *http.Request) {
 func (s *server) scheduleHints(w http.ResponseWriter, r *http.Request) {
 	list, err := s.Devices.ScheduleHints(r.Context(), r.PathValue("id"))
 	if err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, list)
@@ -247,7 +247,7 @@ func (s *server) backupJSON(w http.ResponseWriter, r *http.Request) {
 	}
 	files, err := service.BackupJSON(data)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, files)
@@ -272,7 +272,7 @@ func (s *server) emData(w http.ResponseWriter, r *http.Request) {
 	}
 	list, err := s.Devices.EMEnergy(r.Context(), r.PathValue("id"), start, end)
 	if err != nil {
-		writeError(w, scriptErrorCode(err), err.Error())
+		writeErr(w, scriptErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, list)

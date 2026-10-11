@@ -6,7 +6,7 @@
 // to a file, upload to the device, run/stop, upload and run, undo/redo, find,
 // go to line, caret position, help, and the script's log (the device's debug
 // websocket, "info" lines of this script only).
-import { ApiError, scriptsApi, wsURL, type Device, type ScriptInfo } from '../api';
+import { ApiError, errorOf, scriptsApi, wsURL, type Device, type ScriptInfo } from '../api';
 import { download } from '../csv';
 import { h } from '../dom';
 import { t } from '../i18n';
@@ -91,8 +91,8 @@ export async function openScriptEditor(d: Device, s: ScriptInfo, onRun: (running
     ws = new WebSocket(wsURL(`ws/log/${encodeURIComponent(d.id)}`));
     ws.onmessage = (m) => {
       try {
-        const j = JSON.parse(String(m.data)) as { level?: number; fd?: number; data?: string; error?: string };
-        if (j.error) log('ShellyLanMan error: ' + j.error);
+        const j = JSON.parse(String(m.data)) as { level?: number; fd?: number; data?: string; error?: unknown };
+        if (j.error) log('ShellyLanMan error: ' + (errorOf(j).message ?? ''));
         else if (j.level === 2 && (j.fd ?? 100 + s.id) === 100 + s.id) log((j.data ?? '').replace(/\n$/, ''));
       } catch { /* not JSON */ }
     };

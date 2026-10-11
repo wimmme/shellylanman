@@ -179,7 +179,7 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeErr(w, http.StatusBadRequest, err)
 		return
 	}
 	s.Hub.Broadcast(hub.Event{Type: "settings.changed", Data: next})
@@ -307,7 +307,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 		if errors.As(err, &tooBig) {
 			writeError(w, http.StatusRequestEntityTooLarge, "request body too large")
 		} else {
-			writeError(w, http.StatusBadRequest, "invalid JSON: "+err.Error())
+			writeCoded(w, http.StatusBadRequest, apiError{Code: "invalid_json", Message: "invalid JSON: " + err.Error()})
 		}
 		return false
 	}
@@ -319,10 +319,6 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(v)
-}
-
-func writeError(w http.ResponseWriter, code int, msg string) {
-	writeJSON(w, code, map[string]string{"error": msg})
 }
 
 // getUpdate: the last release check (never checked when the setting is off).

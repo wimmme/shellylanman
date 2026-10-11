@@ -37,6 +37,12 @@ export class ApiError extends Error {
 let loginRequired: () => void = () => {};
 export function onLoginRequired(fn: () => void): void { loginRequired = fn; }
 
+/** The error of an answer: {"error": {"code", "message", "retryAfter"}} (DECISIONS P22-2). */
+export function errorOf(data: unknown): { code?: string; message?: string; retryAfter?: number } {
+  const e = (data as { error?: unknown } | null)?.error;
+  return e && typeof e === 'object' ? e as { code?: string; message?: string; retryAfter?: number } : {};
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const init: RequestInit = { method, headers: {} };
   if (body !== undefined) {
@@ -46,9 +52,9 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const resp = await fetch('api/v1' + path, init);
   const data = resp.status === 204 ? {} : await resp.json().catch(() => ({}));
   if (!resp.ok) {
-    const e = data as { error?: string; code?: string; retryAfter?: number };
-    if (resp.status === 401 && e.error === 'login required') loginRequired();
-    throw new ApiError(resp.status, e.error || resp.statusText, e.code, e.retryAfter);
+    const e = errorOf(data);
+    if (resp.status === 401 && e.code === 'login_required') loginRequired();
+    throw new ApiError(resp.status, e.message || resp.statusText, e.code, e.retryAfter);
   }
   return data as T;
 }
@@ -150,7 +156,11 @@ export const devicesApi = {
   logText: async (id: string, file: number): Promise<string> => {
     const r = await fetch(`api/v1/devices/${encodeURIComponent(id)}/log?file=${file}`);
     const text = await r.text();
-    if (!r.ok) throw new ApiError(r.status, text);
+    if (!r.ok) {
+      let e: ReturnType<typeof errorOf> = {};
+      try { e = errorOf(JSON.parse(text)); } catch { /* not JSON */ }
+      throw new ApiError(r.status, e.message || text, e.code);
+    }
     return text;
   },
 };

@@ -141,8 +141,5 @@ Nothing open. (*Create profile…* showing that it loads: done for 0.9.7.)
 are cheap now and breaking changes afterwards. Wim agreed to both on 2026-10-12 (DECISIONS §31).
 
 - ~~**A version field in every file under `/data`.**~~ Done for 0.9.7 (DECISIONS P22-1).
-- **A machine-readable error shape in the REST API.** Today `{"error": "text"}`
-  (`internal/httpapi/httpapi.go`). Something like `{"error": {"code": "device_offline",
-  "message": "…"}}` lets the Home Assistant integration and other OpenAPI clients react to
-  a code instead of a sentence. Changing it after 1.0 breaks those clients; the
-  integration in `shellylanman-ha` would change in the same release.
+- ~~**A machine-readable error shape in the REST API.**~~ Done for 0.9.7 (DECISIONS P22-2); the
+  integration in `shellylanman-ha` reads both shapes.

@@ -23,13 +23,13 @@ func (s *server) apGuide(w http.ResponseWriter, r *http.Request) {
 	case err == nil:
 		writeJSON(w, http.StatusOK, g)
 	case errors.Is(err, service.ErrNotFound):
-		writeError(w, http.StatusNotFound, err.Error())
+		writeErr(w, http.StatusNotFound, err)
 	case errors.Is(err, service.ErrBadCommand):
-		writeError(w, http.StatusConflict, err.Error())
+		writeErr(w, http.StatusConflict, err)
 	case errors.Is(err, service.ErrInvalid):
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeErr(w, http.StatusBadRequest, err)
 	default:
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 	}
 }
 
@@ -49,10 +49,10 @@ func (s *server) localFirmwareModel(w http.ResponseWriter, r *http.Request) {
 	case err == nil:
 		writeJSON(w, http.StatusOK, link)
 	case errors.Is(err, service.ErrInvalid):
-		writeError(w, http.StatusBadRequest, err.Error())
+		writeErr(w, http.StatusBadRequest, err)
 	case errors.Is(err, firmware.ErrNotFound):
-		writeError(w, http.StatusNotFound, err.Error())
+		writeErr(w, http.StatusNotFound, err)
 	default: // index or network problem
-		writeError(w, http.StatusBadGateway, err.Error())
+		writeErr(w, http.StatusBadGateway, err)
 	}
 }

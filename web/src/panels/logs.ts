@@ -1,7 +1,7 @@
 // Device logs (ShellyScanner: DialogDeviceLogsG1 / DialogDeviceLogsG2).
 // Gen1: the /debug/log and /debug/log1 files. Gen2+: the live /debug/log
 // WebSocket, relayed by the server; for a BLU device, its gateway's log.
-import { devicesApi, wsURL, type Device } from '../api';
+import { devicesApi, errorOf, wsURL, type Device } from '../api';
 import { allDevices } from '../devices';
 import { h } from '../dom';
 import { t } from '../i18n';
@@ -63,9 +63,9 @@ function gen2(dev: Device): void {
       offBtn.setAttribute('disabled', '');
     };
     ws.onmessage = (m) => {
-      let msg: { ts?: number; level?: number; fd?: number | string; data?: string; error?: string };
+      let msg: { ts?: number; level?: number; fd?: number | string; data?: string; error?: unknown };
       try { msg = JSON.parse(String(m.data)); } catch { append(String(m.data)); return; }
-      if (msg.error) { append('>>>> ' + msg.error, 'log-meta'); return; }
+      if (msg.error) { append('>>>> ' + (errorOf(msg).message ?? ''), 'log-meta'); return; }
       const lvl = msg.level ?? 0;
       if (lvl <= Number(level.value)) append(`${Math.trunc(msg.ts ?? 0)} - L${lvl} - fd${msg.fd ?? ''}: ${(msg.data ?? '').trim()}`);
     };

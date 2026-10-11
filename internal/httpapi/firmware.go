@@ -22,7 +22,7 @@ func (s *server) firmwareRoutes(mux router, h func(http.HandlerFunc) http.Handle
 func (s *server) firmwareIndex(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.Devices.FirmwareIndex(r.Context(), idsParam(r))
 	if err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, rows)
@@ -46,11 +46,11 @@ func (s *server) localFirmware(w http.ResponseWriter, r *http.Request) {
 	case err == nil:
 		writeJSON(w, http.StatusOK, link)
 	case errors.Is(err, service.ErrUpToDate), errors.Is(err, service.ErrNoLocalFW):
-		writeError(w, http.StatusConflict, err.Error())
+		writeErr(w, http.StatusConflict, err)
 	case errors.Is(err, service.ErrNotFound):
-		writeError(w, http.StatusNotFound, err.Error())
+		writeErr(w, http.StatusNotFound, err)
 	default: // index or network problem
-		writeError(w, http.StatusBadGateway, err.Error())
+		writeErr(w, http.StatusBadGateway, err)
 	}
 }
 
@@ -84,7 +84,7 @@ func (s *server) firmwareFile(w http.ResponseWriter, r *http.Request) {
 func (s *server) getFirmware(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.Devices.Firmware(r.Context(), idsParam(r))
 	if err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	if rows == nil {
@@ -103,12 +103,12 @@ func (s *server) updateFirmware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !body.Confirm {
-		writeError(w, http.StatusPreconditionRequired, service.ErrConfirm.Error())
+		writeErr(w, http.StatusPreconditionRequired, service.ErrConfirm)
 		return
 	}
 	lines, err := s.Devices.FirmwareUpdate(r.Context(), body.Items)
 	if err != nil {
-		writeError(w, configErrorCode(err), err.Error())
+		writeErr(w, configErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"results": lines})

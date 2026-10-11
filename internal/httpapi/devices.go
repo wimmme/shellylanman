@@ -42,11 +42,11 @@ func (s *server) deviceRoutes(mux router) {
 		}
 		switch err := s.Devices.IdentifyBLU(body.Gateway, body.Duration); {
 		case errors.Is(err, service.ErrIdentifyBusy):
-			writeError(w, http.StatusConflict, err.Error())
+			writeErr(w, http.StatusConflict, err)
 		case errors.Is(err, service.ErrNotFound):
-			writeError(w, http.StatusNotFound, err.Error())
+			writeErr(w, http.StatusNotFound, err)
 		case err != nil:
-			writeError(w, http.StatusBadRequest, err.Error())
+			writeErr(w, http.StatusBadRequest, err)
 		default:
 			w.WriteHeader(http.StatusAccepted)
 		}
@@ -99,7 +99,7 @@ func (s *server) command(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, service.ErrConfirm) {
 			code = http.StatusPreconditionRequired
 		}
-		writeError(w, code, err.Error())
+		writeErr(w, code, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -112,7 +112,7 @@ func (s *server) reboot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !body.Confirm {
-		writeError(w, http.StatusPreconditionRequired, service.ErrConfirm.Error())
+		writeErr(w, http.StatusPreconditionRequired, service.ErrConfirm)
 		return
 	}
 	if len(body.IDs) == 0 {
@@ -120,7 +120,7 @@ func (s *server) reboot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.Reboot(body.IDs); err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
@@ -148,10 +148,10 @@ func (s *server) writeCredentials(w http.ResponseWriter, r *http.Request) {
 	c, err := s.Devices.DeviceCredentials(r.PathValue("id"))
 	switch {
 	case errors.Is(err, service.ErrNotFound), errors.Is(err, service.ErrNoCredentials):
-		writeError(w, http.StatusNotFound, err.Error())
+		writeErr(w, http.StatusNotFound, err)
 		return
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
@@ -161,7 +161,7 @@ func (s *server) writeCredentials(w http.ResponseWriter, r *http.Request) {
 func (s *server) getDevice(w http.ResponseWriter, r *http.Request) {
 	d, ok := s.Devices.Get(r.PathValue("id"))
 	if !ok {
-		writeError(w, http.StatusNotFound, service.ErrNotFound.Error())
+		writeErr(w, http.StatusNotFound, service.ErrNotFound)
 		return
 	}
 	writeJSON(w, http.StatusOK, d)
@@ -173,7 +173,7 @@ func (s *server) removeDevice(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, service.ErrNotFound) {
 			code = http.StatusNotFound
 		}
-		writeError(w, code, err.Error())
+		writeErr(w, code, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -190,7 +190,7 @@ func (s *server) refreshDevices(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) reloadDevice(w http.ResponseWriter, r *http.Request) {
 	if !s.Devices.Reload(r.PathValue("id")) {
-		writeError(w, http.StatusNotFound, service.ErrNotFound.Error())
+		writeErr(w, http.StatusNotFound, service.ErrNotFound)
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
@@ -211,7 +211,7 @@ func (s *server) putDeviceCredentials(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, service.ErrNotFound) {
 			code = http.StatusNotFound
 		}
-		writeError(w, code, err.Error())
+		writeErr(w, code, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -228,7 +228,7 @@ func (s *server) putCredentials(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.SetGlobalCredentials(shelly.Credentials{User: b.User, Password: b.Password}); err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, s.Devices.Credentials())
@@ -245,7 +245,7 @@ func (s *server) rescan(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) clearArchive(w http.ResponseWriter, r *http.Request) {
 	if err := s.Devices.ClearArchive(); err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -254,7 +254,7 @@ func (s *server) clearArchive(w http.ResponseWriter, r *http.Request) {
 func (s *server) interfaces(w http.ResponseWriter, r *http.Request) {
 	ifs, err := discovery.Interfaces()
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
+		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, ifs)
@@ -263,7 +263,7 @@ func (s *server) interfaces(w http.ResponseWriter, r *http.Request) {
 func (s *server) infoRequests(w http.ResponseWriter, r *http.Request) {
 	reqs, err := s.Devices.InfoRequests(r.PathValue("id"))
 	if err != nil {
-		writeError(w, http.StatusNotFound, err.Error())
+		writeErr(w, http.StatusNotFound, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, reqs)
@@ -277,7 +277,7 @@ func (s *server) infoResult(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := s.Devices.Info(r.Context(), r.PathValue("id"), idx)
 	if err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	writeJSON(w, http.StatusOK, res)
@@ -303,7 +303,7 @@ func (s *server) logSnapshot(w http.ResponseWriter, r *http.Request) {
 	file, _ := strconv.Atoi(r.URL.Query().Get("file"))
 	text, err := s.Devices.LogSnapshot(r.Context(), r.PathValue("id"), file)
 	if err != nil {
-		writeError(w, deviceErrorCode(err), err.Error())
+		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -317,7 +317,7 @@ func (s *server) pauseDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.Devices.SetPaused(r.PathValue("id"), b.Paused); err != nil {
-		writeError(w, http.StatusNotFound, err.Error())
+		writeErr(w, http.StatusNotFound, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -328,7 +328,7 @@ func (s *server) pauseDevice(w http.ResponseWriter, r *http.Request) {
 func (s *server) logStream(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if _, ok := s.Devices.Get(id); !ok {
-		writeError(w, http.StatusNotFound, service.ErrNotFound.Error())
+		writeErr(w, http.StatusNotFound, service.ErrNotFound)
 		return
 	}
 	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{OriginPatterns: s.Origins})
@@ -343,7 +343,7 @@ func (s *server) logStream(w http.ResponseWriter, r *http.Request) {
 		cancel()
 	})
 	if err != nil {
-		msg, _ := json.Marshal(map[string]string{"error": err.Error()})
+		msg, _ := json.Marshal(errorBody{Error: apiError{Code: errorCode(err, http.StatusBadGateway), Message: err.Error()}})
 		_ = c.Write(ctx, websocket.MessageText, msg)
 		c.Close(websocket.StatusInternalError, "device log unavailable")
 		return
@@ -365,7 +365,7 @@ func (s *server) putNote(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, service.ErrNoArchive) {
 			code = http.StatusConflict
 		}
-		writeError(w, code, err.Error())
+		writeErr(w, code, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

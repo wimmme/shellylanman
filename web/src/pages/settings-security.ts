@@ -51,9 +51,9 @@ function newPassword(onChange: () => void): { part: HTMLElement[]; value: () => 
 function message(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.retryAfter) return t('login.wait', { s: err.retryAfter });
-    if (err.code === 'wrong') return t('security.wrongCurrent');
-    if (err.code === 'tooShort') return t('security.ruleLength');
-    if (err.code === 'noCapital') return t('security.ruleCapital');
+    if (err.code === 'wrong_password') return t('security.wrongCurrent');
+    if (err.code === 'password_too_short') return t('security.ruleLength');
+    if (err.code === 'password_no_capital') return t('security.ruleCapital');
   }
   return err instanceof Error ? err.message : String(err);
 }

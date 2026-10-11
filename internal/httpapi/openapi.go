@@ -110,10 +110,6 @@ type authEnabledBody struct {
 	AuthEnabled bool `json:"authEnabled"`
 }
 
-type errorBody struct {
-	Error string `json:"error"`
-}
-
 // configApplyBody: `ids` plus the fields of the section's apply type.
 type configApplyBody struct {
 	IDs []string `json:"ids"`
@@ -447,7 +443,7 @@ var tagDocs = []struct{ name, desc string }{
 }
 
 var standardErr = map[int]string{
-	400: "The request is wrong: invalid JSON, an unknown field, or an argument that does not fit. `error` says what.",
+	400: "The request is wrong: invalid JSON, an unknown field, or an argument that does not fit. `error.message` says what.",
 	401: "Login required: a UI password is set and the request has neither a session cookie nor a valid MCP token.",
 	403: "The device asked for a password ShellyLanMan does not have (or has wrong), or a browser request came from another origin.",
 	404: "No such device (or thing).",
@@ -480,7 +476,7 @@ const infoDescription = `The REST API of ShellyLanMan, the same API its web page
 
 **Confirmation.** Destructive actions (reboot, restore, firmware update, Wi-Fi settings, a circuit breaker) need ` + "`\"confirm\": true`" + ` in the body; without it the answer is ` + "`428`" + `. ` + "`POST /api/v1/devices/{id}/rpc`" + ` asks for it with risky RPC methods and refuses factory resets.
 
-**Errors.** A failure is ` + "`{\"error\": \"…\"}`" + ` with a status code. For an operation on a device: ` + "`404`" + ` no such device, ` + "`403`" + ` the device wants a password ShellyLanMan does not have, ` + "`504`" + ` the device cannot be reached, ` + "`502`" + ` the device answered with an error.
+**Errors.** A failure is ` + "`{\"error\": {\"code\": \"device_offline\", \"message\": \"…\"}}`" + ` with a status code. React to ` + "`code`" + ` (the list is in the ` + "`Error`" + ` schema); ` + "`message`" + ` is for people and may change. For an operation on a device: ` + "`404`" + ` no such device, ` + "`403`" + ` the device wants a password ShellyLanMan does not have, ` + "`504`" + ` the device cannot be reached, ` + "`502`" + ` the device answered with an error.
 
 **Several devices.** Actions on several devices answer ` + "`200`" + ` with one result line per device (` + "`ok`" + `, ` + "`fail`" + ` or ` + "`queued`" + `), also when some failed. A device that is offline gets the action as a *deferred task* where the original does the same.
 
@@ -511,10 +507,7 @@ func buildSpec() map[string]any {
 	for _, t := range tagDocs {
 		tags = append(tags, map[string]any{"name": t.name, "description": t.desc})
 	}
-	g.comps["Error"] = map[string]any{
-		"type": "object", "required": []string{"error"},
-		"properties": map[string]any{"error": map[string]any{"type": "string", "description": "What went wrong."}},
-	}
+	g.comps["Error"] = errorSchema()
 	shared := map[string]any{}
 	for code, d := range standardErr {
 		shared["E"+strconv.Itoa(code)] = errorResponse(d)
@@ -624,6 +617,28 @@ func (g *schemaGen) configApply() map[string]any {
 		one = append(one, g.of(v))
 	}
 	return map[string]any{"allOf": []any{ids, map[string]any{"oneOf": one}}}
+}
+
+// errorSchema describes errorBody with the complete list of codes (DECISIONS P22-2).
+func errorSchema() map[string]any {
+	codes := make([]string, len(errorCodes))
+	lines := ""
+	for i, c := range errorCodes {
+		codes[i] = c.code
+		lines += "\n- `" + c.code + "`: " + c.desc
+	}
+	return map[string]any{
+		"type": "object", "required": []string{"error"},
+		"properties": map[string]any{"error": map[string]any{
+			"type": "object", "required": []string{"code", "message"},
+			"properties": map[string]any{
+				"code": map[string]any{"type": "string", "enum": codes,
+					"description": "What went wrong, for programs. New codes may be added; a client treats an unknown one by the HTTP status." + lines},
+				"message":    map[string]any{"type": "string", "description": "What went wrong, for people. May change between versions."},
+				"retryAfter": map[string]any{"type": "integer", "description": "Seconds to wait (`too_many_tries`, `wrong_password` after several tries)."},
+			},
+		}},
+	}
 }
 
 func errorResponse(desc string) map[string]any {

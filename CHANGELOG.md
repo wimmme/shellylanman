@@ -12,6 +12,11 @@ versions follow [Semantic Versioning](https://semver.org/).
   tasks and scenes did not check theirs). An older ShellyLanMan started on data written by a newer one stops
   with a message naming the file, instead of misreading it and writing over it; saved logins are the
   exception and are simply dropped. Files from earlier releases are read as before.
+- **REST API errors carry a code** (for scripts and the Home Assistant integration):
+  `{"error": {"code": "device_offline", "message": "…"}}` instead of `{"error": "…"}`. The codes are listed in the
+  OpenAPI description (`/api/v1/openapi.json`, schema `Error`); the message is for people and may change. A client
+  that read the old `error` text must read `error.message` now. The login's codes are now `wrong_password`,
+  `too_many_tries`, `password_too_short` and `password_no_capital`.
 
 ## [0.9.6] - 2026-10-08
 

@@ -51,7 +51,7 @@ with sync_playwright() as p:
     check(dlg.get_by_role("button", name="Continue").is_disabled(), "while reading: a spinner in the dialog, Continue disabled")
     pg.screenshot(path="/shots/pfd-loading.png")
     held[0].fulfill(status=502, content_type="application/json",
-                    body='{"error": "device does not answer"}')
+                    body='{"error": {"code": "device_offline", "message": "device does not answer"}}')
     dlg.get_by_text("device does not answer").wait_for(timeout=3000)
     check(pg.locator(".toast").count() == 0, "a failure is shown in the dialog, not as a toast")
     check(dlg.get_by_role("button", name="Continue").is_disabled(), "and Continue stays disabled")

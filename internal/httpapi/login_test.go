@@ -58,11 +58,11 @@ func TestPasswordLifecycle(t *testing.T) {
 	api := srv.URL + "/api/v1"
 
 	// The rules of P15-7.
-	for pw, code := range map[string]string{"Short1": "tooShort", "longenough": "noCapital"} {
+	for pw, code := range map[string]string{"Short1": "password_too_short", "longenough": "password_no_capital"} {
 		r := do(t, "PUT", api+"/auth/password", `{"password":"`+pw+`"}`, jsonHdr)
-		var e authError
+		var e errorBody
 		decode(t, r, &e)
-		if r.StatusCode != 400 || e.Code != code {
+		if r.StatusCode != 400 || e.Error.Code != code {
 			t.Fatalf("%q: %d %+v", pw, r.StatusCode, e)
 		}
 	}
@@ -99,9 +99,9 @@ func TestPasswordLifecycle(t *testing.T) {
 
 	// Log in: wrong, then right with "Stay logged in".
 	r = do(t, "POST", api+"/auth/login", `{"password":"secret pass"}`, jsonHdr)
-	var e authError
+	var e errorBody
 	decode(t, r, &e)
-	if r.StatusCode != 401 || e.Code != "wrong" {
+	if r.StatusCode != 401 || e.Error.Code != "wrong_password" {
 		t.Fatalf("wrong password %d %+v", r.StatusCode, e)
 	}
 	r = do(t, "POST", api+"/auth/login", `{"password":"Secret pass","remember":true}`, jsonHdr)
@@ -233,16 +233,16 @@ func TestIngressNeedsNoLogin(t *testing.T) {
 func TestWrongPasswordsSlowDown(t *testing.T) {
 	srv, st := newTestServer(t, nil)
 	setPassword(t, st, "Secret pass")
-	var e authError
+	var e errorBody
 	for i := 1; i <= auth.FreeTries; i++ {
 		r := do(t, "POST", srv.URL+"/api/v1/auth/login", `{"password":"wrong"}`, jsonHdr)
-		e = authError{}
+		e = errorBody{}
 		decode(t, r, &e)
 		if r.StatusCode != 401 {
 			t.Fatalf("try %d: %d", i, r.StatusCode)
 		}
 	}
-	if e.RetryAfter != 1 {
+	if e.Error.RetryAfter != 1 || e.Error.Code != "wrong_password" {
 		t.Fatalf("after %d tries %+v", auth.FreeTries, e)
 	}
 	// Right away again, even with the right password: wait first.

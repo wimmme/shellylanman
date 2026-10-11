@@ -36,7 +36,7 @@ export function showLogin(app: HTMLElement): void {
       submit.disabled = false;
       pw.select();
       if (err instanceof ApiError && err.retryAfter) wait(err.retryAfter);
-      else if (err instanceof ApiError && err.code === 'wrong') msg.textContent = t('login.wrong');
+      else if (err instanceof ApiError && err.code === 'wrong_password') msg.textContent = t('login.wrong');
       else msg.textContent = err instanceof Error ? err.message : String(err);
     }
   } },
