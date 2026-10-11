@@ -133,12 +133,7 @@ use; do it only if it is a small step, otherwise leave it.
 
 ## 3. Small things for the next release
 
-- **Create profile…: show that it is loading** (Wim, 2026-10-08). The button first reads the device
-  (`GET /api/v1/profiles/from-device`) and only then opens the dialog, which can take a few seconds on a slow
-  device, with no sign of life. Either a spinner on the button, or open the dialog at once with the
-  loading state (`loadingState()` / the `state.loading` spinner) and fill the list when the answer is in.
-  The second is probably better: the user sees at once that something is happening, and a failure is
-  shown in the dialog instead of a toast. (`web/src/panels/profilefromdevice.ts`.)
+Nothing open. (*Create profile…* showing that it loads: done for 0.9.7.)
 
 ## 4. Before v1.0.0
 

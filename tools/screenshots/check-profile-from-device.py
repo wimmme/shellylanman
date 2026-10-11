@@ -2,11 +2,12 @@
 
     SCRIPT=check-profile-from-device.py sh tools/screenshots/run.sh
 
-Exit 1 when the button is not there or does not follow the selection, the list of settings does not show,
+Exit 1 when the button is not there or does not follow the selection, the dialog does not open at once with
+a spinner, a failure is not shown in it, the list of settings does not show,
 the editor does not open with the ticked settings and an empty, required name, a profile without a name
 is saved, a password is invented, or the page logs a CSP error. Only reads from the (simulated) devices.
 
-Screenshots: /shots/pfd-list.png, pfd-editor.png.
+Screenshots: /shots/pfd-loading.png, pfd-list.png, pfd-editor.png.
 """
 from playwright.sync_api import sync_playwright
 
@@ -32,21 +33,48 @@ with sync_playwright() as p:
     btn = pg.get_by_role("button", name="Create profile…")
     check(btn.is_disabled(), "disabled without a selection")
 
-    opened = False
+    # The dialog opens at once and shows that the device is being read (roadmap §3): hold the answer back.
+    held = []
+    pg.route("**/api/v1/profiles/from-device*", lambda route: held.append(route))
     boxes = pg.locator("tr[data-id] input[type=checkbox]")
+    first = None
+    for i in range(boxes.count()):
+        boxes.nth(i).check()
+        if btn.is_enabled():
+            first = i
+            break
+        boxes.nth(i).uncheck()
+    check(first is not None, "a device for which Create profile… is enabled")
+    btn.click()
+    dlg = pg.locator(".modal[role=dialog]")
+    dlg.locator(".spinner").wait_for(timeout=2000)
+    check(dlg.get_by_role("button", name="Continue").is_disabled(), "while reading: a spinner in the dialog, Continue disabled")
+    pg.screenshot(path="/shots/pfd-loading.png")
+    held[0].fulfill(status=502, content_type="application/json",
+                    body='{"error": "device does not answer"}')
+    dlg.get_by_text("device does not answer").wait_for(timeout=3000)
+    check(pg.locator(".toast").count() == 0, "a failure is shown in the dialog, not as a toast")
+    check(dlg.get_by_role("button", name="Continue").is_disabled(), "and Continue stays disabled")
+    dlg.get_by_role("button", name="Cancel").click()
+    dlg.wait_for(state="detached", timeout=3000)
+    pg.unroute("**/api/v1/profiles/from-device*")
+    boxes.nth(first).uncheck()
+
+    opened = False
     for i in range(boxes.count()):
         boxes.nth(i).check()
         if btn.is_enabled():
             btn.click()
             dlg = pg.locator(".modal[role=dialog]")
             try:
-                dlg.locator(".prof-pick, .muted").first.wait_for(timeout=8000)
-                opened = True
-                break
+                dlg.locator(".prof-pick, .muted, .state .title").first.wait_for(timeout=8000)
+                if dlg.locator(".prof-pick, p.muted").count():
+                    opened = True
+                    break
+                dlg.get_by_role("button", name="Cancel").click()
             except Exception:
                 pass
         boxes.nth(i).uncheck()
-        pg.locator(".toast").count()
     check(opened, "the list of settings opens for a device")
     dlg = pg.locator(".modal[role=dialog]")
     items = dlg.locator(".prof-pick li")

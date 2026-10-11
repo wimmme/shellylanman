@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **Create profile…** opens its dialog at once and shows that the device is being read; a device that does not
+  answer is shown in the dialog instead of as a message at the bottom.
+
 ## [0.9.6] - 2026-10-08
 
 Create a profile from a Shelly you already set up, and a release check that fits the Home Assistant app.
