@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-10-12
+
+Stability only, no new features: fixes from a critical review of 0.9.7. A broken data file no longer costs you
+your notes or deferred tasks, error codes are fixed for programs, and a page left open during an update asks to
+be reloaded.
+
 ### Fixed
 - A data file that cannot be read (the archive with your notes, the deferred tasks, scenes, profiles) is moved
   aside as `<name>.broken-<time>` instead of being written over at the next save; the log says where it went.
