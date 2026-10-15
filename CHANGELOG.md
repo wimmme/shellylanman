@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.10] - 2026-10-16
+
+From using 0.9.9 on a phone: the firmware download now shows its progress and works in an installed app behind
+an HTTPS proxy, the Firmware page is easier to read, and About checks for a new release when you open it.
+
 ### Changed
 - Firmware wizard: **Download** fetches the file in the page with a progress bar and says when it is done (and how
   big it is); in an app installed on a phone a plain link showed nothing at all. It uses the link relative to the
