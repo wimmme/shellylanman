@@ -65,8 +65,8 @@ per-family copyright notices and the full licence text are in
 |---|---|---|
 | Go standard library | 1.27 | BSD-3-Clause |
 | `github.com/coder/websocket` | v1.8.15 | ISC |
-| `golang.org/x/net` | v0.58.0 | BSD-3-Clause (mDNS message parsing, IPv4 multicast) |
-| `golang.org/x/sys` | v0.47.0 | BSD-3-Clause (socket options for sharing UDP 5353) |
+| `golang.org/x/net` | v0.61.0 | BSD-3-Clause (mDNS message parsing, IPv4 multicast) |
+| `golang.org/x/sys` | v0.49.0 | BSD-3-Clause (socket options for sharing UDP 5353) |
 | `github.com/skip2/go-qrcode` | v0.0.0-20200617195104-da1b6568686e | MIT (QR code of the local firmware download) |
 
 `github.com/coder/websocket` licence:

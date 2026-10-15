@@ -5,6 +5,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.9] - 2026-10-15
+
+The firmware wizard through a device's access point now works from Home Assistant's sidebar and on the phone
+itself: a Download button next to the QR code, clickable addresses, and texts that say when to scan and when to
+tap. Dependencies updated.
+
 ### Changed
 - Firmware wizard through the access point: the firmware step has a **Download** button next to the QR code, so
   the wizard also works on the phone itself, and says when to scan (page on a computer) and when to press
@@ -12,6 +18,7 @@ versions follow [Semantic Versioning](https://semver.org/).
   from the phone; the device's address in step 4 (also in *Set up a new Shelly*) is a link that opens in a new tab.
 - Opened from Home Assistant's sidebar, the firmware step shows a tip that the link uses ShellyLanMan's own port on
   Home Assistant's address, and where to set the address for phones when a phone cannot open it.
+- Dependencies: `golang.org/x/net` 0.61.0, `golang.org/x/sys` 0.49.0; `@types/node` 26.6.5 (development only).
 
 ### Fixed
 - Firmware via the access point: opened from Home Assistant's sidebar, the download link (and QR code) pointed
