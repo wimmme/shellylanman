@@ -44,10 +44,11 @@ func (s *server) localFirmwareModel(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body) {
 		return
 	}
-	link, err := s.Devices.LocalDownloadModel(r.Context(), body.Gen, body.Key, s.phoneBase(r))
+	base, guessed := s.phoneBase(r)
+	link, err := s.Devices.LocalDownloadModel(r.Context(), body.Gen, body.Key, base)
 	switch {
 	case err == nil:
-		writeJSON(w, http.StatusOK, link)
+		writeJSON(w, http.StatusOK, localLink(link, guessed))
 	case errors.Is(err, service.ErrInvalid):
 		writeErr(w, http.StatusBadRequest, err)
 	case errors.Is(err, firmware.ErrNotFound):

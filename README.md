@@ -250,6 +250,11 @@ Terminate TLS at the proxy, forward WebSocket upgrades for `/ws`, and set
 default — set one in Settings → Security, or add authentication at the proxy,
 if the UI is reachable beyond your own LAN. See [`SECURITY.md`](SECURITY.md).
 
+Phones fetch firmware files from ShellyLanMan itself (the QR code and Download button of
+the firmware wizard, `/fw/…`). The link uses the address the browser used; when a phone
+cannot reach ShellyLanMan there, set *Settings → Network → Address of ShellyLanMan for
+phones*, for example `http://192.168.1.10:3082`.
+
 ## 🧭 Features
 
 Everything ShellyScanner does, in the browser, and pages that work together:

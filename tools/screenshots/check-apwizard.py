@@ -5,12 +5,13 @@
 
 Exit 1 when the wizard does not open from the Firmware page, does not recognise an access
 point name, does not ask for the model of an unknown name, a step does not show its QR code or
-text, the device is not found by its MAC, or the page logs a CSP error.
+text, the device is not found by its MAC, the firmware step has no Download button or the page
+step no clickable address, or the page logs a CSP error.
 
 The firmware step asks Shelly's firmware index over the internet; the check accepts the QR code
 or the banner that says the index could not be read, and tests every other step strictly.
 
-Screenshots: /shots/apw-which.png, apw-join.png, apw-page.png.
+Screenshots: /shots/apw-which.png, apw-file.png, apw-join.png, apw-page.png, apw-phone-file.png.
 """
 import sys
 
@@ -42,6 +43,7 @@ with sync_playwright() as p:
     check(dlg.locator(".apw-steps li.current").inner_text().endswith("Device"), "starts at Device")
     nxt = dlg.get_by_role("button", name="Next")
     check(nxt.is_disabled(), "Next waits for a model")
+    check(dlg.get_by_text("easiest from your phone").count() == 1, "device step: the phone tip")
 
     # An access point name that says what it is.
     name = dlg.locator("input[type=text]")
@@ -78,6 +80,13 @@ with sync_playwright() as p:
     pg.wait_for_timeout(4000)
     got = dlg.locator("img.lfw-qr").count() == 1 or dlg.locator(".banner.warn").count() == 1
     check(got, "firmware step: the QR code, or the banner that the index could not be read")
+    if dlg.locator("img.lfw-qr").count() == 1:
+        dl = dlg.get_by_role("link", name="Download")
+        link = dlg.locator("input[readonly]").input_value()
+        check(dl.count() == 1 and dl.get_attribute("href") == link and dl.get_attribute("download") is not None,
+              "firmware step: a Download button with the same link")
+        check(dlg.get_by_text("press Download").count() == 1, "firmware step: scan on a computer, Download on the phone")
+    pg.screenshot(path="/shots/apw-file.png")
     nxt.click()
     dlg.locator(".apw-steps li.current").get_by_text("Join").wait_for()
     dlg.locator("img.lfw-qr").wait_for(timeout=5000)
@@ -88,6 +97,8 @@ with sync_playwright() as p:
     dlg.locator(".apw-steps li.current").get_by_text("Open page").wait_for()
     dlg.locator("img.lfw-qr").wait_for(timeout=5000)
     check(dlg.get_by_text("http://192.168.33.1").count() >= 1, "page step: the address and its QR code")
+    page_link = dlg.locator("a[href='http://192.168.33.1']")
+    check(page_link.count() == 1 and page_link.get_attribute("target") == "_blank", "page step: the address is a link (new tab)")
     pg.screenshot(path="/shots/apw-page.png")
     nxt.click()
     dlg.locator(".apw-steps li.current").get_by_text("Update").wait_for()
@@ -105,8 +116,17 @@ with sync_playwright() as p:
     ph.set_viewport_size({"width": 390, "height": 844})
     ph.goto(B + "#/firmware"); ph.wait_for_timeout(2000)
     ph.get_by_role("button", name="Through an access point…").click()
-    ph.locator(".modal[role=dialog]").wait_for()
+    pd = ph.locator(".modal[role=dialog]")
+    pd.wait_for()
     check(ph.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), "phone: no sideways scroll")
+    pd.locator("input[type=text]").fill("ShellyPlugSG3-54320467CBD4")
+    pd.get_by_role("button", name="Recognise").click()
+    pd.get_by_text("Plug S G3").wait_for(timeout=5000)
+    pd.get_by_role("button", name="Next").click()
+    pd.locator(".apw-steps li.current").get_by_text("Firmware").wait_for()
+    ph.wait_for_timeout(4000)
+    check(ph.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), "phone, firmware step: no sideways scroll")
+    ph.screenshot(path="/shots/apw-phone-file.png")
     br.close()
 
 if problems:

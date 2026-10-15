@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/store"
 )
 
@@ -195,17 +196,27 @@ func TestPhoneBaseUnderIngress(t *testing.T) {
 		"ha.example":         "http://ha.example:3082",
 		"[fd00::1]:8123":     "http://[fd00::1]:3082",
 	} {
-		if got := s.phoneBase(ing(host)); got != want {
-			t.Errorf("ingress %s: %q, want %q", host, got, want)
+		if got, guessed := s.phoneBase(ing(host)); got != want || !guessed {
+			t.Errorf("ingress %s: %q %v, want %q (guessed)", host, got, guessed, want)
 		}
 	}
 	direct := httptest.NewRequest("POST", "/api/v1/firmware/x/local", nil)
 	direct.Host = "192.168.0.127:3082"
-	if got := s.phoneBase(direct); got != "http://192.168.0.127:3082" {
-		t.Errorf("direct: %q", got)
+	if got, guessed := s.phoneBase(direct); got != "http://192.168.0.127:3082" || guessed {
+		t.Errorf("direct: %q %v", got, guessed)
 	}
 	st.Update(func(v *store.Settings) { v.PhoneBaseURL = "http://10.0.0.5:3082" })
-	if got := s.phoneBase(ing("192.168.0.127:8123")); got != "http://10.0.0.5:3082" {
-		t.Errorf("configured: %q", got)
+	if got, guessed := s.phoneBase(ing("192.168.0.127:8123")); got != "http://10.0.0.5:3082" || guessed {
+		t.Errorf("configured: %q %v", got, guessed)
+	}
+	// The tip only when the address was guessed, and never over another warning.
+	if w := localLink(&service.LocalLink{}, true).Warning; w != "ingress" {
+		t.Errorf("tip %q", w)
+	}
+	if w := localLink(&service.LocalLink{Warning: "localhost"}, true).Warning; w != "localhost" {
+		t.Errorf("other warning %q", w)
+	}
+	if w := localLink(&service.LocalLink{}, false).Warning; w != "" {
+		t.Errorf("no tip %q", w)
 	}
 }

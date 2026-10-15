@@ -34,29 +34,40 @@ func (s *server) firmwareIndex(w http.ResponseWriter, r *http.Request) {
 // phoneBase: the configured address for phones, else the one the browser used.
 // Under Home Assistant ingress the browser used Home Assistant, which does not
 // serve /fw/: then ShellyLanMan's own port on the same host (as Settings → MCP).
-func (s *server) phoneBase(r *http.Request) string {
+// guessed: that port on Home Assistant's address may not reach ShellyLanMan
+// (Home Assistant behind a proxy or a name): the page then shows a tip.
+func (s *server) phoneBase(r *http.Request) (base string, guessed bool) {
 	if b := s.Store.Settings().PhoneBaseURL; b != "" {
-		return b
+		return b, false
 	}
 	if viaIngress(r) && s.Port != nil {
 		host := r.Host
 		if h, _, err := net.SplitHostPort(host); err == nil {
 			host = h
 		}
-		return "http://" + net.JoinHostPort(strings.Trim(host, "[]"), strconv.Itoa(s.Port()))
+		return "http://" + net.JoinHostPort(strings.Trim(host, "[]"), strconv.Itoa(s.Port())), true
 	}
 	scheme := "http"
 	if r.TLS != nil {
 		scheme = "https"
 	}
-	return scheme + "://" + r.Host
+	return scheme + "://" + r.Host, false
+}
+
+// localLink adds the ingress tip to a link whose address phoneBase guessed.
+func localLink(link *service.LocalLink, guessed bool) *service.LocalLink {
+	if guessed && link.Warning == "" {
+		link.Warning = "ingress"
+	}
+	return link
 }
 
 func (s *server) localFirmware(w http.ResponseWriter, r *http.Request) {
-	link, err := s.Devices.LocalDownload(r.Context(), r.PathValue("id"), s.phoneBase(r))
+	base, guessed := s.phoneBase(r)
+	link, err := s.Devices.LocalDownload(r.Context(), r.PathValue("id"), base)
 	switch {
 	case err == nil:
-		writeJSON(w, http.StatusOK, link)
+		writeJSON(w, http.StatusOK, localLink(link, guessed))
 	case errors.Is(err, service.ErrUpToDate), errors.Is(err, service.ErrNoLocalFW):
 		writeErr(w, http.StatusConflict, err)
 	case errors.Is(err, service.ErrNotFound):

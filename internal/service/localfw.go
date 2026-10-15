@@ -56,8 +56,8 @@ type LocalLink struct {
 	Version  string `json:"version"`
 	Source   string `json:"source"`
 	FileName string `json:"fileName"`
-	Expires  int64  `json:"expires"` // unix ms
-	Warning  string `json:"warning,omitempty"`
+	Expires  int64  `json:"expires"`           // unix ms
+	Warning  string `json:"warning,omitempty"` // localhost, badBase; ingress (set by the API: the address is a guess)
 }
 
 // FirmwareSource returns the index (created on first use under /data/firmware).

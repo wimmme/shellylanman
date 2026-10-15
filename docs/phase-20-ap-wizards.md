@@ -112,3 +112,10 @@ Profiles (`web/src/pages/settings-profiles.ts`, logic in `profilelogic.ts`) and
 `web/src/panels/provwizard.ts`. Tested with unit tests (service, API, web logic) and
 `tools/screenshots/check-provision.py`; not yet with a real, factory-new device (a new device's
 behaviour on its access point under firmware 2.0 is still to be looked at, section 5).
+
+*On the phone itself, 2026-10-15 (Wim's feedback).* The wizard works best on the phone that does the update,
+where a QR code on its own screen cannot be scanned: the firmware step has a Download button (the same link), the
+device's page in the page step is a link (new tab, so the wizard stays), and the texts say when to scan and when to
+press. The firmware link takes the address the browser used; under Home Assistant ingress that is Home Assistant
+(`:8123`, no `/fw/`, a 404), so there it is ShellyLanMan's own port on that host, with a tip (`warning: ingress`)
+to set the address for phones when the host name does not reach it (Home Assistant behind a proxy or a name).

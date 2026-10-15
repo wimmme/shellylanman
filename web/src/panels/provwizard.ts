@@ -9,7 +9,7 @@ import { confirmDialog, openFrame } from '../modal';
 import { neighbour, type WizardStep } from '../aplogic';
 import { describe, newlyOnline, snapshot, type Seen } from '../profilelogic';
 import { stepText } from '../pages/settings-profiles';
-import { badge, copyBtn, fail, loading, msg, qr } from './apwizard';
+import { badge, copyBtn, fail, loading, msg, pageBadge, qr } from './apwizard';
 
 type Step = Extract<WizardStep, 'join' | 'page'> | 'profile' | 'apply';
 const STEPS: readonly Step[] = ['profile', 'join', 'page', 'apply'];
@@ -127,7 +127,7 @@ export function openProvisionWizard(): void {
     const ssid = profile?.wifiSSID;
     return h('div', {}, h('p', { class: 'muted' }, t('apw.page.intro')),
       h('div', { class: 'lfw-grid' }, pageQR ? qr(pageQR, 'apw.page.qrAlt') : null,
-        h('div', { class: 'lfw-info' }, badge('apw.page.url', pageURL), h('p', {}, t('prov.page.steps')),
+        h('div', { class: 'lfw-info' }, pageBadge(pageURL), h('p', {}, t('prov.page.steps')),
           ssid ? h('div', { class: 'row' }, badge('prov.page.network', ssid), copyBtn(ssid)) : null,
           h('p', { class: 'muted' }, t('prov.page.password')))));
   }

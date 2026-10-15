@@ -24,6 +24,9 @@ export const copyBtn = (text: string): HTMLElement => h('button', { class: 'btn 
   try { await navigator.clipboard.writeText(text); toast(t('lfw.copied'), 'info'); } catch { /* the text is shown: select it */ }
 } }, t('common.copy'));
 export const badge = (label: Key, v: string): HTMLElement => h('div', { class: 'lfw-badge' }, h('span', { class: 'muted' }, t(label)), h('strong', {}, v));
+// The device's page as a link: on the phone itself it opens in a tab next to the wizard.
+export const pageBadge = (url: string): HTMLElement => h('div', { class: 'lfw-badge' }, h('span', { class: 'muted' }, t('apw.page.url')),
+  h('strong', {}, h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url)));
 
 /** Open the firmware wizard, for a device in the list (id) or from the name of an access point. */
 export function openFirmwareWizard(opts: { id?: string } = {}): void {
@@ -136,10 +139,10 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') void find(); });
     if (opts.id) {
       showResult();
-      return h('div', {}, h('p', { class: 'muted' }, t('apw.which.fromList')), result);
+      return h('div', {}, h('p', { class: 'muted' }, t('apw.which.fromList')), h('p', { class: 'muted' }, t('apw.which.phone')), result);
     }
     if (st.guide) { models ??= await apApi.models(); showResult(); }
-    return h('div', {}, h('p', { class: 'muted' }, t('apw.which.intro')),
+    return h('div', {}, h('p', { class: 'muted' }, t('apw.which.intro')), h('p', { class: 'muted' }, t('apw.which.phone')),
       h('div', { class: 'row' }, h('label', { class: 'row' }, t('apw.which.name'), input), h('button', { class: 'btn', onclick: () => void find() }, t('apw.which.find'))),
       result);
   }
@@ -155,14 +158,19 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     }
     const l = link;
     const url = h('input', { readonly: true, value: l.url, 'aria-label': t('lfw.link') });
-    return h('div', { class: 'lfw' }, intro,
-      l.warning ? h('div', { class: 'banner warn', role: 'alert' }, t(k('lfw.warn.' + l.warning))) : null,
+    // On the phone itself the QR code cannot be scanned: the same link as a download.
+    const download = h('a', { class: 'btn primary', href: l.url, download: l.fileName }, t('apw.file.download'));
+    // ingress: a tip (the address is a guess), the others are errors.
+    const warning = !l.warning ? null : l.warning === 'ingress'
+      ? h('div', { class: 'banner', role: 'note' }, t('lfw.warn.ingress'))
+      : h('div', { class: 'banner warn', role: 'alert' }, t(k('lfw.warn.' + l.warning)));
+    return h('div', { class: 'lfw' }, intro, warning,
       h('div', { class: 'lfw-grid' }, qr(l.qr, 'lfw.qrAlt'),
         h('div', { class: 'lfw-info' },
           badge('lfw.model', l.model), badge('lfw.version', l.current ? `${l.current} → ${l.version}` : l.version),
           badge('lfw.source', t(l.source === 'shelly-tools' ? 'lfw.srcArchive' : 'lfw.srcShelly')),
           badge('lfw.file', l.fileName), badge('lfw.expires', dateTime(new Date(l.expires), true)))),
-      h('div', { class: 'row' }, url, copyBtn(l.url)));
+      h('div', { class: 'row' }, url, copyBtn(l.url), download));
   }
 
   // ---- 3: join the access point ----
@@ -202,7 +210,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     const g = st.guide!;
     return h('div', { class: 'lfw' }, h('p', { class: 'muted' }, t('apw.page.intro')),
       h('div', { class: 'lfw-grid' }, qr(g.pageQR, 'apw.page.qrAlt'),
-        h('div', { class: 'lfw-info' }, badge('apw.page.url', g.pageURL), h('p', {}, t('apw.page.steps')))));
+        h('div', { class: 'lfw-info' }, pageBadge(g.pageURL), h('p', {}, t('apw.page.steps')))));
   }
 
   // ---- 5: wait until the device is back ----
