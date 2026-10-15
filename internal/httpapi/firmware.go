@@ -3,8 +3,11 @@ package httpapi
 import (
 	"errors"
 	"mime"
+	"net"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/wimmme/shellylanman/internal/service"
 )
@@ -29,9 +32,18 @@ func (s *server) firmwareIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 // phoneBase: the configured address for phones, else the one the browser used.
+// Under Home Assistant ingress the browser used Home Assistant, which does not
+// serve /fw/: then ShellyLanMan's own port on the same host (as Settings → MCP).
 func (s *server) phoneBase(r *http.Request) string {
 	if b := s.Store.Settings().PhoneBaseURL; b != "" {
 		return b
+	}
+	if viaIngress(r) && s.Port != nil {
+		host := r.Host
+		if h, _, err := net.SplitHostPort(host); err == nil {
+			host = h
+		}
+		return "http://" + net.JoinHostPort(strings.Trim(host, "[]"), strconv.Itoa(s.Port()))
 	}
 	scheme := "http"
 	if r.TLS != nil {

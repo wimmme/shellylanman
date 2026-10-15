@@ -3,13 +3,17 @@ package httpapi
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/wimmme/shellylanman/internal/store"
 )
 
 func testSBK(t *testing.T) []byte {
@@ -170,5 +174,38 @@ func TestDevicesGenFilter(t *testing.T) {
 	decode(t, do(t, "GET", srv.URL+"/api/v1/devices?gen=2", "", nil), &list)
 	if len(list) != 0 {
 		t.Fatalf("gen 2: %v", list)
+	}
+}
+
+// Under Home Assistant ingress the browser's host is Home Assistant (which has no
+// /fw/): the phone link uses ShellyLanMan's own port on that host.
+func TestPhoneBaseUnderIngress(t *testing.T) {
+	st, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &server{Config: Config{Store: st, Port: func() int { return 3082 }}}
+	ing := func(host string) *http.Request {
+		r := httptest.NewRequest("POST", "/api/v1/firmware/x/local", nil)
+		r.Host = host
+		return r.WithContext(context.WithValue(r.Context(), ingressKey{}, true))
+	}
+	for host, want := range map[string]string{
+		"192.168.0.127:8123": "http://192.168.0.127:3082",
+		"ha.example":         "http://ha.example:3082",
+		"[fd00::1]:8123":     "http://[fd00::1]:3082",
+	} {
+		if got := s.phoneBase(ing(host)); got != want {
+			t.Errorf("ingress %s: %q, want %q", host, got, want)
+		}
+	}
+	direct := httptest.NewRequest("POST", "/api/v1/firmware/x/local", nil)
+	direct.Host = "192.168.0.127:3082"
+	if got := s.phoneBase(direct); got != "http://192.168.0.127:3082" {
+		t.Errorf("direct: %q", got)
+	}
+	st.Update(func(v *store.Settings) { v.PhoneBaseURL = "http://10.0.0.5:3082" })
+	if got := s.phoneBase(ing("192.168.0.127:8123")); got != "http://10.0.0.5:3082" {
+		t.Errorf("configured: %q", got)
 	}
 }

@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- Firmware via the access point: opened from Home Assistant's sidebar, the download link (and QR code) pointed
+  at Home Assistant's own port and answered 404. It now uses ShellyLanMan's own port on that host, unless an
+  address for phones is set (Settings → Network).
+
 ## [0.9.8] - 2026-10-12
 
 Stability only, no new features: fixes from a critical review of 0.9.7. A broken data file no longer costs you
