@@ -57,3 +57,33 @@ func TestCheck(t *testing.T) {
 		t.Fatalf("change events: %d", events)
 	}
 }
+
+// The About page checks when it opens: GitHub is asked at most once a minute.
+func TestCheckNow(t *testing.T) {
+	asked := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		asked++
+		w.Write([]byte(`[{"tag_name":"v1.2.0","html_url":"u-120"}]`))
+	}))
+	defer srv.Close()
+	st, err := store.Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := New(st, "v1.1.0", nil)
+	c.URL = srv.URL
+	if s := c.CheckNow(context.Background()); s.Mode != Never || asked != 0 {
+		t.Fatalf("off: %+v, asked %d", s, asked)
+	}
+	st.Update(func(s *store.Settings) { s.UpdateCheck = Stable })
+	if s := c.CheckNow(context.Background()); !s.Newer || asked != 1 {
+		t.Fatalf("on: %+v, asked %d", s, asked)
+	}
+	if s := c.CheckNow(context.Background()); !s.Newer || asked != 1 {
+		t.Fatalf("again within a minute: %+v, asked %d", s, asked)
+	}
+	c.last.Checked -= MinRecheck.Milliseconds() + 1
+	if c.CheckNow(context.Background()); asked != 2 {
+		t.Fatalf("after a minute: asked %d", asked)
+	}
+}

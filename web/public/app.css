@@ -146,7 +146,7 @@ table.data tbody tr:hover td{background:rgba(99,130,190,.05)}
 .state svg{width:40px;height:40px;opacity:.6}
 .state .title{color:var(--text-main);font-weight:600}
 .spinner{width:22px;height:22px;border:3px solid var(--border);border-top-color:var(--accent-rx);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}.btn.spinning svg{animation:spin 1s linear infinite}.about-check{gap:4px}
 
 /* Buttons and forms */
 .btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:.85rem;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-main);cursor:pointer}
@@ -230,7 +230,7 @@ dl.kv dd{margin:0}
 .menu button{display:block;width:100%;text-align:left;font:inherit;font-size:.85rem;background:none;border:none;color:var(--text-main);padding:6px 10px;border-radius:5px;cursor:pointer;white-space:nowrap}
 .menu button:hover{background:rgba(99,130,190,.12)}
 table.devices td{vertical-align:top}
-table.devices td.sel,table.devices th.sel{width:28px;padding-right:0}
+table.devices td.sel,table.devices th.sel,table.fw td.sel,table.fw th.sel{width:28px;padding-right:0}
 table.devices tbody tr{cursor:default}
 table.devices tbody tr.selected td{background:color-mix(in srgb,var(--accent-rx) 14%,transparent)}
 table.devices td.c-ip,table.devices td.c-mac,table.devices td.c-rssi,table.devices td.c-uptime,table.devices td.c-temp,table.devices td.c-measures{font-family:var(--font-mono);font-size:.82rem}
@@ -387,7 +387,7 @@ a[target="_blank"]::after,.btn.ext::after{content:"↗";margin-left:.25em;font-s
 .apw-steps{display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none;margin:0 0 14px;padding:0;counter-reset:apw}
 .apw-steps li{counter-increment:apw;color:var(--text-muted);font-size:.85rem}.apw-steps li::before{content:counter(apw) ". "}
 .apw-steps li.current{color:var(--text-main);font-weight:600}.apw-steps li.done{color:var(--accent-ok)}
-.apw-content{min-height:200px}.apw-result{margin-top:10px;display:grid;gap:8px}
+.apw-content{min-height:200px}.apw-dl{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:8px}.apw-dl:empty{display:none}.apw-dl progress{flex:1;min-width:120px}.apw-result{margin-top:10px;display:grid;gap:8px}
 .lfw-info .btn.small{justify-self:start}
 .prof-form .field{max-width:520px;margin-bottom:10px}.prof-sub{margin-left:16px;padding-left:12px;border-left:2px solid var(--border)}
 .prof-pick{list-style:none;margin:8px 0;padding:0;display:grid;gap:8px}.prof-differs{font-weight:600}.prof-item{margin-bottom:10px}.prof-steps{margin:6px 0 0;padding-left:20px;display:grid;gap:2px}

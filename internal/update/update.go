@@ -130,6 +130,23 @@ type release struct {
 	URL        string `json:"html_url"`
 }
 
+// MinRecheck is how soon a check on request (the About page) may ask GitHub again: without a
+// token GitHub allows 60 requests an hour per address.
+const MinRecheck = time.Minute
+
+// CheckNow checks on request (the About page is opened, or its ↻ pressed), unless the last
+// check was less than MinRecheck ago: then it returns that one.
+func (c *Checker) CheckNow(ctx context.Context) Status {
+	c.mu.Lock()
+	last := c.last
+	c.mu.Unlock()
+	if last.Checked > 0 && last.Mode == modeOf(c.Store.Settings().UpdateCheck) &&
+		time.Since(time.UnixMilli(last.Checked)) < MinRecheck {
+		return c.Status()
+	}
+	return c.Check(ctx)
+}
+
 // Check asks GitHub now.
 func (c *Checker) Check(ctx context.Context) Status {
 	st := c.Store.Settings()

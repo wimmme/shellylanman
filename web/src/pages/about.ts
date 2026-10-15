@@ -1,6 +1,6 @@
 import { api, type About, type Dep, type UpdateStatus } from '../api';
 import { parseChangelog, type Release } from '../changelog';
-import { h, ICONS } from '../dom';
+import { h, icon, ICONS } from '../dom';
 import { formatDuration } from '../format';
 import { LANGUAGES, t, type Key } from '../i18n';
 import { openModal } from '../modal';
@@ -26,7 +26,31 @@ function showText(title: string, path: string): void {
 function versionState(u: UpdateStatus | null): HTMLElement {
   if (!u || u.mode === 'never' || !u.mode) return h('a', { href: '#/settings', class: 'about-state muted' }, t('about.checkOff'));
   if (u.newer && u.latest) return link(u.url || '#', t('about.newer', { version: u.latest }), 'about-state warn');
+  if (u.error) return h('span', { class: 'about-state warn', title: u.error }, t('about.checkFailed'));
   return h('span', { class: 'about-state ok' }, t('about.upToDate'));
+}
+
+/**
+ * The version state, checked again when the page opens (the daily check may be hours old: a new
+ * release then only showed after a restart) and with ↻ (the server asks GitHub at most once a minute).
+ */
+function versionBox(first: UpdateStatus | null): HTMLElement {
+  const box = h('span', { class: 'row about-check' });
+  const btn: HTMLButtonElement = h('button', { class: 'btn icon', title: t('about.checkNow'), 'aria-label': t('about.checkNow'), onclick: () => void check() }, icon(ICONS.refresh, 16));
+  const draw = (u: UpdateStatus | null): void => {
+    const on = !!u && !!u.mode && u.mode !== 'never';
+    box.replaceChildren(versionState(u), ...(on ? [btn] : []));
+  };
+  const check = async (): Promise<void> => {
+    btn.disabled = true;
+    btn.classList.add('spinning');
+    try { draw(await api.checkUpdate()); } catch { /* keep what is shown */ }
+    btn.disabled = false;
+    btn.classList.remove('spinning');
+  };
+  draw(first);
+  if (first && first.mode && first.mode !== 'never') void check();
+  return box;
 }
 
 function hero(a: About, u: UpdateStatus | null): HTMLElement {
@@ -44,7 +68,7 @@ function hero(a: About, u: UpdateStatus | null): HTMLElement {
       h('p', {}, t('about.what3')),
       h('div', { class: 'about-meta' },
         h('span', { class: 'about-version mono' }, /^\d/.test(a.version) ? 'v' + a.version : a.version),
-        versionState(u), uptime, link(a.source, a.source.replace('https://', '')))));
+        versionBox(u), uptime, link(a.source, a.source.replace('https://', '')))));
 }
 
 function system(a: About): HTMLElement {

@@ -9,6 +9,7 @@ import {
 } from '../aplogic';
 import { allDevices, loadDevices, onDevicesChanged } from '../devices';
 import { h } from '../dom';
+import { fetchWithProgress, localPath, megabytes, progressText, saveBlob } from '../download';
 import { dateTime } from '../format';
 import { t, type Key } from '../i18n';
 import { openFrame } from '../modal';
@@ -158,8 +159,31 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     }
     const l = link;
     const url = h('input', { readonly: true, value: l.url, 'aria-label': t('lfw.link') });
-    // On the phone itself the QR code cannot be scanned: the same link as a download.
-    const download = h('a', { class: 'btn primary', href: l.url, download: l.fileName }, t('apw.file.download'));
+    // On the phone itself the QR code cannot be scanned: the same file as a download. It is fetched
+    // in the page, with progress, because a plain link shows nothing in an installed app (PWA).
+    const dlStatus = h('div', { class: 'apw-dl', role: 'status' });
+    const download: HTMLButtonElement = h('button', { class: 'btn primary', onclick: () => void fetchFile() }, t('apw.file.download'));
+    const fetchFile = async (): Promise<void> => {
+      const path = localPath(l.url);
+      if (!path) { window.open(l.url, '_blank', 'noopener'); return; }
+      download.disabled = true;
+      const bar = h('progress', { max: 1 });
+      const text = h('span', {}, t('apw.file.downloading', { progress: progressText(0, 0) }));
+      dlStatus.replaceChildren(bar, text);
+      try {
+        const blob = await fetchWithProgress(path, (done, total) => {
+          if (total > 0) { bar.max = total; bar.value = done; }
+          text.textContent = t('apw.file.downloading', { progress: progressText(done, total) });
+        });
+        saveBlob(blob, l.fileName);
+        dlStatus.replaceChildren(h('span', {}, t('apw.file.done', { file: l.fileName, size: megabytes(blob.size) })));
+      } catch (e) {
+        dlStatus.replaceChildren(h('div', { class: 'banner warn', role: 'alert' }, t('apw.file.failed', { error: msg(e) }), ' ',
+          h('a', { href: l.url, target: '_blank', rel: 'noopener noreferrer' }, t('apw.file.openLink'))));
+      } finally {
+        download.disabled = false;
+      }
+    };
     // ingress: a tip (the address is a guess), the others are errors.
     const warning = !l.warning ? null : l.warning === 'ingress'
       ? h('div', { class: 'banner', role: 'note' }, t('lfw.warn.ingress'))
@@ -170,7 +194,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
           badge('lfw.model', l.model), badge('lfw.version', l.current ? `${l.current} → ${l.version}` : l.version),
           badge('lfw.source', t(l.source === 'shelly-tools' ? 'lfw.srcArchive' : 'lfw.srcShelly')),
           badge('lfw.file', l.fileName), badge('lfw.expires', dateTime(new Date(l.expires), true)))),
-      h('div', { class: 'row' }, url, copyBtn(l.url), download));
+      h('div', { class: 'row' }, url, copyBtn(l.url), download), dlStatus);
   }
 
   // ---- 3: join the access point ----

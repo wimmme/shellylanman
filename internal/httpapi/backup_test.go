@@ -205,6 +205,12 @@ func TestPhoneBaseUnderIngress(t *testing.T) {
 	if got, guessed := s.phoneBase(direct); got != "http://192.168.0.127:3082" || guessed {
 		t.Errorf("direct: %q %v", got, guessed)
 	}
+	proxied := httptest.NewRequest("POST", "/api/v1/firmware/x/local", nil)
+	proxied.Host = "shellylanman.example"
+	proxied.Header.Set("X-Forwarded-Proto", "https")
+	if got, _ := s.phoneBase(proxied); got != "https://shellylanman.example" {
+		t.Errorf("behind a TLS proxy: %q", got)
+	}
 	st.Update(func(v *store.Settings) { v.PhoneBaseURL = "http://10.0.0.5:3082" })
 	if got, guessed := s.phoneBase(ing("192.168.0.127:8123")); got != "http://10.0.0.5:3082" || guessed {
 		t.Errorf("configured: %q %v", got, guessed)

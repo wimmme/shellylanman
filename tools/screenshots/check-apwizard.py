@@ -11,7 +11,7 @@ step no clickable address, or the page logs a CSP error.
 The firmware step asks Shelly's firmware index over the internet; the check accepts the QR code
 or the banner that says the index could not be read, and tests every other step strictly.
 
-Screenshots: /shots/apw-which.png, apw-file.png, apw-join.png, apw-page.png, apw-phone-file.png.
+Screenshots: /shots/fw-table.png, /shots/apw-which.png, apw-file.png, apw-join.png, apw-page.png, apw-phone-file.png.
 """
 import sys
 
@@ -35,6 +35,25 @@ with sync_playwright() as p:
     errors = []
     pg.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
     pg.goto(B + "#/firmware"); pg.wait_for_timeout(2500)
+
+    # The Firmware table: a read-only box first, "-" where there is nothing newer, the local-update column.
+    fw = pg.locator("table.fw")
+    fw.locator("tbody tr").first.wait_for(timeout=10000)
+    pg.wait_for_timeout(5000)
+    heads = [x.strip().lower() for x in fw.locator("thead th").all_inner_texts()]
+    check(heads[-2:] == ["shelly index", "local update"], f"firmware table: index and local-update columns {heads}")
+    first = fw.locator("tbody tr td.sel input[type=checkbox]")
+    check(first.count() == fw.locator("tbody tr").count() and all(first.nth(i).is_disabled() for i in range(first.count())),
+          "firmware table: a read-only box in front of every row")
+    ticks = fw.locator("tbody tr td:nth-child(5) input[type=checkbox], tbody tr td:nth-child(6) input[type=checkbox]")
+    if ticks.count():
+        row = ticks.first.locator("xpath=ancestor::tr")
+        ticks.first.check()
+        check(row.locator("td.sel input").is_checked(), "firmware table: the first box follows a ticked version")
+        ticks.first.uncheck()
+        check(not fw.locator("tbody tr td.sel input:checked").count(), "firmware table: and is cleared with it")
+    check(fw.locator("tbody td:nth-child(6)").get_by_text("-", exact=True).count() >= 1, "firmware table: '-' where there is no beta")
+    pg.screenshot(path="/shots/fw-table.png")
 
     pg.get_by_role("button", name="Through an access point…").click()
     dlg = pg.locator(".modal[role=dialog]")
@@ -81,11 +100,15 @@ with sync_playwright() as p:
     got = dlg.locator("img.lfw-qr").count() == 1 or dlg.locator(".banner.warn").count() == 1
     check(got, "firmware step: the QR code, or the banner that the index could not be read")
     if dlg.locator("img.lfw-qr").count() == 1:
-        dl = dlg.get_by_role("link", name="Download")
-        link = dlg.locator("input[readonly]").input_value()
-        check(dl.count() == 1 and dl.get_attribute("href") == link and dl.get_attribute("download") is not None,
-              "firmware step: a Download button with the same link")
         check(dlg.get_by_text("press Download").count() == 1, "firmware step: scan on a computer, Download on the phone")
+        try:
+            with pg.expect_download(timeout=90000) as got_dl:
+                dlg.get_by_role("button", name="Download").click()
+            name = got_dl.value.suggested_filename
+            check(name.endswith(".zip"), f"firmware step: Download saves the file ({name})")
+            check(dlg.get_by_text("Downloaded:").count() == 1, "firmware step: says it was downloaded, with its size")
+        except Exception as e:  # the file comes from Shelly's CDN through the server
+            check(dlg.locator(".apw-dl .banner").count() == 1, f"firmware step: no download, but an error is shown ({e})")
     pg.screenshot(path="/shots/apw-file.png")
     nxt.click()
     dlg.locator(".apw-steps li.current").get_by_text("Join").wait_for()

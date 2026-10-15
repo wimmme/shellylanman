@@ -14,7 +14,7 @@ import { t, type Key } from '../i18n';
 import { confirmDialog } from '../modal';
 import type { EventSocket } from '../socket';
 import { showResults } from './devsettings';
-import { indexCell } from './localfw';
+import { indexCell, localCell, na } from './localfw';
 import { deviceURL, openPages } from '../weblinks';
 
 const tr = (k: string, v?: Record<string, number>): string => t(k as Key, v);
@@ -58,7 +58,7 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
   };
 
   const cellNode = (r: FirmwareRow, cell: Cell, col: 'stable' | 'beta'): Node => {
-    if (cell.type === 'empty') return h('input', { type: 'checkbox', disabled: true, 'aria-label': t(col === 'stable' ? 'fw.col.stable' : 'fw.col.beta') });
+    if (cell.type === 'empty') return na(); // nothing newer, or not read: "-" as on Devices and Checklist
     if (cell.type === 'text') return document.createTextNode(cell.text);
     const box = h('input', { type: 'checkbox', checked: choice.get(r.id) === col });
     box.addEventListener('change', () => { choice.set(r.id, toggle(choice.get(r.id) ?? null, col, box.checked)); draw(); });
@@ -72,13 +72,17 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
     tbody.replaceChildren(...shown.map((r) => {
       const busy = checking.has(r.id) || !!r.updating;
       const status = r.rebooting ? 'offline' : busy ? 'reading' : r.status;
-      const tr_ = h('tr', {},
+      // The first box is not clicked: it shows whether a stable or beta version is ticked.
+      const chosen = !!choice.get(r.id);
+      const tr_ = h('tr', { class: chosen ? 'selected' : undefined },
+        h('td', { class: 'sel' }, h('input', { type: 'checkbox', disabled: true, checked: chosen, title: t('fw.selTip'), 'aria-label': `${r.name}: ${t('fw.selTip')}` })),
         h('td', {}, h('span', { class: 'pill ' + status }, t(('status.' + status) as Key))),
         h('td', {}, r.name),
         h('td', { title: r.currentBuild ?? '' }, r.current ?? ''),
         h('td', {}, cellNode(r, stableCell(r, tr), 'stable')),
         h('td', {}, cellNode(r, betaCell(r), 'beta')),
-        withIndex ? h('td', {}, indexCell(index.get(r.id), indexLoading)) : null);
+        withIndex ? h('td', {}, indexCell(index.get(r.id), indexLoading)) : null,
+        withIndex ? h('td', {}, localCell(index.get(r.id), indexLoading)) : null);
       tr_.addEventListener('dblclick', () => { // browseAction
         const d = allDevices().find((x) => x.id === r.id);
         if (d && d.status !== 'ghost' && d.gen !== 'blu' && d.gen !== 'bth') openPages([deviceURL(d.ip, d.port)]);
@@ -104,7 +108,9 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
     choice.clear();
     rows.forEach((r) => checking.add(r.id));
     body.replaceChildren(h('div', { class: 'table-wrap' }, h('table', { class: 'data fw' },
-      h('thead', {}, h('tr', {}, ...(['col.status', 'col.device', 'fw.col.current', 'fw.col.stable', 'fw.col.beta', ...(withIndex ? ['lfw.col'] : [])] as Key[]).map((k) => h('th', { scope: 'col', title: k === 'lfw.col' ? t('lfw.colTip') : undefined }, t(k))))),
+      h('thead', {}, h('tr', {}, h('th', { class: 'sel', scope: 'col', 'aria-label': t('fw.selTip') }),
+        ...(['col.status', 'col.device', 'fw.col.current', 'fw.col.stable', 'fw.col.beta', ...(withIndex ? ['lfw.col', 'lfw.localCol'] : [])] as Key[]).map((k) =>
+          h('th', { scope: 'col', title: k === 'lfw.col' ? t('lfw.colTip') : k === 'lfw.localCol' ? t('lfw.localColTip') : undefined }, t(k))))),
       tbody)));
     draw();
     if (withIndex) void loadIndex();

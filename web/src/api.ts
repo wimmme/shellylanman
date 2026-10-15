@@ -66,6 +66,7 @@ export const api = {
   settings: () => request<Settings>('GET', '/settings'),
   updateSettings: (patch: Partial<Settings>) => request<Settings>('PUT', '/settings', patch),
   update: () => request<UpdateStatus>('GET', '/update'),
+  checkUpdate: () => request<UpdateStatus>('POST', '/update/check'),
   server: () => request<ServerInfo>('GET', '/server'),
   mcp: () => request<MCPInfo>('GET', '/mcp'),
   setMCP: (patch: { enabled?: boolean; access?: MCPInfo['access'] }) => request<MCPInfo>('PUT', '/mcp', patch),

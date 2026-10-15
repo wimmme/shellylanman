@@ -97,6 +97,7 @@ func build(cfg Config) (http.Handler, *server) {
 	mux.HandleFunc("GET /api/v1/settings", s.getSettings)
 	mux.HandleFunc("PUT /api/v1/settings", s.putSettings)
 	mux.HandleFunc("GET /api/v1/update", s.getUpdate)
+	mux.HandleFunc("POST /api/v1/update/check", s.checkUpdate)
 	s.deviceRoutes(mux)
 	s.serverRoutes(mux)
 	s.logRoutes(mux)
@@ -328,4 +329,13 @@ func (s *server) getUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, s.Updates.Status())
+}
+
+// checkUpdate: check for a release now (the About page), at most once a minute.
+func (s *server) checkUpdate(w http.ResponseWriter, r *http.Request) {
+	if s.Updates == nil {
+		writeJSON(w, http.StatusOK, update.Status{Mode: update.Never})
+		return
+	}
+	writeJSON(w, http.StatusOK, s.Updates.CheckNow(r.Context()))
 }

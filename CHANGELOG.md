@@ -5,6 +5,20 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Firmware wizard: **Download** fetches the file in the page with a progress bar and says when it is done (and how
+  big it is); in an app installed on a phone a plain link showed nothing at all. It uses the link relative to the
+  page, so it works on ShellyLanMan's own port, behind a reverse proxy and in Home Assistant's sidebar alike.
+- Firmware page: a box in front of each row shows whether a version is ticked (it follows the *New stable* and
+  *New beta* ticks); "-" where there is no newer version, as on Devices and Checklist; the ⚡ moved to a new
+  column *Local update* ("via device access point"), *Shelly index* shows the version.
+- About: the release check runs again when the page opens, and ↻ checks at once (GitHub is asked at most once a
+  minute). A failed check says so instead of "up to date". API: `POST /api/v1/update/check`.
+
+### Fixed
+- Behind a reverse proxy with HTTPS the firmware link (QR code) started with `http://`: browsers block such a
+  download from an HTTPS page, an installed app without a word. It now follows the proxy (`X-Forwarded-Proto`).
+
 ## [0.9.9] - 2026-10-15
 
 The firmware wizard through a device's access point now works from Home Assistant's sidebar and on the phone

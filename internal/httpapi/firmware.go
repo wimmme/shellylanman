@@ -47,11 +47,9 @@ func (s *server) phoneBase(r *http.Request) (base string, guessed bool) {
 		}
 		return "http://" + net.JoinHostPort(strings.Trim(host, "[]"), strconv.Itoa(s.Port())), true
 	}
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-	return scheme + "://" + r.Host, false
+	// baseURL: https also behind a TLS proxy; an http link from an https page is an
+	// insecure download that browsers block, a PWA without a word.
+	return baseURL(r), false
 }
 
 // localLink adds the ingress tip to a link whose address phoneBase guessed.
