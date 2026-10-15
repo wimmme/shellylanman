@@ -922,6 +922,7 @@
   "apw.join.ssid": "Nombre de la red",
   "apw.join.qrAlt": "Código QR que conecta al punto de acceso del dispositivo",
   "apw.join.open": "La red es abierta: no tiene contraseña. Escanee el código con la cámara del teléfono.",
+  "apw.join.onPhone": "En el propio teléfono: elija esta red en sus ajustes de Wi-Fi y vuelva luego a esta página.",
   "apw.join.protected": "Este punto de acceso tiene contraseña: conéctese a mano.",
   "apw.join.off": "El punto de acceso de este dispositivo está apagado.",
   "apw.join.switchOn": "Encenderlo",

@@ -198,7 +198,8 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
       parts.push(h('div', { class: 'lfw-grid' },
         g.joinQR ? qr(g.joinQR, 'apw.join.qrAlt') : null,
         h('div', { class: 'lfw-info' }, badge('apw.join.ssid', apLabel(g)), copyBtn(apLabel(g)),
-          h('p', { class: 'muted' }, g.joinQR ? t('apw.join.open') : t('apw.join.protected')))));
+          h('p', { class: 'muted' }, g.joinQR ? t('apw.join.open') : t('apw.join.protected')),
+          g.joinQR ? h('p', { class: 'muted' }, t('apw.join.onPhone')) : null)));
       box.replaceChildren(...parts);
     };
     draw();

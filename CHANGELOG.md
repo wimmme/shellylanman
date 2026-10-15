@@ -8,8 +8,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 - Firmware wizard through the access point: the firmware step has a **Download** button next to the QR code, so
   the wizard also works on the phone itself, and says when to scan (page on a computer) and when to press
-  Download (on the phone). The first step says it is easiest from the phone; the device's address in step 4 (also
-  in *Set up a new Shelly*) is a link that opens in a new tab.
+  Download (on the phone); the join step says how to join on the phone itself. The first step says it is easiest
+  from the phone; the device's address in step 4 (also in *Set up a new Shelly*) is a link that opens in a new tab.
 - Opened from Home Assistant's sidebar, the firmware step shows a tip that the link uses ShellyLanMan's own port on
   Home Assistant's address, and where to set the address for phones when a phone cannot open it.
 

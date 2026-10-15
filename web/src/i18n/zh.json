@@ -922,6 +922,7 @@
   "apw.join.ssid": "网络名称",
   "apw.join.qrAlt": "连接设备接入点的二维码",
   "apw.join.open": "该网络是开放的：没有密码。用手机相机扫描二维码。",
+  "apw.join.onPhone": "在手机上操作时：在 Wi-Fi 设置中选择此网络，然后回到此页面。",
   "apw.join.protected": "此接入点有密码：请手动连接。",
   "apw.join.off": "此设备的接入点已关闭。",
   "apw.join.switchOn": "打开它",

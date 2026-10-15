@@ -117,7 +117,8 @@ export function openProvisionWizard(): void {
     const g = guide;
     return h('div', {}, h('p', { class: 'muted' }, t('apw.join.intro')),
       h('div', { class: 'lfw-grid' }, g.joinQR ? qr(g.joinQR, 'apw.join.qrAlt') : null,
-        h('div', { class: 'lfw-info' }, badge('apw.join.ssid', g.ssid.trim()), copyBtn(g.ssid.trim()), h('p', { class: 'muted' }, t('apw.join.open')))));
+        h('div', { class: 'lfw-info' }, badge('apw.join.ssid', g.ssid.trim()), copyBtn(g.ssid.trim()), h('p', { class: 'muted' }, t('apw.join.open')),
+          h('p', { class: 'muted' }, t('apw.join.onPhone')))));
   }
 
   // ---- 3: open the page and enter the home network ----

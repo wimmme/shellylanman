@@ -91,6 +91,7 @@ with sync_playwright() as p:
     dlg.locator(".apw-steps li.current").get_by_text("Join").wait_for()
     dlg.locator("img.lfw-qr").wait_for(timeout=5000)
     check(dlg.get_by_text("ShellyPlugSG3-54320467CBD4").count() >= 1 and dlg.get_by_text("The network is open").count() == 1, "join step: the name, the QR code, open")
+    check(dlg.get_by_text("On the phone itself").count() == 1, "join step: how to join on the phone itself")
     check(dlg.get_by_text("Switch it on").count() == 0, "a name alone has no access point to switch on")
     pg.screenshot(path="/shots/apw-join.png")
     nxt.click()

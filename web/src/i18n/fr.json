@@ -922,6 +922,7 @@
   "apw.join.ssid": "Nom du réseau",
   "apw.join.qrAlt": "QR code qui connecte au point d'accès de l'appareil",
   "apw.join.open": "Le réseau est ouvert : il n'a pas de mot de passe. Scannez le code avec l'appareil photo du téléphone.",
+  "apw.join.onPhone": "Sur le téléphone lui-même : choisissez ce réseau dans ses réglages Wi-Fi, puis revenez sur cette page.",
   "apw.join.protected": "Ce point d'accès a un mot de passe : connectez-vous à la main.",
   "apw.join.off": "Le point d'accès de cet appareil est désactivé.",
   "apw.join.switchOn": "L'activer",

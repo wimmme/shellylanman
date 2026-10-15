@@ -922,6 +922,7 @@
   "apw.join.ssid": "Netwerknaam",
   "apw.join.qrAlt": "QR-code die verbindt met het access point van het toestel",
   "apw.join.open": "Het netwerk is open: het heeft geen wachtwoord. Scan de code met de camera van de telefoon.",
+  "apw.join.onPhone": "Op je telefoon zelf: kies dit netwerk in je Wi-Fi-instellingen en kom daarna terug naar deze pagina.",
   "apw.join.protected": "Dit access point heeft een wachtwoord: verbind er zelf mee.",
   "apw.join.off": "Het access point van dit toestel staat uit.",
   "apw.join.switchOn": "Zet het aan",
