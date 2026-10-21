@@ -133,7 +133,11 @@ use; do it only if it is a small step, otherwise leave it.
 
 ## 3. Small things for the next release
 
-Nothing open. (*Create profile…* showing that it loads: done for 0.9.7.)
+- **After Home Assistant 2026.11** (HACS becomes the built-in Marketplace): add `categories`
+  to the integration's manifest in `shellylanman-ha` (`plugs_switches`,
+  `computers_network.monitoring`; the list is `homeassistant/generated/integration_categories.json`
+  in core). hassfest on 2026.10 still rejects the key (tried 2026-10-21). Also check that the
+  my.home-assistant "Open in HACS" button in both READMEs opens the Marketplace.
 
 ## 4. Before v1.0.0
 
