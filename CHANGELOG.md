@@ -5,6 +5,14 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.11] - 2026-10-22
+
+No changes to ShellyLanMan itself: this release goes with the Home Assistant app and integration 0.9.11, whose
+integration asks for a new MCP token when needed, speaks ShellyLanMan's 8 languages and is in HACS's default list.
+
+### Changed
+- `docs/roadmap.md`: what to do after Home Assistant 2026.11, when HACS becomes the built-in Marketplace.
+
 ## [0.9.10] - 2026-10-16
 
 From using 0.9.9 on a phone: the firmware download now shows its progress and works in an installed app behind
