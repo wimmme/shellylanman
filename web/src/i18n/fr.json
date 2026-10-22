@@ -817,6 +817,7 @@
   "mcp.url": "Adresse",
   "mcp.token": "Jeton",
   "mcp.tokenSet": "Un jeton est défini. Il n'est affiché qu'une fois ; créez-en un nouveau si vous l'avez perdu (l'ancien cesse alors de fonctionner).",
+  "mcp.tokenNone": "Pas encore de jeton : un assistant sur une autre machine en a besoin. Créez-le avec Nouveau jeton.",
   "mcp.tokenNew": "Nouveau jeton",
   "mcp.tokenShown": "Copiez le jeton maintenant : il ne sera plus affiché.",
   "mcp.tokenConfirm": "Créer un nouveau jeton ? Les assistants qui utilisent le jeton actuel perdent l'accès.",

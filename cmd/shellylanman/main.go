@@ -116,6 +116,23 @@ func run(log *slog.Logger, logs *logbuf.Buffer, port, dataDir string, origins []
 		IdleTimeout:       120 * time.Second,
 	}
 	sup := supervisor.FromEnv() // set only when running as a Home Assistant app
+	// Home Assistant's MCP integration is offered only while the MCP server is on: an
+	// offer for a server that is off fails in Home Assistant with "unexpected error".
+	// Switching it off does not withdraw the offer: the Supervisor would then make
+	// Home Assistant delete an MCP integration already set up with it (DECISIONS P23-2).
+	announceMCP := func() {
+		if sup == nil || mcpLocal == "" || !st.Settings().MCP.Enabled {
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		url := "http://" + mcpLocal + "/mcp"
+		if err := sup.Announce(ctx, supervisor.ServiceMCP, map[string]any{"url": url}); err != nil {
+			log.Warn("Home Assistant discovery", "service", supervisor.ServiceMCP, "err", err)
+		} else {
+			log.Info("announced to Home Assistant", "service", supervisor.ServiceMCP, "url", url)
+		}
+	}
 	announce := func(port int) {
 		if sup == nil {
 			return
@@ -130,14 +147,7 @@ func run(log *slog.Logger, logs *logbuf.Buffer, port, dataDir string, origins []
 		} else {
 			log.Info("announced to Home Assistant", "service", supervisor.ServiceShellyLanMan, "url", url)
 		}
-		if mcpLocal != "" {
-			url := "http://" + mcpLocal + "/mcp"
-			if err := sup.Announce(ctx, supervisor.ServiceMCP, map[string]any{"url": url}); err != nil {
-				log.Warn("Home Assistant discovery", "service", supervisor.ServiceMCP, "err", err)
-			} else {
-				log.Info("announced to Home Assistant", "service", supervisor.ServiceMCP, "url", url)
-			}
-		}
+		announceMCP()
 	}
 	// Where the web UI listens: one setting (DECISIONS P17-1), shown on the settings page.
 	addr, source, err := listen.Resolve(port, sup != nil)
@@ -166,7 +176,7 @@ func run(log *slog.Logger, logs *logbuf.Buffer, port, dataDir string, origins []
 		ports.Ingress = ingress
 	}
 	ports.MCPLocal = mcpLocal
-	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Logs: logs, Port: ln.Port, Ports: ports, Static: web.Files(), Origins: origins, Log: log})
+	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Logs: logs, Port: ln.Port, Ports: ports, Static: web.Files(), Origins: origins, Log: log, MCPSwitchedOn: announceMCP})
 	if _, err := ln.Start(); err != nil {
 		return listen.InUse("web UI", addr, where, err)
 	}

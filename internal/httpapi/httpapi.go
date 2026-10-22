@@ -48,6 +48,9 @@ type Config struct {
 	// the WebSocket, e.g. a reverse proxy's public name.
 	Origins []string
 	Log     *slog.Logger
+	// MCPSwitchedOn is called when the MCP server is switched on (the Home
+	// Assistant app announces it then; nil outside the app and in tests).
+	MCPSwitchedOn func()
 }
 
 type server struct {

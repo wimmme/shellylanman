@@ -106,6 +106,7 @@ func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body) {
 		return
 	}
+	wasOn := s.Store.Settings().MCP.Enabled
 	_, err := s.Store.Update(func(st *store.Settings) {
 		if body.Enabled != nil {
 			st.MCP.Enabled = *body.Enabled
@@ -120,6 +121,9 @@ func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
 	}
 	// Switching on without a token would refuse every client: make one.
 	info := s.mcpInfo()
+	if info.Enabled && !wasOn && s.MCPSwitchedOn != nil {
+		go s.MCPSwitchedOn()
+	}
 	if info.Enabled && !info.HasToken {
 		tok, err := s.makeMCPToken()
 		if err != nil {

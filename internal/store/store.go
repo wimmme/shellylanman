@@ -110,6 +110,9 @@ func Defaults() Settings {
 		Scan:       ScanSettings{Mode: ScanFull, RefreshSeconds: 2, ConfigTics: 5},
 		Archive:    ArchiveSettings{Use: true, AutoReload: true},
 		BackupKeep: 10,
+		// On, read only (DECISIONS P23-1). Over the LAN it still needs a token, which
+		// is made only on request; the Home Assistant app's loopback listener needs none.
+		MCP: MCPSettings{Enabled: true, Access: "read"},
 	}
 }
 

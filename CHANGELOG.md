@@ -5,6 +5,15 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- **MCP is on by default** in a new installation, read only. Over the network it still needs a token, which exists
+  only once you make one (*Settings → MCP → New token*; the page now says so). Installations that have MCP off keep
+  it off.
+
+### Fixed
+- Home Assistant app: Home Assistant no longer offers *Model Context Protocol* while ShellyLanMan's MCP server is
+  off (adding it failed with "unexpected error"). It is offered when MCP is on, also right after you switch it on.
+
 ## [0.9.11] - 2026-10-22
 
 No changes to ShellyLanMan itself: this release goes with the Home Assistant app and integration 0.9.11, whose

@@ -131,3 +131,25 @@ func TestInstanceIDStablePerDataDir(t *testing.T) {
 		t.Fatalf("ids %q %q %q", a.InstanceID(), b.InstanceID(), c.InstanceID())
 	}
 }
+
+// MCP is on in a fresh installation (P23-1); an installation that stored it off keeps it off.
+func TestMCPDefaultOnlyForNewInstallations(t *testing.T) {
+	if d := Defaults().MCP; !d.Enabled || d.Access != "read" {
+		t.Fatalf("defaults: %+v", d)
+	}
+	dir := t.TempDir()
+	s, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Update(func(st *Settings) { st.MCP.Enabled = false }); err != nil {
+		t.Fatal(err)
+	}
+	again, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.Settings().MCP.Enabled {
+		t.Fatal("an installation that had MCP off got it switched on")
+	}
+}

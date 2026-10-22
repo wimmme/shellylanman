@@ -345,8 +345,8 @@ claude mcp add --transport http shellylanman http://<your-host>:3082/mcp \
 
 Scenes are named lists of device actions stored in ShellyLanMan (`/data/scenes.json`).
 
-Off by default, read-only unless you choose otherwise, a bearer token on every
-request, browser requests from other sites refused, and every action that changes
+On by default but read-only unless you choose otherwise, a bearer token on every
+request over the network (none exists until you make one under *Settings → MCP*), browser requests from other sites refused, and every action that changes
 something written to the log. Devices are named by name, host name, IP or MAC.
 
 ## 🔌 REST API
@@ -400,8 +400,9 @@ Questions, ideas, feedback: the [thread on the Home Assistant Community](https:/
   WebSocket, a strict Content Security Policy, no third-party scripts or fonts.
 - **Destructive actions** (reboot, restore, firmware update, port change) always ask
   for confirmation, and the API requires `confirm: true`.
-- **MCP** is off by default, needs a token, and is read-only unless you allow control
-  or configuration.
+- **MCP** is on by default but read-only unless you allow control or configuration,
+  and over the network it needs a token, which exists only once you make one. The
+  Home Assistant app's own listener (loopback only) needs none.
 - Report vulnerabilities privately: see [`SECURITY.md`](SECURITY.md).
 
 ## 💻 Development

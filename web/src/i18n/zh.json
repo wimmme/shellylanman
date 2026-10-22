@@ -817,6 +817,7 @@
   "mcp.url": "地址",
   "mcp.token": "令牌",
   "mcp.tokenSet": "已设置令牌。令牌只显示一次；如果丢失请新建一个（旧令牌随即失效）。",
+  "mcp.tokenNone": "还没有令牌：其他机器上的助手需要令牌。请用“新建令牌”创建。",
   "mcp.tokenNew": "新建令牌",
   "mcp.tokenShown": "请立即复制令牌：它不会再次显示。",
   "mcp.tokenConfirm": "新建令牌？使用当前令牌的助手将失去访问权限。",

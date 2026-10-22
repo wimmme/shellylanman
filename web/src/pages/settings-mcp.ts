@@ -47,7 +47,8 @@ export async function mcpSettings(body: HTMLElement): Promise<void> {
         copyRow(token, t('mcp.token')),
         copyRow(`claude mcp add --transport http shellylanman ${url} --header "Authorization: Bearer ${token}"`, t('mcp.claude')),
         copyRow(JSON.stringify({ mcpServers: { shellylanman: { type: 'http', url, headers: { Authorization: `Bearer ${token}` } } } }, null, 2), t('mcp.json'))]
-      : info.hasToken ? [h('p', { class: 'muted' }, t('mcp.tokenSet'))] : [];
+      : info.hasToken ? [h('p', { class: 'muted' }, t('mcp.tokenSet'))]
+        : info.enabled ? [h('p', { class: 'muted' }, t('mcp.tokenNone'))] : [];
 
     box.replaceChildren(
       h('p', {}, t('mcp.intro')),

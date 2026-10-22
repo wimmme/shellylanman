@@ -817,6 +817,7 @@
   "mcp.url": "Indirizzo",
   "mcp.token": "Token",
   "mcp.tokenSet": "È impostato un token. Viene mostrato una sola volta; creane uno nuovo se l'hai perso (il vecchio smette di funzionare).",
+  "mcp.tokenNone": "Nessun token ancora: un assistente su un'altra macchina ne ha bisogno. Crealo con Nuovo token.",
   "mcp.tokenNew": "Nuovo token",
   "mcp.tokenShown": "Copia il token ora: non verrà più mostrato.",
   "mcp.tokenConfirm": "Creare un nuovo token? Gli assistenti che usano quello attuale perderanno l'accesso.",
