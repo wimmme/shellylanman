@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.12] - 2026-10-22
+
+From a first install of the Home Assistant app: MCP is on by default (read only), and Home Assistant offers its MCP
+integration only when that works.
+
 ### Changed
 - **MCP is on by default** in a new installation, read only. Over the network it still needs a token, which exists
   only once you make one (*Settings → MCP → New token*; the page now says so). Installations that have MCP off keep
