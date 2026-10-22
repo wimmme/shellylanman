@@ -37,16 +37,27 @@ func TestCheck(t *testing.T) {
 	if s := c.Check(context.Background()); s.Newer || !s.Skipped {
 		t.Fatalf("skipped: %+v", s)
 	}
-	// A Home Assistant app: the app's releases, and skipping a version does not hide it.
+	// A Home Assistant app: the app's tags, and skipping a version does not hide it.
 	app := New(st, "v1.1.0", nil)
-	app.URL = srv.URL
 	app.HomeAssistantApp()
-	if app.URL != AppReleasesURL {
-		t.Fatalf("the app looks at shellylanman-ha: %s", app.URL)
+	if app.URL != AppTagsURL {
+		t.Fatalf("the app looks at shellylanman-ha's app tags: %s", app.URL)
 	}
-	app.URL = srv.URL
-	if s := app.Check(context.Background()); !s.Newer || s.Skipped || !s.App {
+	tags := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`[{"ref":"refs/tags/app-v1.1.0"},{"ref":"refs/tags/app-v1.2.0-1"},{"ref":"refs/tags/app-v1.2.0"},{"ref":"refs/tags/app-v"}]`))
+	}))
+	defer tags.Close()
+	app.URL = tags.URL
+	if s := app.Check(context.Background()); !s.Newer || s.Skipped || !s.App || s.Latest != "v1.2.0" || s.URL != AppNotesURL+"#120" {
 		t.Fatalf("app, skip does not apply: %+v", s)
+	}
+	// An app-only fix (-1) runs the same ShellyLanMan, so it counts as that version (a banner would
+	// stay after the update).
+	fixed := New(st, "v1.2.0", nil)
+	fixed.HomeAssistantApp()
+	fixed.URL = tags.URL
+	if s := fixed.Check(context.Background()); s.Newer {
+		t.Fatalf("app fix of the running version: %+v", s)
 	}
 	dev := New(st, "dev", nil)
 	dev.URL = srv.URL

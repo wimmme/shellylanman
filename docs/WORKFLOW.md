@@ -10,9 +10,10 @@ systems) is not in this public repository: Claude Code reads it from
 | Repository | Holds | Release |
 |---|---|---|
 | `wimmme/shellylanman` | the application (Go server, TypeScript UI, MCP server) | tag `vX.Y.Z` → image `ghcr.io/wimmme/shellylanman:X.Y.Z`, `X.Y`, `latest` and a GitHub release with the CHANGELOG section |
-| `wimmme/shellylanman-ha` | Home Assistant app (`shellylanman/`) and integration (`custom_components/shellylanman`, HACS) | tag `vX.Y.Z` → image `ghcr.io/wimmme/shellylanman-ha:X.Y.Z`; HACS takes the integration from the repository |
+| `wimmme/shellylanman-ha` | Home Assistant app (`shellylanman/`) and integration (`custom_components/shellylanman`, HACS) | app: tag `app-vX.Y.Z` → image `ghcr.io/wimmme/shellylanman-ha:X.Y.Z`, no GitHub release; integration: tag `vX.Y.Z` → GitHub release, which HACS offers |
 
-Both carry the same version number. How they depend on each other:
+ShellyLanMan and the app carry the same version number; the integration has its own (DECISIONS
+P24-1). How they depend on each other:
 `shellylanman-ha/COMPATIBILITY.md`.
 
 ## 2. Checks
@@ -104,16 +105,22 @@ base of the app), then `shellylanman-ha`.
 5. Wait for the *Publish image* and *Test* workflows (`gh run watch`); the publish
    workflow creates the GitHub release from the CHANGELOG section.
 
-**shellylanman-ha**
+**shellylanman-ha** — the app and the integration are released separately (DECISIONS P24-1):
 
-1. `shellylanman/config.yaml` `version`, `shellylanman/Dockerfile`
-   `SHELLYLANMAN_VERSION`, `custom_components/shellylanman/manifest.json` `version`.
-2. `shellylanman/CHANGELOG.md` (app) and `CHANGELOG.md` (integration): new section.
-3. `sh tools/test.sh` on both Home Assistant versions.
-4. Commit `release: vX.Y.Z …`, tag, push `main` and the tag; wait for the *App* and
-   *Integration* workflows (on `main` and on the tag). The Integration workflow makes
-   the GitHub release of the tag after its checks (HACS needs releases), with notes
-   from both changelogs (`tools/release-notes.sh`).
+- **The app**, with every ShellyLanMan release (or `X.Y.Z-N` for a fix in the app only):
+  1. `shellylanman/config.yaml` `version`, `shellylanman/Dockerfile` `SHELLYLANMAN_VERSION`.
+  2. `shellylanman/CHANGELOG.md`: new section.
+  3. Commit `release: app X.Y.Z`, tag `app-vX.Y.Z`, push the tag first and wait for the *App*
+     workflow (it publishes the image), then push `main`: Home Assistant offers the update as
+     soon as `config.yaml` on `main` has the new version. No GitHub release (HACS would read it
+     as an integration update).
+- **The integration**, only when it changed:
+  1. `custom_components/shellylanman/manifest.json` `version` (its own numbering).
+  2. `CHANGELOG.md`: new section, with the ShellyLanMan version it needs.
+  3. `sh tools/test.sh` on both Home Assistant versions.
+  4. Commit `release: integration X.Y.Z`, tag `vX.Y.Z`, push `main` and the tag; the
+     *Integration* workflow makes the GitHub release after its checks (HACS needs releases),
+     with the notes from `CHANGELOG.md` (`tools/release-notes.sh`).
 
 **Afterwards:** install it on the Home Assistant test instance (§6) and record what
 was checked in `docs/hardware-tests.md` (append, never rewrite).

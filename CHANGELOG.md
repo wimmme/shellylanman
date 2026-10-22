@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Home Assistant app: the release check looks at the app's own versions (the `app-v…` tags of `shellylanman-ha`)
+  and links to the app's changelog. The GitHub releases there are now the integration's, which gets a new version
+  only when it changes.
+
 ## [0.9.12] - 2026-10-22
 
 From a first install of the Home Assistant app: MCP is on by default (read only), and Home Assistant offers its MCP

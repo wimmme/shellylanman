@@ -7,7 +7,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -25,9 +27,13 @@ const (
 // ReleasesURL lists the project's releases.
 const ReleasesURL = "https://api.github.com/repos/wimmme/shellylanman/releases?per_page=30"
 
-// AppReleasesURL lists the releases of the Home Assistant app (shellylanman-ha): an app is updated
-// through Home Assistant, which sees a new version only when that repository has one.
-const AppReleasesURL = "https://api.github.com/repos/wimmme/shellylanman-ha/releases?per_page=30"
+// AppTagsURL lists the app's tags in shellylanman-ha (app-vX.Y.Z): an app is updated through Home
+// Assistant, which sees a new version when that repository has one. The app has tags, no GitHub
+// releases: the releases there are the integration's, with its own versions (DECISIONS P24-1).
+const AppTagsURL = "https://api.github.com/repos/wimmme/shellylanman-ha/git/matching-refs/tags/app-v"
+
+// AppNotesURL is the app's changelog; a version's section is its anchor (0.9.13 → #0913).
+const AppNotesURL = "https://github.com/wimmme/shellylanman-ha/blob/main/shellylanman/CHANGELOG.md"
 
 // Status is what the UI shows.
 type Status struct {
@@ -63,10 +69,10 @@ func New(st *store.Store, current string, onChange func(Status)) *Checker {
 		Every: 24 * time.Hour, OnChange: onChange, wake: make(chan struct{}, 1)}
 }
 
-// HomeAssistantApp makes the checker look at the app's releases (shellylanman-ha); skipping a version
+// HomeAssistantApp makes the checker look at the app's tags (shellylanman-ha); skipping a version
 // is not offered there, as Home Assistant keeps showing the update.
 func (c *Checker) HomeAssistantApp() {
-	c.URL, c.app = AppReleasesURL, true
+	c.URL, c.app = AppTagsURL, true
 }
 
 // Run checks at start and then every c.Every while the setting is on; Wake
@@ -186,7 +192,11 @@ func (c *Checker) latest(ctx context.Context, pre bool) (*release, error) {
 		return nil, fmt.Errorf("releases: HTTP %d", resp.StatusCode)
 	}
 	var list []release
-	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
+	if c.app {
+		if list, err = appTags(resp.Body); err != nil {
+			return nil, err
+		}
+	} else if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
 		return nil, err
 	}
 	var best *release
@@ -200,4 +210,24 @@ func (c *Checker) latest(ctx context.Context, pre bool) (*release, error) {
 		}
 	}
 	return best, nil
+}
+
+// appTags turns the app's tags (refs/tags/app-v0.9.13) into releases: tag v0.9.13, the notes the
+// version's section of the app's changelog. App versions have no pre-releases.
+func appTags(body io.Reader) ([]release, error) {
+	var refs []struct {
+		Ref string `json:"ref"`
+	}
+	if err := json.NewDecoder(body).Decode(&refs); err != nil {
+		return nil, err
+	}
+	var list []release
+	for _, r := range refs {
+		v, ok := strings.CutPrefix(r.Ref, "refs/tags/app-v")
+		if !ok || v == "" {
+			continue
+		}
+		list = append(list, release{Tag: "v" + v, URL: AppNotesURL + "#" + strings.ReplaceAll(v, ".", "")})
+	}
+	return list, nil
 }

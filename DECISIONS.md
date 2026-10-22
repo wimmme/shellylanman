@@ -681,3 +681,19 @@ adding it failed with "unexpected error" — MCP was off (404, which Home Assist
 |---|---|---|
 | P23-1 | **The MCP server is on by default, read only** (replaces M3's "off by default"; the rest of M3 stays). A fresh installation has no token: over the LAN `/mcp` answers 401 until the user makes one (*New token*; the page says so). The Home Assistant app's loopback listener needs no token, so Assist can read at once. An installation that stored MCP off keeps it off (only `Defaults()` changed) | Wim: MCP is a feature, like the REST API, which is open by default; without a token nothing is exposed on the LAN |
 | P23-2 | **The app announces MCP to Home Assistant only while the MCP server is on**: at start when it is on, and when it is switched on in *Settings → MCP*. Switching it off does **not** withdraw the announcement: on a withdrawal the Supervisor tells Home Assistant to delete the config entries made from it, and the MCP integration's entry has the announcement's uuid as its unique id — the user's MCP integration would disappear | Wim; withdrawal checked in the Supervisor and Home Assistant sources (2026-10-22) |
+
+## 33. The app and the integration get their own versions (2026-10-22, Wim)
+
+Home Assistant showed two updates for every release: the app (from `config.yaml` on `main`, through the Supervisor)
+and the integration (from HACS, which takes the newest GitHub release of `shellylanman-ha`). Both had the same
+version, so the integration was "updated" also when it had not changed (0.9.12: "No changes to the integration").
+Joining them into one update is not possible: they come from two sources. HACS (`repositories/base.py`, read
+2026-10-22) uses GitHub releases, not tags: the first release that is no draft and no pre-release, whatever its tag.
+
+| # | Decision | Why |
+|---|---|---|
+| P24-1 | **The app and the integration are released separately**, from 0.9.13 on. The **app** keeps ShellyLanMan's version (`X.Y.Z`, `X.Y.Z-N` for a fix in the app only); its tag is `app-vX.Y.Z`, which builds and publishes the image, and it gets **no GitHub release**. The **integration** has its own version, raised only when it changes; its tag is `vX.Y.Z` and its GitHub release (made after the tests, hassfest and the HACS check) has the integration's changelog only. Replaces "version = ShellyLanMan version" for the integration (`shellylanman-ha` COMPATIBILITY.md). The image tags of `ghcr.io/wimmme/shellylanman-ha` stay `X.Y.Z` | Wim: the app will change more often than the integration; a HACS update without a change is noise |
+| P24-2 | Replaces the source of P21-5: **the app's release check reads the `app-v` tags** (`git/matching-refs/tags/app-v`) and links to the version's section of the app's changelog; the rest of P21-5 stays. An app fix (`-N`) runs the same ShellyLanMan and does not count as newer than it. The standalone release check (`wimmme/shellylanman` releases) is unchanged. Apps of 0.9.12 and older keep reading the releases, so their banner only follows the integration's from now on; Home Assistant still shows the app update | follows from P24-1 |
+| P24-3 | **Which ShellyLanMan an integration needs** stays in its changelog ("Works with ShellyLanMan X or newer"), as before; no check in the integration | Wim: the proposal as given |
+| P24-4 | **v1.0.0 is a release that was first released as 0.9.x, installed and tested**, with no other change | Wim |
+
