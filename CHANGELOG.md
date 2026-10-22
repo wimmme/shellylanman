@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.13] - 2026-10-22
+
+Goes with the Home Assistant app 0.9.13: the app and the integration now get their own versions, so Home Assistant
+shows an integration update only when the integration changed.
+
 ### Changed
 - Home Assistant app: the release check looks at the app's own versions (the `app-v…` tags of `shellylanman-ha`)
   and links to the app's changelog. The GitHub releases there are now the integration's, which gets a new version
