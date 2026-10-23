@@ -320,6 +320,13 @@ On a phone the pages get the full width; the navigation is behind ☰:
   <img src="docs/images/screenshot-phone-menu.png" alt="The menu on a phone" width="240">
 </p>
 
+Updating a Shelly through its own access point, step by step (an illustration, not a
+recording):
+
+<p>
+  <img src="docs/images/firmware-local-update.gif" alt="Animation: pick the Shelly, download the firmware, join the Shelly's access point, upload the file at 192.168.33.1, wait while it flashes, back in ShellyLanMan with the new version" width="720">
+</p>
+
 ## 🤖 AI assistants (MCP)
 
 ShellyLanMan has a built-in [Model Context Protocol](https://modelcontextprotocol.io)

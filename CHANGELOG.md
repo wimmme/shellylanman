@@ -5,6 +5,9 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Documentation
+- README: an animation of a firmware update through the Shelly's own access point.
+
 ## [0.9.13] - 2026-10-22
 
 Goes with the Home Assistant app 0.9.13: the app and the integration now get their own versions, so Home Assistant
