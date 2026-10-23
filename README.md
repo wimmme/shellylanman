@@ -35,6 +35,10 @@ developed further as a web application of its own: pages that work together for 
 first-time user, an MCP server for AI assistants, a Home Assistant app and integration,
 eight languages. No desktop, no VNC, no Java, no cloud.
 
+<p align="center">
+  <img src="docs/images/tour.gif" alt="A tour: tick devices on the Devices page, then the same selection on Checklist, Firmware and Charts" width="800">
+</p>
+
 [Why](#-why-shellylanman) · [Quick start](#-quick-start) · [Features](#-features) ·
 [Pages](#-pages) · [Screenshots](#-screenshots) · [AI assistants (MCP)](#-ai-assistants-mcp) · [REST API](#-rest-api) · [Home Assistant](#-home-assistant) · [Security](#-security) ·
 [Configuration](#configuration) · [Development](#-development) · [Contributing](#-contributing) · [Support](#-support) · [Credits](#-credits)

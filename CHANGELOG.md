@@ -7,6 +7,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 - README: an animation of a firmware update through the Shelly's own access point.
+- README: a short tour of the pages, recorded with simulated devices (`tools/screenshots/tour.py`,
+  turned into MP4 and GIF by `tools/screenshots/video.sh`).
 
 ## [0.9.13] - 2026-10-22
 

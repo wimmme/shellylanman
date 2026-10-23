@@ -61,6 +61,14 @@ dimmer's slider), Checklist, Firmware, Charts, script editor, device info, logs
 (the "Porch light" simulator plays `tools/screenshots/log/_log.jsonl`), About, and a
 phone with its menu, and the Identify BLU devices wizard. Copy the PNGs to `docs/images/` and check them before committing.
 
+The README tour (Devices → Checklist → Firmware → Charts) is a recording of the same
+setup; ffmpeg on the Docker host turns it into `tour.mp4` and `tour.gif` in
+`./screenshots-out` (the GIF goes to `docs/images/`, the MP4 is for posts elsewhere):
+
+```sh
+SCRIPT=tour.py sh tools/screenshots/run.sh && sh tools/screenshots/video.sh
+```
+
 `SCRIPT=<file> sh tools/screenshots/run.sh` runs another script from that directory
 against the same setup. `check-editor.py` is such a browser test of the script
 editor (scripts in `tools/screenshots/script/`, served by the "Heat pump"
