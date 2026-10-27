@@ -51,8 +51,9 @@ eight languages. No desktop, no VNC, no Java, no cloud.
   (Raspberry Pi 4/5), opened from any browser, also on a phone.
 - **Local first** — nothing leaves your LAN except what ShellyScanner also does (the
   devices' own firmware checks) and an opt-in release check. No account, no telemetry.
-- **Firmware without the cloud** — a QR code gives your phone the firmware file from
-  ShellyLanMan, to update a device through its own access point.
+- **Firmware without the cloud** — Shellys without internet access (in their own VLAN, say)
+  get their updates from ShellyLanMan (*Settings → Firmware*), and a QR code gives your
+  phone the firmware file to update a device through its own access point.
 - **In your language** — English, Nederlands, Deutsch, Français, Español, Italiano,
   Български, 中文.
 - **Better than the phone app** — Shelly's own app is built around the cloud and shows
@@ -256,8 +257,10 @@ if the UI is reachable beyond your own LAN. See [`SECURITY.md`](SECURITY.md).
 
 Phones fetch firmware files from ShellyLanMan itself (the QR code and Download button of
 the firmware wizard, `/fw/…`). The link uses the address the browser used; when a phone
-cannot reach ShellyLanMan there, set *Settings → Network → Address of ShellyLanMan for
-phones*, for example `http://192.168.1.10:3082`.
+cannot reach ShellyLanMan there, set *Settings → Firmware → Address of ShellyLanMan for
+phones*, for example `http://192.168.1.10:3082`. When ShellyLanMan handles the updates, the
+devices fetch from its own address on their network (plain http, the web port); set
+*Address of ShellyLanMan for the devices* when they reach it elsewhere.
 
 ## 🧭 Features
 
@@ -276,8 +279,9 @@ Everything ShellyScanner does, in the browser, and pages that work together:
 - **Configuration** of one or many devices (Wi-Fi, login, MQTT, NTP, cloud, …), the
   configuration checklist and deferred tasks for devices that are offline.
 - **Backup and restore** (`.sbk`, compatible with ShellyScanner), kept on the server.
-- **Firmware** check and update with live progress, plus one new feature: a **QR code
-  for a local firmware download**, to update a device through its own access point.
+- **Firmware** check and update with live progress; for devices without internet,
+  **updates through ShellyLanMan**, which checks Shelly's index and serves the file; and a
+  **QR code for a local firmware download**, to update a device through its own access point.
 - **Scripts** (with a code editor) and KVS, **schedulers** (Gen2+, Wall Display
   thermostat, BLU TRV) and **charts** with 24 hours of history.
 - **Appearance**: dark and light themes, colour palettes, fonts and sizes, per browser.
@@ -286,7 +290,8 @@ Everything ShellyScanner does, in the browser, and pages that work together:
   `http://<ip>:3082` browsers offer only a home-screen shortcut.
 
 What leaves your LAN: the devices' own firmware checks (as with ShellyScanner); Shelly's
-firmware index when you open the Firmware page; the ShellyLanMan release check only
+firmware index when you open the Firmware page (and once a day when ShellyLanMan handles the
+updates); the ShellyLanMan release check only
 if you switch it on (off by default). No telemetry.
 
 ## 📑 Pages

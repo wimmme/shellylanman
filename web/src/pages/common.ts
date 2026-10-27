@@ -10,6 +10,15 @@ export interface Page {
   dispose?(): void;
 }
 
+/**
+ * The status pill of every table (DECISIONS P25-5): green on line, red off line, blue while
+ * read or updated, grey archived. ↻: restart needed; orange ring and ⚡: newer firmware.
+ */
+export function statusPill(cls: string, label: string, marks: { reboot: boolean; update: boolean } = { reboot: false, update: false }): HTMLElement {
+  return h('span', { class: 'pill ' + cls + (marks.update ? ' update' : '') }, label, marks.reboot ? ' ↻' : null,
+    marks.update ? h('span', { class: 'pill-upd', 'aria-hidden': 'true' }, '⚡') : null);
+}
+
 export function card(title: string, badge: string | null, ...body: (Node | string)[]): HTMLElement {
   return h('section', { class: 'card' },
     h('div', { class: 'card-head' }, h('h2', { class: 'card-title' }, title), badge !== null && h('span', { class: 'card-badge' }, badge)),

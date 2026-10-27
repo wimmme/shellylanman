@@ -120,10 +120,14 @@ var fieldDocs = map[string]string{
 	"Settings.mqttSlow":           "Extra pause, in tenths of a second, after each device when MQTT settings are applied to several.",
 	"Settings.backupKeep":         "Backups kept per device; older ones are deleted. 0 keeps all.",
 	"Settings.phoneBaseURL":       "The address phones use for local firmware downloads (`http://host:port`); empty: the address the browser used.",
+	"Settings.firmware":           "Who looks for firmware updates (Settings → Firmware).",
 	"Settings.updateCheck":        "Release check on GitHub: `never` (default), `stable` or `all`.",
 	"ScanSettings.mode":           "`full` (mDNS on all interfaces), `local` (mDNS on one), `ip` (ranges) or `offline` (archive only).",
 	"ScanSettings.refreshSeconds": "Seconds between status refreshes while a browser is open.",
 	"ScanSettings.configTics":     "Status refreshes per configuration refresh.",
+
+	"FirmwareSettings.mode":          "`device` (default: the devices check Shelly's servers themselves) or `local` (ShellyLanMan compares them with Shelly's index and updates them from its own copy: devices without internet).",
+	"FirmwareSettings.deviceBaseURL": "Local mode: the address devices fetch firmware from (`http://host:port`); empty: this server's address on the way to each device.",
 
 	"Sample.t":       "Unix milliseconds.",
 	"EMSeries.data":  "For each phase in turn: `[unix seconds, Wh]`.",

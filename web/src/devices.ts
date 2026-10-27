@@ -28,12 +28,12 @@ function changed(): void {
 }
 
 /**
- * The marks after "online": ↻ when the device needs a restart, ↑ when it says a newer
- * stable firmware exists (DECISIONS P19-1). Nothing for devices that are not online.
+ * The marks of an online device: ↻ when it needs a restart (DECISIONS P19-1), an orange
+ * ring and ⚡ when a newer stable firmware exists (P25-5). None for devices that are not online.
  */
-export function statusMarks(d: Device): string {
-  if (d.status !== 'online') return '';
-  return (d.rebootRequired ? ' ↻' : '') + (d.updateAvailable ? ' ↑' : '');
+export function statusMarks(d: Device | undefined): { reboot: boolean; update: boolean } {
+  if (!d || d.status !== 'online') return { reboot: false, update: false };
+  return { reboot: !!d.rebootRequired, update: !!d.updateAvailable };
 }
 
 export function onDevicesChanged(l: Listener): () => void {

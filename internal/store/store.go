@@ -66,7 +66,26 @@ type Settings struct {
 	// MCP is the Model Context Protocol server at /mcp (package mcp); its
 	// bearer token is the secret MCPTokenSecret.
 	MCP MCPSettings `json:"mcp"`
+	// Firmware: who looks for firmware updates (DECISIONS §34).
+	Firmware FirmwareSettings `json:"firmware"`
 }
+
+// Firmware update modes (DECISIONS P25-1).
+const (
+	FirmwareDevice = "device" // the devices check Shelly's servers themselves (default, as ShellyScanner)
+	FirmwareLocal  = "local"  // ShellyLanMan checks the index and serves the files: devices without internet
+)
+
+// FirmwareSettings: Settings → Firmware.
+type FirmwareSettings struct {
+	Mode string `json:"mode,omitempty"` // FirmwareDevice ("" too) or FirmwareLocal
+	// DeviceBaseURL is the address devices fetch firmware from ("http://host:port");
+	// empty = this server's address on the way to each device (DECISIONS P25-3).
+	DeviceBaseURL string `json:"deviceBaseURL,omitempty"`
+}
+
+// Local reports whether ShellyLanMan handles the firmware updates.
+func (f FirmwareSettings) Local() bool { return f.Mode == FirmwareLocal }
 
 // MCPSettings switch the MCP server on and set what it may do.
 type MCPSettings struct {
@@ -152,6 +171,16 @@ func (s Settings) Validate() error {
 		u, err := url.Parse(s.PhoneBaseURL)
 		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || (u.Path != "" && u.Path != "/") || u.RawQuery != "" {
 			return errors.New("phone address must look like http://host:port")
+		}
+	}
+	if s.Firmware.Mode != "" && s.Firmware.Mode != FirmwareDevice && s.Firmware.Mode != FirmwareLocal {
+		return errors.New("firmware mode must be device or local")
+	}
+	if s.Firmware.DeviceBaseURL != "" {
+		// Devices cannot fetch from https on a name they do not trust: plain http only.
+		u, err := url.Parse(s.Firmware.DeviceBaseURL)
+		if err != nil || u.Scheme != "http" || u.Host == "" || (u.Path != "" && u.Path != "/") || u.RawQuery != "" {
+			return errors.New("device address must look like http://host:port")
 		}
 	}
 	if s.BackupKeep < 0 || s.BackupKeep > 1000 {

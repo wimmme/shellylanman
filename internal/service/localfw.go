@@ -4,7 +4,7 @@ package service
 // the server compares each device's firmware with Shelly's index and, for a
 // newer stable version, hands out a link on this server from which a phone
 // downloads the verified file (to update the device through its own access
-// point). Devices are never told to update from it.
+// point). In local mode (fwlocal.go) devices are also told to update from it.
 
 import (
 	"context"
@@ -94,7 +94,7 @@ type shellyInfo struct{ Type, App, FW, FWID, Ver string }
 func (m *Devices) infoOf(e *entry) (model.Device, shellyInfo) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	return e.dev, shellyInfo{e.info.Type, e.info.App, e.info.FW, e.info.FWID, e.info.Ver}
+	return e.dev, shellyInfoOf(e)
 }
 
 // FirmwareIndex compares the devices with the index (all Wi-Fi devices when ids is empty).
@@ -225,16 +225,18 @@ func baseWarning(base string) string {
 // FirmwareFile resolves a download link to the verified file (downloaded
 // and checked on first use) and the name it is served under.
 func (m *Devices) FirmwareFile(ctx context.Context, token string) (path, name string, err error) {
-	sealed := strings.NewReplacer("-", "+", "_", "/").Replace(token)
-	if n := len(sealed) % 4; n != 0 {
-		sealed += strings.Repeat("=", 4-n)
+	c, ok := m.deviceClaims(token) // a short link given to a device (fwlocal.go)
+	if !ok {
+		sealed := strings.NewReplacer("-", "+", "_", "/").Replace(token)
+		if n := len(sealed) % 4; n != 0 {
+			sealed += strings.Repeat("=", 4-n)
+		}
+		raw, err := m.store.Unseal(linkContext, sealed)
+		if err != nil || json.Unmarshal([]byte(raw), &c) != nil {
+			return "", "", ErrLinkExpired
+		}
 	}
-	raw, err := m.store.Unseal(linkContext, sealed)
-	if err != nil {
-		return "", "", ErrLinkExpired
-	}
-	var c linkClaims
-	if json.Unmarshal([]byte(raw), &c) != nil || time.Now().Unix() > c.Exp {
+	if time.Now().Unix() > c.Exp {
 		return "", "", ErrLinkExpired
 	}
 	x := m.FirmwareSource()

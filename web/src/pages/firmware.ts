@@ -1,5 +1,6 @@
 // The Firmware page: the FW Update panel for the selected devices, or for all
 // devices when none is selected (DECISIONS P12-2).
+import { devicesApi } from '../api';
 import { allDevices, loadDevices } from '../devices';
 import { h, ICONS } from '../dom';
 import { t } from '../i18n';
@@ -39,7 +40,9 @@ export const firmwarePage: Page = {
       });
       scopeBox.replaceChildren(...(banner ? [banner] : []));
     };
-    const c = card(t('fw.title'), null, scopeBox, h('p', { class: 'muted' }, t('fw.intro')), panelBox, h('div', { class: 'row' }, update,
+    const intro = h('p', { class: 'muted' }, t('fw.intro'));
+    devicesApi.settings().then((s) => { if (s.firmware?.mode === 'local') intro.textContent = t('fw.introLocal'); }).catch(() => {});
+    const c = card(t('fw.title'), null, scopeBox, intro, panelBox, h('div', { class: 'row' }, update,
       h('button', { class: 'btn', title: t('apw.openTip'), onclick: () => openFirmwareWizard() }, t('apw.open'))));
     c.querySelector('.card-head')!.append(badge);
     main.append(c);

@@ -171,6 +171,13 @@ func TestGen2IndexOverPinnedTLS(t *testing.T) {
 	if _, err := x.Latest(context.Background(), "2", "Evil"); err == nil {
 		t.Fatal("foreign file URL accepted")
 	}
+	// Cached answers without asking; failed lookups are not cached answers.
+	if c := x.Cached("3", "MiniPMG3"); c == nil || c.Version != "2.0.1" {
+		t.Fatalf("cached %+v", c)
+	}
+	if x.Cached("2", "Evil") != nil || x.Cached("2", "Never") != nil || x.Cached("1", "SHPLG-S") != nil {
+		t.Fatal("cached without a good answer")
+	}
 }
 
 func TestEvictKeepsNewest(t *testing.T) {

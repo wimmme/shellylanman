@@ -10,7 +10,7 @@ import { configApi, devicesApi, type BLEItem, type ChecklistRow, type Device } f
 import { cellView, editable, FALSE, HAS, isBLU, isG1, isG2, sameBoolean, sameObject, sameStringOrInt, type Col } from '../checklistlogic';
 import { manyAtOnce, openPages } from '../weblinks';
 import { tooltip, whyDisabled } from '../why';
-import { addressText, allDevices, loadDevices, onDevicesChanged } from '../devices';
+import { addressText, allDevices, loadDevices, onDevicesChanged, statusMarks } from '../devices';
 import { h, ICONS, keepOrReplace, patch } from '../dom';
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
@@ -18,7 +18,7 @@ import { openDeviceSettings } from '../panels/devsettings';
 import { openIdentify } from '../panels/bluidentify';
 import { toast } from '../toast';
 import { openingScope, selected, takeHashIds } from '../selection';
-import { card, emptyState, scopeBanner, type Page } from './common';
+import { card, emptyState, scopeBanner, statusPill, type Page } from './common';
 
 const COLS: { key: Col; label: Key; tip: Key; good?: boolean }[] = [
   { key: 'eco', label: 'chk.col.eco', tip: 'chk.tip.eco', good: true },
@@ -219,7 +219,9 @@ export const checklistPage: Page = {
           h('td', { class: 'sel' }, h('input', { type: 'checkbox', 'aria-label': r.host, checked: selected.has(r.id),
             onclick: (e: Event) => e.stopPropagation(),
             onchange: () => { if (selected.has(r.id)) selected.delete(r.id); else selected.add(r.id); anchor = r.id; draw(); } })),
-          h('td', {}, h('span', { class: 'pill ' + r.status }, t(('status.' + r.status) as Key))),
+          h('td', {}, (r as { loading?: boolean }).loading // blue while read, as on the other pages (DECISIONS P25-5)
+            ? statusPill('reading', t('status.reading'))
+            : statusPill(r.status, t(('status.' + r.status) as Key), statusMarks(devOf(r.id)))),
           h('td', {}, r.host, (r as { loading?: boolean }).loading ? h('span', { class: 'spinner small', 'aria-label': t('state.loading') }) : null),
           h('td', { class: 'mono' }, r.address.replace(/:80$/, '')),
           ...COLS.map((c) => { const v = cellView(c.key, r[c.key], c.good); return h('td', { class: 'chk ' + v.cls }, v.text); }));

@@ -15,10 +15,12 @@ test('addresses sort numerically, then by port (ShellyScanner default order)', (
   assert.deepEqual(sorted, ['10.0.0.1', '192.168.0.9', '192.168.0.9:8081', '192.168.0.100']);
 });
 
-test('status marks: ↻ for a restart, ↑ for a newer stable firmware, only when online', () => {
-  assert.equal(statusMarks(dev('10.0.0.1')), '');
-  assert.equal(statusMarks({ ...dev('10.0.0.1'), rebootRequired: true }), ' ↻');
-  assert.equal(statusMarks({ ...dev('10.0.0.1'), updateAvailable: true, updateVersion: '1.4.4' }), ' ↑');
-  assert.equal(statusMarks({ ...dev('10.0.0.1'), rebootRequired: true, updateAvailable: true }), ' ↻ ↑');
-  assert.equal(statusMarks({ ...dev('10.0.0.1'), status: 'offline', rebootRequired: true, updateAvailable: true }), '');
+test('status marks: a restart, a newer stable firmware, only when online', () => {
+  const none = { reboot: false, update: false };
+  assert.deepEqual(statusMarks(dev('10.0.0.1')), none);
+  assert.deepEqual(statusMarks(undefined), none);
+  assert.deepEqual(statusMarks({ ...dev('10.0.0.1'), rebootRequired: true }), { reboot: true, update: false });
+  assert.deepEqual(statusMarks({ ...dev('10.0.0.1'), updateAvailable: true, updateVersion: '1.4.4' }), { reboot: false, update: true });
+  assert.deepEqual(statusMarks({ ...dev('10.0.0.1'), rebootRequired: true, updateAvailable: true }), { reboot: true, update: true });
+  assert.deepEqual(statusMarks({ ...dev('10.0.0.1'), status: 'offline', rebootRequired: true, updateAvailable: true }), none);
 });

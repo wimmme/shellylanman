@@ -140,6 +140,9 @@ table.data tbody tr:hover td{background:rgba(99,130,190,.05)}
 .pill.error{color:var(--accent-err);border-style:dashed}
 .pill.ghost{color:var(--text-muted)}
 .pill.searching{color:var(--text-muted);font-style:italic}
+/* A newer firmware: orange ring and ⚡ after the label (DECISIONS P25-5) */
+.pill.update{border-color:var(--accent-warn);box-shadow:0 0 0 1px var(--accent-warn)}
+.pill-upd{color:var(--accent-warn)}
 
 /* Empty / loading states */
 .state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:40px 16px;text-align:center;color:var(--text-muted)}

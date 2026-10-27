@@ -697,3 +697,18 @@ Joining them into one update is not possible: they come from two sources. HACS (
 | P24-3 | **Which ShellyLanMan an integration needs** stays in its changelog ("Works with ShellyLanMan X or newer"), as before; no check in the integration | Wim: the proposal as given |
 | P24-4 | **v1.0.0 is a release that was first released as 0.9.x, installed and tested**, with no other change | Wim |
 
+
+## 34. Firmware through ShellyLanMan, and one status colour scheme (2026-10-27, Wim)
+
+For Shellys in a VLAN without internet: they cannot see or fetch their updates. ShellyLanMan already finds the
+newest stable firmware in Shelly's index and keeps a verified copy (§4.4, the access-point wizard §29); it can now
+also tell a device to update from that copy. The Shelly API allows it: Gen2+ `Shelly.Update` takes `url` instead of
+`stage`, Gen1 has `/ota?url=`. **Replaces Q17 (b)** ("not update from ShellyLanMan") for the new local mode only.
+
+| # | Decision | Why |
+|---|---|---|
+| P25-1 | New tab **Settings → Firmware**, after Network, with a choice: *the devices themselves (online)* — as before, the default — or *ShellyLanMan (the Shellys have no internet access)*. The phone address of the local download moved here from Settings → Network. Setting `firmware.mode` (`device`/`local`) | Wim |
+| P25-2 | In local mode an update is sent **through the API with a link on ShellyLanMan** (Gen1 `/ota?url=`, Gen2+ `Shelly.Update {url}`), for one or many devices, with the same confirmation and `confirm: true` as before. ShellyLanMan fetches and verifies the file *before* it sends the command. **Stable only**: the Firmware page shows the index's newest stable version and no beta. BLU devices keep their gateway's update. The access-point wizard stays for devices that cannot reach ShellyLanMan | Wim: API with a local URL; stable only |
+| P25-3 | The address devices fetch from is **automatic** (ShellyLanMan's own address on the route to each device, with its web port) **and can be set** (`firmware.deviceBaseURL`, `http://host:port`, http only: devices cannot fetch from https on a name they do not trust). The link is short (`/fw/<16 hex>/<file>`, kept in memory for an hour) because Gen1 has little room for a URL | Wim: automatic + overridable |
+| P25-4 | In local mode ShellyLanMan asks the index **once a day and when the Firmware page opens** (index cache 6 h); the update mark on Devices, the *Updates* chip and the selection *Firmware update available* then come from the index, not from the device. Back in device mode the device's own word returns at its next refresh | Wim |
+| P25-5 | **One status scheme on Devices, Checklist and Firmware**: green online, red offline, grey archived, **blue while a device is read or updated** (the Checklist showed green while reading, the Firmware page red while a device restarted). A newer stable firmware: the green pill gets an **orange ring and an orange ⚡** after the label, instead of the green ↑ (P19-1), also on Checklist and Firmware. ↻ (restart needed) stays | Wim: the arrow did not stand out |

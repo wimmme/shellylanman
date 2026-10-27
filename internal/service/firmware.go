@@ -65,6 +65,7 @@ type FirmwareRow struct {
 type fwInfo struct {
 	current, currentBuild, stable, stableBuild, beta, betaBuild string
 	updating, valid                                             bool
+	local, newer                                                bool // from the index (local mode): stable is newer
 }
 
 // fwTrack follows an update until the device is back (PanelFWUpdate.DeviceFirmware).
@@ -245,6 +246,9 @@ func (m *Devices) firmwareRow(e *entry, fw fwInfo, known, preselect bool) Firmwa
 	row.Updating = fw.updating
 	// createTableRow: stable ticked when shown and newer than the current build.
 	row.Preselect = preselect && fw.stableBuild != "" && (fw.currentBuild == "" || fw.stableBuild > fw.currentBuild)
+	if fw.local {
+		row.Preselect = preselect && fw.newer
+	}
 	t := m.fwTracks()
 	t.mu.Lock()
 	if tr, ok := t.tracks[d.ID]; ok {
@@ -309,12 +313,16 @@ func (m *Devices) Firmware(ctx context.Context, ids []string) ([]FirmwareRow, er
 
 func (m *Devices) firmwareRowOf(ctx context.Context, e *entry, preselect bool) FirmwareRow {
 	m.mu.Lock()
-	known := hasManager(e)
+	known, blu := hasManager(e), e.blu != nil
 	m.mu.Unlock()
 	if !known {
 		return m.firmwareRow(e, fwInfo{}, false, false)
 	}
-	return m.firmwareRow(e, m.checkFirmware(ctx, e), true, preselect)
+	fw := m.checkFirmware(ctx, e)
+	if !blu && m.localMode() {
+		fw = m.localFirmwareInfo(ctx, e, fw)
+	}
+	return m.firmwareRow(e, fw, true, preselect)
 }
 
 // ---- update ------------------------------------------------------------------------
@@ -388,6 +396,7 @@ func (m *Devices) updateOne(ctx context.Context, e *entry, stable, mayQueue bool
 
 // sendUpdate: /ota?update=true|beta=true (Gen1), Shelly.Update {stage} (Gen2+),
 // BluTrv.UpdateFirmware (blocking: sent in the background, like the original).
+// In local mode a stable update comes from this server (fwlocal.go).
 func (m *Devices) sendUpdate(ctx context.Context, e *entry, stable bool) error {
 	m.mu.Lock()
 	d, conn, blu := e.dev, e.conn, e.blu
@@ -404,6 +413,8 @@ func (m *Devices) sendUpdate(ctx context.Context, e *entry, stable bool) error {
 		return nil
 	case conn == nil:
 		return ErrNoConnection
+	case stable && m.localMode():
+		return m.sendLocalUpdate(ctx, e, conn)
 	case d.Gen == "1":
 		if stable {
 			return g1cmd(ctx, conn, "/ota?update=true")

@@ -5,6 +5,21 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **Firmware updates through ShellyLanMan**, for Shellys without internet access (for example in their own VLAN).
+  New tab *Settings → Firmware*: choose whether the devices look for updates themselves (as before) or
+  ShellyLanMan does it for them. In that mode ShellyLanMan compares every device with Shelly's index once a day and
+  when the Firmware page opens, and *Update* has the device fetch the verified firmware from ShellyLanMan
+  (Gen1 `/ota?url=`, Gen2+ `Shelly.Update` with a URL). Stable versions only. The devices must reach ShellyLanMan's
+  web port; the address is found automatically and can be set.
+
+### Changed
+- One status colour scheme on Devices, Checklist and Firmware: blue while a device is read or updated (the Checklist
+  showed green, the Firmware page red during the restart).
+- A newer firmware is now shown as an orange ring and an orange ⚡ on the status, instead of a small ↑; also on the
+  Checklist and Firmware pages.
+- The phone address of the local firmware download moved from *Settings → Network* to *Settings → Firmware*.
+
 ### Documentation
 - README: an animation of a firmware update through the Shelly's own access point.
 - README: a short tour of the pages, recorded with simulated devices (`tools/screenshots/tour.py`,

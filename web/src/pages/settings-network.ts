@@ -6,12 +6,12 @@ import { confirmDialog } from '../modal';
 
 const MAX_RANGES = 10; // ShellyScanner: up to 10 IP ranges
 
-function field(id: string, label: string, control: HTMLElement, help?: string): HTMLElement {
+export function field(id: string, label: string, control: HTMLElement, help?: string): HTMLElement {
   control.id = id;
   return h('div', { class: 'field' }, h('label', { for: id }, label), control, help ? h('small', { class: 'muted' }, help) : null);
 }
 
-function result(): { el: HTMLElement; ok: () => void; fail: (e: unknown) => void } {
+export function result(): { el: HTMLElement; ok: () => void; fail: (e: unknown) => void } {
   const el = h('span', { class: 'muted', role: 'status' });
   return {
     el,
@@ -93,13 +93,6 @@ export async function network(body: HTMLElement): Promise<void> {
     try { await devicesApi.updateSettings({ backupKeep: Number(keep.value) }); kres.ok(); } catch (e) { kres.fail(e); }
   } }, t('common.save'));
 
-  // Address of this server for phones (local firmware download)
-  const phone = h('input', { type: 'url', placeholder: location.origin, value: settings.phoneBaseURL ?? '', size: 32 });
-  const pres = result();
-  const psave = h('button', { class: 'btn', onclick: async () => {
-    try { await devicesApi.updateSettings({ phoneBaseURL: phone.value }); pres.ok(); } catch (e) { pres.fail(e); }
-  } }, t('common.save'));
-
   body.append(
     modeBox, extra,
     field('scanRefresh', t('scan.refresh'), refresh),
@@ -116,9 +109,6 @@ export async function network(body: HTMLElement): Promise<void> {
     h('h3', { class: 'card-title', style: 'margin-top:24px' }, t('backupKeep.title')),
     field('backupKeep', t('backupKeep.label'), keep, t('backupKeep.help')),
     h('div', { class: 'row' }, ksave, kres.el),
-    h('h3', { class: 'card-title', style: 'margin-top:24px' }, t('phone.title')),
-    field('phoneBase', t('phone.label'), phone, t('phone.help')),
-    h('div', { class: 'row' }, psave, pres.el),
   );
 }
 

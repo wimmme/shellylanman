@@ -129,7 +129,9 @@ export interface ScanState {
 export interface IPRange { base: string; first: number; last: number }
 export interface ScanSettings { mode: string; interface?: string; ranges?: IPRange[]; refreshSeconds: number; configTics: number }
 export interface ArchiveSettings { use: boolean; autoReload: boolean }
-export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number; backupKeep?: number; phoneBaseURL?: string }
+/** Settings → Firmware: the devices check Shelly themselves, or ShellyLanMan does it for them (DECISIONS §34). */
+export interface FirmwareSettings { mode?: 'device' | 'local'; deviceBaseURL?: string }
+export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number; backupKeep?: number; phoneBaseURL?: string; firmware?: FirmwareSettings }
 export interface CredentialsInfo { globalSet: boolean; globalUser: string }
 export interface NetInterface { name: string; addrs: string[] }
 

@@ -7,7 +7,8 @@
 // of the ticked devices. Used as the first tab of Devices settings and on the
 // Firmware page.
 import { ApiError, firmwareApi, localFwApi, type FirmwareRow, type IndexRow } from '../api';
-import { allDevices } from '../devices';
+import { allDevices, statusMarks } from '../devices';
+import { statusPill } from '../pages/common';
 import { h } from '../dom';
 import { betaCell, count, initialChoice, matches, placeholderRows, requests, selectAll, stableCell, toggle, type Cell, type Choice } from '../firmwarelogic';
 import { t, type Key } from '../i18n';
@@ -70,13 +71,14 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
   const draw = (): void => {
     const shown = rows.filter((r) => matches(r, filter));
     tbody.replaceChildren(...shown.map((r) => {
-      const busy = checking.has(r.id) || !!r.updating;
-      const status = r.rebooting ? 'offline' : busy ? 'reading' : r.status;
+      // Blue while read or updated, the restart included (DECISIONS P25-5).
+      const busy = checking.has(r.id) || !!r.updating || !!r.rebooting;
+      const status = busy ? 'reading' : r.status;
       // The first box is not clicked: it shows whether a stable or beta version is ticked.
       const chosen = !!choice.get(r.id);
       const tr_ = h('tr', { class: chosen ? 'selected' : undefined },
         h('td', { class: 'sel' }, h('input', { type: 'checkbox', disabled: true, checked: chosen, title: t('fw.selTip'), 'aria-label': `${r.name}: ${t('fw.selTip')}` })),
-        h('td', {}, h('span', { class: 'pill ' + status }, t(('status.' + status) as Key))),
+        h('td', {}, statusPill(status, t(('status.' + status) as Key), busy ? undefined : statusMarks(allDevices().find((d) => d.id === r.id)))),
         h('td', {}, r.name),
         h('td', { title: r.currentBuild ?? '' }, r.current ?? ''),
         h('td', {}, cellNode(r, stableCell(r, tr), 'stable')),

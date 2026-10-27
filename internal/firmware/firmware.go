@@ -185,6 +185,26 @@ func (x *Index) Latest(ctx context.Context, gen, key string) (*Latest, error) {
 	return x.latestG2(ctx, key)
 }
 
+// Cached returns what the index last found for a device, without asking Shelly
+// (nil when it was never looked up or the lookup failed). Old answers count too.
+func (x *Index) Cached(gen, key string) *Latest {
+	x.mu.Lock()
+	defer x.mu.Unlock()
+	if gen != "1" {
+		if c, ok := x.gen2[key]; ok && c.err == nil {
+			return c.l
+		}
+		return nil
+	}
+	if e, ok := x.gen1[key]; ok && e.URL != "" && e.Version != "" {
+		return &Latest{Gen: "1", Key: key, Version: shortG1(e.Version), Build: e.Version, URL: e.URL, Source: SourceShelly}
+	}
+	if c, ok := x.archive[key]; ok && c.err == nil {
+		return c.l
+	}
+	return nil
+}
+
 func (x *Index) latestG1(ctx context.Context, typ string) (*Latest, error) {
 	x.mu.Lock()
 	fresh := x.gen1 != nil && time.Since(x.gen1At) < x.TTL

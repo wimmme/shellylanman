@@ -176,6 +176,7 @@ func run(log *slog.Logger, logs *logbuf.Buffer, port, dataDir string, origins []
 		ports.Ingress = ingress
 	}
 	ports.MCPLocal = mcpLocal
+	devices.Port = ln.Port // local firmware: the address devices fetch from
 	srv.Handler = httpapi.New(httpapi.Config{Store: st, Hub: h, Devices: devices, Updates: updates, Logs: logs, Port: ln.Port, Ports: ports, Static: web.Files(), Origins: origins, Log: log, MCPSwitchedOn: announceMCP})
 	if _, err := ln.Start(); err != nil {
 		return listen.InUse("web UI", addr, where, err)

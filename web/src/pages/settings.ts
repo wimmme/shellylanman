@@ -13,23 +13,28 @@ import { card, type Page } from './common';
 import { mcpSettings } from './settings-mcp';
 import { profilesSettings } from './settings-profiles';
 import { securitySettings } from './settings-security';
+import { firmwareSettings } from './settings-firmware';
 import { archive, network } from './settings-network';
 
 export function settingsPage(onLanguageChange: () => void): Page {
-  let tab: 'general' | 'network' | 'archive' | 'profiles' | 'ide' | 'appearance' | 'security' | 'mcp' = 'general';
+  let tab: 'general' | 'network' | 'firmware' | 'archive' | 'profiles' | 'ide' | 'appearance' | 'security' | 'mcp' = 'general';
   return {
     id: 'settings',
     title: 'nav.settings',
     icon: ICONS.settings,
     async render(main) {
-      const body = h('div');
+      const box = h('div');
       const tabs = h('div', { class: 'tabs', role: 'tablist' });
       const show = (which: typeof tab): void => {
         tab = which;
         tabs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === which)));
-        body.replaceChildren();
+        // A fresh box per showing: a tab that is still loading fills a box that is no longer shown,
+        // instead of drawing itself twice when its tab is clicked again.
+        const body = h('div');
+        box.replaceChildren(body);
         if (which === 'general') void general(body, onLanguageChange);
         else if (which === 'network') void network(body);
+        else if (which === 'firmware') void firmwareSettings(body);
         else if (which === 'archive') void archive(body);
         else if (which === 'profiles') void profilesSettings(body);
         else if (which === 'ide') ide(body);
@@ -37,11 +42,11 @@ export function settingsPage(onLanguageChange: () => void): Page {
         else if (which === 'security') void securitySettings(body, () => location.reload());
         else appearance(body);
       };
-      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['archive', 'settings.tab.archive'], ['profiles', 'settings.tab.profiles'], ['ide', 'settings.tab.ide'], ['appearance', 'settings.tab.appearance'], ['security', 'settings.tab.security'], ['mcp', 'settings.tab.mcp']] as const) {
+      for (const [id, key] of [['general', 'settings.tab.general'], ['network', 'settings.tab.network'], ['firmware', 'settings.tab.firmware'], ['archive', 'settings.tab.archive'], ['profiles', 'settings.tab.profiles'], ['ide', 'settings.tab.ide'], ['appearance', 'settings.tab.appearance'], ['security', 'settings.tab.security'], ['mcp', 'settings.tab.mcp']] as const) {
         const b = h('button', { role: 'tab', 'data-tab': id, onclick: () => show(id) }, t(key));
         tabs.append(b);
       }
-      main.append(card(t('nav.settings'), null, tabs, body));
+      main.append(card(t('nav.settings'), null, tabs, box));
       show(tab);
     },
   };

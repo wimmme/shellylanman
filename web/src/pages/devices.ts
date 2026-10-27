@@ -21,7 +21,7 @@ import { toast } from '../toast';
 import { selected } from '../selection';
 import { deviceURL, manyAtOnce, openPages } from '../weblinks';
 import { tooltip, whyDisabled } from '../why';
-import { emptyState, type Page } from './common';
+import { emptyState, statusPill, type Page } from './common';
 
 type ColKey = 'status' | 'type' | 'device' | 'name' | 'keyword' | 'mac' | 'ip' | 'ssid' | 'rssi' | 'cloud' | 'mqtt'
   | 'uptime' | 'temp' | 'measures' | 'logs' | 'source' | 'command';
@@ -65,12 +65,10 @@ function statusTip(d: Device): string {
   return tip.join(' — ');
 }
 
-function statusPill(d: Device): HTMLElement {
+function devicePill(d: Device): HTMLElement {
   const s = STATUS[d.status] ?? STATUS.error;
-  let label = t(s.key);
-  label += statusMarks(d);
-  if (d.status === 'online' && isBLU(d)) label = 'BLU ' + label;
-  return h('span', { class: 'pill ' + s.cls }, label);
+  const label = (d.status === 'online' && isBLU(d) ? 'BLU ' : '') + t(s.key);
+  return statusPill(s.cls, label, statusMarks(d));
 }
 
 function lines(items: string[]): Node {
@@ -80,7 +78,7 @@ function lines(items: string[]): Node {
 }
 
 const COLUMNS: Col[] = [
-  { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: statusPill, tip: statusTip,
+  { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: devicePill, tip: statusTip,
     cmp: (a, b) => a.status.localeCompare(b.status) },
   { key: 'type', label: 'col.type', text: (d) => d.typeName },
   { key: 'device', label: 'col.device', text: (d) => d.hostname },

@@ -108,13 +108,14 @@ type mcpPatchBody struct {
 
 // settingsPatch is a partial update: only fields present in the body change.
 type settingsPatch struct {
-	FirstRunDone *bool                  `json:"firstRunDone"`
-	Language     *string                `json:"language"`
-	Scan         *store.ScanSettings    `json:"scan"`
-	Archive      *store.ArchiveSettings `json:"archive"`
-	MQTTSlow     *int                   `json:"mqttSlow"`
-	BackupKeep   *int                   `json:"backupKeep"`
-	PhoneBaseURL *string                `json:"phoneBaseURL"`
-	UpdateCheck  *string                `json:"updateCheck"`
-	SkipVersion  *string                `json:"skipVersion"`
+	FirstRunDone *bool                   `json:"firstRunDone"`
+	Language     *string                 `json:"language"`
+	Scan         *store.ScanSettings     `json:"scan"`
+	Archive      *store.ArchiveSettings  `json:"archive"`
+	MQTTSlow     *int                    `json:"mqttSlow"`
+	BackupKeep   *int                    `json:"backupKeep"`
+	PhoneBaseURL *string                 `json:"phoneBaseURL"`
+	UpdateCheck  *string                 `json:"updateCheck"`
+	SkipVersion  *string                 `json:"skipVersion"`
+	Firmware     *store.FirmwareSettings `json:"firmware"`
 }

@@ -76,6 +76,8 @@ type Devices struct {
 
 	// IPScanPort is the port probed by an IP scan (80; tests change it).
 	IPScanPort int
+	// Port is this server's web port (local firmware links for devices); nil in tests.
+	Port func() int
 
 	profMu    sync.Mutex // the profiles file (profiles.go)
 	mu        sync.Mutex
@@ -100,6 +102,7 @@ type Devices struct {
 
 	fwIndex     *firmware.Index // Shelly firmware index for the local download (Phase 7)
 	fwIndexOnce sync.Once
+	fwLocal     fwLocalState // firmware through ShellyLanMan (fwlocal.go)
 
 	ring        sampleRing // chart samples (Phase 8)
 	samplesOnce sync.Once
@@ -179,6 +182,7 @@ func (m *Devices) Start(ctx context.Context) {
 	}
 	m.loadDeferred()
 	go m.archiveLoop(ctx)
+	go m.fwLocalLoop(ctx)
 	m.Rescan()
 }
 
@@ -841,12 +845,14 @@ func (m *Devices) reparse(e *entry, d *model.Device) {
 		}
 		d.ApplyReadings(parse.Gen1(parse.Gen1Input{TypeID: d.TypeID, DeviceName: d.Name, Settings: e.rawConfig, Status: e.rawStatus, Actions: e.rawActions}))
 		d.RebootRequired = e.g1Reboot // Gen1 does not report it; the original remembers its own changes
+		m.localUpdateMark(e, d)
 		return
 	}
 	r := parse.Gen2(parse.Gen2Input{TypeID: d.TypeID, DeviceName: d.Name, Config: e.rawConfig, Status: e.rawStatus, Peripherals: e.rawPeriph,
 		Webhooks: e.rawHooks, Variant: e.info.Svc0Type, Components: e.rawComps})
 	e.ext = r.RangeExtender
 	d.ApplyReadings(r)
+	m.localUpdateMark(e, d)
 }
 
 // Models whose inputs show their configured actions in the Command column:

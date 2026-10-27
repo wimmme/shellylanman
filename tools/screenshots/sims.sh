@@ -13,7 +13,11 @@ while read -r dir name; do
   mkdir -p "/tmp/fx/$i"
   cp -r "testdata/$dir/." "/tmp/fx/$i/"
   # One device has a long script, for the script editor (screenshots, check-editor.py).
-  if [ "$dir" = gen3/MiniPMG3 ]; then cp tools/screenshots/script/*.json "/tmp/fx/$i/"; fi
+  # It also says a newer stable firmware exists (the orange ring and ⚡, check-firmware-ui.py).
+  if [ "$dir" = gen3/MiniPMG3 ]; then
+    cp tools/screenshots/script/*.json "/tmp/fx/$i/"
+    sed -i 's/"available_updates": {}/"available_updates": {"stable": {"version": "2.0.3"}}/'       "/tmp/fx/$i/rpc_Shelly.GetStatus.json" "/tmp/fx/$i/rpc_Sys.GetStatus.json"
+  fi
   # And one a live log (the Logs window).
   if [ "$dir" = gen2/Plus1 ]; then cp tools/screenshots/log/_log.jsonl "/tmp/fx/$i/"; fi
   # And one is a gateway that relays a BLU device and answers Identify (_discovery.json).

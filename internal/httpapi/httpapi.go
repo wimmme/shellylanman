@@ -181,6 +181,10 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		if patch.PhoneBaseURL != nil {
 			st.PhoneBaseURL = strings.TrimRight(strings.TrimSpace(*patch.PhoneBaseURL), "/")
 		}
+		if patch.Firmware != nil {
+			st.Firmware = *patch.Firmware
+			st.Firmware.DeviceBaseURL = strings.TrimRight(strings.TrimSpace(st.Firmware.DeviceBaseURL), "/")
+		}
 	})
 	if err != nil {
 		writeErr(w, http.StatusBadRequest, err)
@@ -194,6 +198,9 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 	// it at once with a rescan.
 	if (patch.Scan != nil || patch.Archive != nil) && s.Devices != nil {
 		go s.Devices.Rescan()
+	}
+	if patch.Firmware != nil && s.Devices != nil {
+		s.Devices.FirmwareModeChanged() // local mode: compare with the index at once
 	}
 	writeJSON(w, http.StatusOK, next)
 }

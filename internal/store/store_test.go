@@ -73,6 +73,29 @@ func TestSettingsPersistAndValidate(t *testing.T) {
 	}
 }
 
+func TestFirmwareSettingsValidate(t *testing.T) {
+	ok := []FirmwareSettings{{}, {Mode: FirmwareDevice}, {Mode: FirmwareLocal, DeviceBaseURL: "http://10.0.0.2:3082"}}
+	for _, f := range ok {
+		s := Defaults()
+		s.Firmware = f
+		if err := s.Validate(); err != nil {
+			t.Errorf("%+v: %v", f, err)
+		}
+	}
+	// Devices fetch over plain http: no https, no paths.
+	bad := []FirmwareSettings{{Mode: "cloud"}, {DeviceBaseURL: "https://slm.example"}, {DeviceBaseURL: "http://h:1/x"}, {DeviceBaseURL: "h:1"}}
+	for _, f := range bad {
+		s := Defaults()
+		s.Firmware = f
+		if s.Validate() == nil {
+			t.Errorf("%+v accepted", f)
+		}
+	}
+	if !(FirmwareSettings{Mode: FirmwareLocal}).Local() || (FirmwareSettings{}).Local() {
+		t.Fatal("Local()")
+	}
+}
+
 func TestSecretsAreNotStoredInClear(t *testing.T) {
 	dir := t.TempDir()
 	s, _ := Open(dir)
