@@ -163,6 +163,7 @@ table.data tbody tr:hover td{background:rgba(99,130,190,.05)}
 input,select,textarea{font:inherit;color:var(--text-main);background:var(--bg-deep);border:1px solid var(--border);border-radius:7px;padding:6px 9px}
 input[type=range]{padding:0;accent-color:var(--accent-rx)}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.check-line{flex-wrap:nowrap;align-items:flex-start;margin-bottom:12px;max-width:640px}.check-line input{margin-top:3px;flex:none}
 
 /* Tabs */
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px}
@@ -303,9 +304,12 @@ table.checklist td.chk{text-align:center;font-family:var(--font-mono);font-size:
 td.mono{font-family:var(--font-mono);font-size:.82rem}
 .def-fail{color:var(--accent-err)}.def-success{color:var(--accent-ok)}.def-waiting,.def-running{color:var(--accent-warn)}
 .spinner.small{display:inline-block;width:12px;height:12px;border-width:2px;margin-left:6px;vertical-align:middle}
-.fw-panel .toolbar{margin-top:8px}.fw-check{gap:6px;white-space:nowrap}table.data.fw td{white-space:nowrap}
+.fw-panel .toolbar{margin-top:8px}.fw-check{gap:6px;white-space:nowrap}.fw-cell{gap:4px;flex-wrap:nowrap}
+.fw-link{background:none;border:0;padding:2px;color:var(--text-muted);cursor:pointer;display:inline-flex;border-radius:4px}.fw-link:hover,.fw-link:focus-visible{color:var(--text)}
+.offscreen{position:fixed;left:-9999px;top:0;opacity:0}table.data.fw td{white-space:nowrap}
 .btn.small{padding:2px 8px;min-height:0}.lfw-cell{gap:6px}.lfw-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-.lfw-qr{background:#fff;padding:8px;border-radius:8px;max-width:100%;height:auto}.lfw-info{display:grid;gap:8px;min-width:200px}
+.lfw-qr{background:#fff;padding:8px;border-radius:8px;max-width:100%;height:auto}.lfw-qr.small{width:213px}
+@media (pointer:coarse){.apw-phone-qr{display:none}}.lfw-info{display:grid;gap:8px;min-width:200px}
 .lfw-badge{display:flex;flex-direction:column}.lfw input[readonly]{flex:1;min-width:0}
 .notes{display:grid;gap:10px}.notes-text{width:100%;min-height:220px;font:inherit;resize:vertical}
 @media print{.shell{display:block!important;height:auto!important}.sidebar,.topbar,.toolbar,.banner,.summary,.toasts,.card-head .status-line,th.sel,td.sel{display:none!important}.main,.content,.card,.table-wrap{overflow:visible!important;max-height:none!important;box-shadow:none!important;border:0!important;margin:0!important;padding:0!important}body{background:#fff!important;color:#000!important}table.data{font-size:9pt;width:100%}table.data th,table.data td{color:#000!important;background:#fff!important}}

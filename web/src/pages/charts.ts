@@ -49,6 +49,11 @@ export const chartsPage: Page = {
     let defs: SeriesDef[] = [];
     let data: [number, number][][] = [];
     let paused = false, markers = false, rangeMin = 0, showOnly = -1;
+    // Series hidden with a click on the legend: redraw builds the datasets anew, so the
+    // chart's own visibility would come back with the next reading.
+    const hidden = new Set<number>();
+    // resetZoom calls onZoomComplete too: resuming would pause the chart again at once.
+    let resetting = false;
     const lastT = new Map<string, number>();
     const emState = new Map<string, { local: number; remote: number }>();
 
@@ -72,11 +77,11 @@ export const chartsPage: Page = {
           y: { type: 'linear', title: { display: true, text: '' }, ticks: { callback: (v) => Number(v).toFixed(2) } },
         },
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', onClick: (_e, item) => { const i = item.datasetIndex ?? -1; if (hidden.has(i)) hidden.delete(i); else hidden.add(i); redraw(true); } },
           tooltip: { callbacks: { title: (items) => (items[0] ? new Date(items[0].parsed.x ?? 0).toLocaleTimeString([], { hour12: false, fractionalSecondDigits: 3 } as Intl.DateTimeFormatOptions) : ''), label: (c) => `${c.dataset.label}: ${Number(c.parsed.y).toFixed(2)}` } },
           zoom: {
             pan: { enabled: true, mode: 'x', onPanStart: () => { setPaused(true); return true; } },
-            zoom: { drag: { enabled: true }, wheel: { enabled: false }, mode: 'x', onZoomComplete: () => setPaused(true) },
+            zoom: { drag: { enabled: true }, wheel: { enabled: false }, mode: 'x', onZoomComplete: () => { if (!resetting) setPaused(true); } },
           },
         },
       },
@@ -88,7 +93,11 @@ export const chartsPage: Page = {
       pauseBtn.textContent = p ? '▶' : '❚❚';
       const z = chart.options.plugins!.zoom!;
       z.zoom!.wheel!.enabled = p; // the wheel zooms only while paused
-      if (!p) { chart.resetZoom('none'); applyRange(); }
+      if (!p) {
+        resetting = true;
+        try { chart.resetZoom('none'); } finally { resetting = false; }
+        redraw();
+      }
     };
     const applyRange = (): void => { // setRange
       const x = chart.options.scales!.x!;
@@ -96,10 +105,12 @@ export const chartsPage: Page = {
       const newest = Math.max(0, ...data.flatMap((d) => (d.length ? [d[d.length - 1]![0]] : [])));
       if (RANGES[rangeMin] && newest) { x.min = newest - RANGES[rangeMin]! * 60_000; x.max = newest; } else { delete x.min; delete x.max; }
     };
-    const redraw = (): void => {
+    // force: draw while paused too (a series shown or hidden).
+    const redraw = (force = false): void => {
+      if (paused && !force) return;
       chart.data.datasets = defs.map((s, i) => ({
         label: s.name, data: data[i]!.map(([x, y]) => ({ x, y })), borderColor: PALETTE[i % PALETTE.length], backgroundColor: PALETTE[i % PALETTE.length],
-        borderWidth: 1.5, pointRadius: markers ? 2.5 : 0, hidden: showOnly >= 0 && showOnly !== i, tension: 0,
+        borderWidth: 1.5, pointRadius: markers ? 2.5 : 0, hidden: (showOnly >= 0 && showOnly !== i) || hidden.has(i), tension: 0,
       }));
       chart.options.scales!.y!.title!.text = yLabel();
       applyRange();
@@ -121,6 +132,7 @@ export const chartsPage: Page = {
     const fillSeries = (): void => {
       seriesSel.replaceChildren(h('option', { value: -1 }, t('chart.showAll')), ...defs.map((s, i) => h('option', { value: i }, s.name)));
       showOnly = -1;
+      hidden.clear();
     };
 
     // EM: energy records read from the device (the last 30 minutes, then every minute)
@@ -151,7 +163,7 @@ export const chartsPage: Page = {
           });
         } catch { /* EM-getData: ignored like the original */ }
       }
-      redraw();
+      redraw(true);
     };
 
     const init = async (): Promise<void> => { // initDataSet
@@ -164,7 +176,7 @@ export const chartsPage: Page = {
         const hist = await chartsApi.samples(devs().map((d) => d.id));
         for (const [id, list] of Object.entries(hist)) { for (const s of list) addSample(s, id); lastT.set(id, list.length ? list[list.length - 1]!.t : 0); }
       } catch (e) { toast(e instanceof ApiError ? e.message : String(e)); }
-      redraw();
+      redraw(true);
     };
     const onUpdate = (): void => { // update(UPDATE): readings of on-line devices
       if (type === 'EM') { void loadEM(); return; }
@@ -175,14 +187,14 @@ export const chartsPage: Page = {
         addSample({ t: d.lastSeen, rssi: d.rssi, temp: d.internalTemp, meters: d.meters }, d.id);
         changed = true;
       }
-      if (changed && !paused) redraw();
+      if (changed) redraw();
     };
 
     typeSel.addEventListener('change', () => { type = typeSel.value as ChartType; setPaused(false); void init(); });
     rangeSel.addEventListener('change', () => { rangeMin = Number(rangeSel.value); setPaused(false); redraw(); });
-    seriesSel.addEventListener('change', () => { showOnly = Number(seriesSel.value); redraw(); });
+    seriesSel.addEventListener('change', () => { showOnly = Number(seriesSel.value); hidden.clear(); redraw(true); });
     pauseBtn.addEventListener('click', () => setPaused(!paused));
-    markBtn.addEventListener('click', () => { markers = !markers; markBtn.setAttribute('aria-pressed', String(markers)); redraw(); });
+    markBtn.addEventListener('click', () => { markers = !markers; markBtn.setAttribute('aria-pressed', String(markers)); redraw(true); });
     const series = (): Series[] => defs.map((s, i) => ({ name: s.name, points: data[i]! }));
     const exportCSV = (): void => {
       const x = chart.scales.x!;

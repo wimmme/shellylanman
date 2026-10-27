@@ -5,7 +5,10 @@
 //   - Gen1: https://api.shelly.cloud/files/firmware → data.<TYPE>.{url,version};
 //     fallback: the shelly-tools.de community archive (highest stable version).
 //   - Gen2+: https://updates.shelly.cloud/update/<app> → stable.{version,build_id,url};
-//     alt.* and beta are never used.
+//     alt.* is never used.
+//
+// Beta versions (Gen1 beta_url/beta_ver, Gen2+ beta.*) are only handed out as a link
+// (Beta): they are never downloaded or verified here.
 //
 // The Gen2+ hosts use certificates of Shelly's private CA without a subject
 // alternative name, which no standard client accepts; their public keys are
@@ -108,12 +111,15 @@ type Index struct {
 type gen1Entry struct {
 	URL     string `json:"url"`
 	Version string `json:"version"`
+	BetaURL string `json:"beta_url"`
+	BetaVer string `json:"beta_ver"`
 }
 
 type cached struct {
-	l   *Latest
-	err error
-	at  time.Time
+	l    *Latest
+	err  error
+	at   time.Time
+	beta *Latest // Gen2+: the beta in the same answer
 }
 
 // New returns an index with the default sources.
@@ -185,6 +191,34 @@ func (x *Index) Latest(ctx context.Context, gen, key string) (*Latest, error) {
 	return x.latestG2(ctx, key)
 }
 
+// Beta returns the newest beta in Shelly's index, for a download link only (ErrNotFound
+// when there is none, and for the archive, which has no betas).
+func (x *Index) Beta(ctx context.Context, gen, key string) (*Latest, error) {
+	if key == "" {
+		return nil, ErrNotFound
+	}
+	if gen == "1" {
+		_, _ = x.latestG1(ctx, key) // refreshes the index when it is old
+		x.mu.Lock()
+		e, ok := x.gen1[key]
+		x.mu.Unlock()
+		if !ok || e.BetaURL == "" || e.BetaVer == "" {
+			return nil, ErrNotFound
+		}
+		return &Latest{Gen: "1", Key: key, Version: shortBeta(e.BetaVer), Build: e.BetaVer, URL: e.BetaURL, Source: SourceShelly}, nil
+	}
+	if _, err := x.latestG2(ctx, key); err != nil && !errors.Is(err, ErrNotFound) {
+		return nil, err
+	}
+	x.mu.Lock()
+	b := x.gen2[key].beta
+	x.mu.Unlock()
+	if b == nil {
+		return nil, ErrNotFound
+	}
+	return b, nil
+}
+
 // Cached returns what the index last found for a device, without asking Shelly
 // (nil when it was never looked up or the lookup failed). Old answers count too.
 func (x *Index) Cached(gen, key string) *Latest {
@@ -233,6 +267,15 @@ func (x *Index) latestG1(ctx context.Context, typ string) (*Latest, error) {
 
 var versionRe = regexp.MustCompile(`/v?(\d+(?:\.\d+)*)`)
 
+// shortBeta: "20230913-113421/v1.14.0-beta1-gcb84623" → "1.14.0-beta1".
+func shortBeta(build string) string {
+	v := build[strings.LastIndex(build, "/")+1:]
+	if i := strings.LastIndex(v, "-g"); i > 0 {
+		v = v[:i]
+	}
+	return strings.TrimPrefix(v, "v")
+}
+
 // shortG1: "20230913-113421/v1.14.0-gcb84623" → "1.14.0".
 func shortG1(build string) string {
 	if m := versionRe.FindStringSubmatch(build); m != nil {
@@ -279,7 +322,7 @@ func (x *Index) latestArchive(ctx context.Context, typ string) (*Latest, error) 
 	if x.archive == nil {
 		x.archive = map[string]cached{}
 	}
-	x.archive[typ] = cached{l, err, time.Now()}
+	x.archive[typ] = cached{l: l, err: err, at: time.Now()}
 	x.mu.Unlock()
 	return l, err
 }
@@ -293,20 +336,26 @@ func (x *Index) latestG2(ctx context.Context, app string) (*Latest, error) {
 		return c.l, c.err
 	}
 	x.mu.Unlock()
+	var beta *Latest
 	l, err := func() (*Latest, error) {
 		b, err := x.get(ctx, x.Pinned, x.Gen2URL+url.PathEscape(app), 1<<20)
 		if err != nil {
 			return nil, err
 		}
+		type release struct {
+			Version string `json:"version"`
+			BuildID string `json:"build_id"`
+			URL     string `json:"url"`
+		}
 		var idx struct {
-			Stable struct {
-				Version string `json:"version"`
-				BuildID string `json:"build_id"`
-				URL     string `json:"url"`
-			} `json:"stable"`
+			Stable release `json:"stable"`
+			Beta   release `json:"beta"`
 		}
 		if err := json.Unmarshal(b, &idx); err != nil {
 			return nil, err
+		}
+		if idx.Beta.URL != "" && idx.Beta.Version != "" {
+			beta = &Latest{Gen: "2", Key: app, Version: idx.Beta.Version, Build: idx.Beta.BuildID, URL: idx.Beta.URL, Source: SourceShelly}
 		}
 		if idx.Stable.URL == "" || idx.Stable.Version == "" {
 			return nil, ErrNotFound
@@ -321,7 +370,7 @@ func (x *Index) latestG2(ctx context.Context, app string) (*Latest, error) {
 	if x.gen2 == nil {
 		x.gen2 = map[string]cached{}
 	}
-	x.gen2[app] = cached{l, err, time.Now()}
+	x.gen2[app] = cached{l, err, time.Now(), beta}
 	x.mu.Unlock()
 	return l, err
 }

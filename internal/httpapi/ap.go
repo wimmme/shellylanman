@@ -14,6 +14,21 @@ func (s *server) apRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc)
 	mux.HandleFunc("GET /api/v1/ap/guide", h(s.apGuide))
 	mux.HandleFunc("GET /api/v1/ap/models", s.apModels)
 	mux.HandleFunc("POST /api/v1/firmware/local", h(s.localFirmwareModel))
+	mux.HandleFunc("GET /api/v1/ap/phone", h(s.apPhone))
+}
+
+// apPhone: the link (and QR code) that opens the firmware wizard on a phone.
+func (s *server) apPhone(w http.ResponseWriter, r *http.Request) {
+	base, guessed := s.phoneBase(r)
+	l, err := service.WizardLink(base, r.URL.Query().Get("id"))
+	if err != nil {
+		writeErr(w, http.StatusInternalServerError, err)
+		return
+	}
+	if guessed && l.Warning == "" {
+		l.Warning = "ingress"
+	}
+	writeJSON(w, http.StatusOK, l)
 }
 
 // apGuide: the access point of a device (?id=) or of an access point name (?name=).

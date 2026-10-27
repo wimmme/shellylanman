@@ -6,12 +6,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/wimmme/shellylanman/internal/firmware"
 	"github.com/wimmme/shellylanman/internal/model"
@@ -63,6 +65,14 @@ func TestLocalModeGen1(t *testing.T) {
 		t.Fatalf("device link: %s %v", name, err)
 	}
 
+	// The copy buttons: the stable version on ShellyLanMan, beta on Shelly's server.
+	if l, err := m.FirmwareLink(ctx, "AABBCC000001", StageStable, "http://phone:3082"); err != nil || !l.Local || !strings.HasPrefix(l.URL, "http://phone:3082/fw/") || l.Version != "1.15.0" {
+		t.Fatalf("local link %+v %v", l, err)
+	}
+	if l, err := m.FirmwareLink(ctx, "AABBCC000001", StageBeta, "http://phone:3082"); err != nil || l.Local || l.URL != srv.URL+"/beta/SHPLG-S.zip" || l.Version != "1.16.0-beta1" {
+		t.Fatalf("beta link %+v %v", l, err)
+	}
+
 	// Back to device mode: the device's own word at the next refresh.
 	st.Update(func(s *store.Settings) { s.Firmware.Mode = store.FirmwareDevice })
 	e, _ := m.entryFor("AABBCC000001")
@@ -72,6 +82,12 @@ func TestLocalModeGen1(t *testing.T) {
 	m.mu.Unlock()
 	if d.UpdateAvailable {
 		t.Fatalf("device mode keeps the index mark %+v", d)
+	}
+	if l, err := m.FirmwareLink(ctx, "AABBCC000001", StageStable, "http://phone:3082"); err != nil || l.Local || l.URL != srv.URL+"/SHPLG-S.zip" {
+		t.Fatalf("online link %+v %v", l, err)
+	}
+	if _, err := m.FirmwareLink(ctx, "AABBCC000001", "nightly", ""); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("stage: %v", err)
 	}
 }
 
@@ -131,5 +147,46 @@ func TestDeviceBaseAuto(t *testing.T) {
 	m.Port = func() int { return 3082 }
 	if _, err := m.deviceBase(model.Device{IP: "127.0.0.1"}); err == nil {
 		t.Fatal("loopback is not an address for devices")
+	}
+}
+
+func TestWizardLink(t *testing.T) {
+	l, err := WizardLink("http://10.0.0.5:3082/", "AABBCC000001")
+	if err != nil || l.URL != "http://10.0.0.5:3082/#/firmware?apw=AABBCC000001" || !strings.HasPrefix(l.QR, "data:image/png;base64,") || l.Warning != "" {
+		t.Fatalf("%+v %v", l, err)
+	}
+	if l, _ := WizardLink("http://localhost:3082", ""); l.URL != "http://localhost:3082/#/firmware?apw=" || l.Warning != "localhost" {
+		t.Fatalf("%+v", l)
+	}
+}
+
+// A device back from an update has its configuration read again at once: in local mode the
+// running version, and so the ⚡, comes from it.
+func TestBackFromUpdateRereadsConfig(t *testing.T) {
+	m, _, ctx := newService(t, localMode)
+	g1 := plugS(t, m, ctx, nil, "AABBCC000001")
+	reads := func() int {
+		n := 0
+		for _, c := range g1.Calls() {
+			if c == "GET /settings" {
+				n++
+			}
+		}
+		return n
+	}
+	e, _ := m.entryFor("AABBCC000001")
+	m.mu.Lock()
+	d := e.dev
+	m.mu.Unlock()
+	m.startTrack(e, d)
+	before := reads()
+	d.Status = model.StatusOffline
+	m.fwUpdated(d) // restarting
+	d.Status = model.StatusOnline
+	m.fwUpdated(d) // back
+	for end := time.Now().Add(3 * time.Second); reads() == before; time.Sleep(20 * time.Millisecond) {
+		if time.Now().After(end) {
+			t.Fatalf("configuration not read again: %v", g1.Calls())
+		}
 	}
 }

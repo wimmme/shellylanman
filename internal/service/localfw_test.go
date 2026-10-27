@@ -33,7 +33,8 @@ func fakeGen1Index(t *testing.T, build string) *httptest.Server {
 	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/index":
-			json.NewEncoder(w).Encode(map[string]any{"isok": true, "data": map[string]any{"SHPLG-S": map[string]string{"url": srv.URL + "/SHPLG-S.zip", "version": build}}})
+			json.NewEncoder(w).Encode(map[string]any{"isok": true, "data": map[string]any{"SHPLG-S": map[string]string{"url": srv.URL + "/SHPLG-S.zip", "version": build,
+				"beta_url": srv.URL + "/beta/SHPLG-S.zip", "beta_ver": "20260201-000000/v1.16.0-beta1-gabcdef0"}}})
 		case "/SHPLG-S.zip":
 			w.Write(buf.Bytes())
 		default:

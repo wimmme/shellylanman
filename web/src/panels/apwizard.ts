@@ -2,11 +2,12 @@
 // (DECISIONS §29, docs/phase-20-ap-wizards.md): the phone does the work at the device, the
 // wizard on this screen shows what to scan. It starts from a device in the list or from the name
 // of an access point, so it also serves a Shelly ShellyLanMan does not know.
-import { ApiError, apApi, configApi, firmwareApi, localFwApi, type APGuide, type LocalLink, type ModelChoice } from '../api';
+import { ApiError, apApi, configApi, firmwareApi, localFwApi, type APGuide, type LocalLink, type ModelChoice, type PhoneLink } from '../api';
 import {
   apIsOff, apLabel, canGoOn, canSwitchAPOn, cameBack, FIRMWARE_STEPS, neighbour, startWaiting, targetModel, watchedId,
   type WizardState, type WizardStep, type Waiting,
 } from '../aplogic';
+import { copyText } from '../clipboard';
 import { allDevices, loadDevices, onDevicesChanged } from '../devices';
 import { h } from '../dom';
 import { fetchWithProgress, localPath, megabytes, progressText, saveBlob } from '../download';
@@ -20,9 +21,15 @@ const k = (key: string): Key => key as Key;
 
 export const loading = (): HTMLElement => h('div', { class: 'state' }, h('div', { class: 'spinner', role: 'status', 'aria-label': t('state.loading') }), t('state.loading'));
 export const fail = (e: unknown): HTMLElement => h('div', { class: 'banner warn', role: 'alert' }, msg(e));
-export const qr = (src: string, alt: Key): HTMLElement => h('img', { class: 'lfw-qr', src, alt: t(alt), width: 320, height: 320 });
+export const qr = (src: string, alt: Key, small = false): HTMLElement => h('img', { class: 'lfw-qr' + (small ? ' small' : ''), src, alt: t(alt), width: 320, height: 320 });
+/** Text in paragraphs, one per line of the catalogue entry. */
+const paras = (text: string, cls = 'muted'): HTMLElement[] => text.split('\n').map((l) => h('p', { class: cls }, l));
+/** A link warning (lfw.warn.*): ingress is a tip (the address is a guess), the others are errors. */
+const linkWarning = (w: string | undefined): HTMLElement | null => !w ? null : w === 'ingress'
+  ? h('div', { class: 'banner', role: 'note' }, t('lfw.warn.ingress'))
+  : h('div', { class: 'banner warn', role: 'alert' }, t(k('lfw.warn.' + w)));
 export const copyBtn = (text: string): HTMLElement => h('button', { class: 'btn small', onclick: async () => {
-  try { await navigator.clipboard.writeText(text); toast(t('lfw.copied'), 'info'); } catch { /* the text is shown: select it */ }
+  if (await copyText(text)) toast(t('lfw.copied'), 'info'); // else: the text is shown, select it
 } }, t('common.copy'));
 export const badge = (label: Key, v: string): HTMLElement => h('div', { class: 'lfw-badge' }, h('span', { class: 'muted' }, t(label)), h('strong', {}, v));
 // The device's page as a link: on the phone itself it opens in a tab next to the wizard.
@@ -37,6 +44,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
   let waiting: Waiting | null = null;
   let unsub: (() => void) | null = null;
   let models: ModelChoice[] | null = null;
+  let phoneLink: PhoneLink | null | undefined;
   let gone = false;
 
   const frame = openFrame(t('apw.title'), { onClose: () => { gone = true; unsub?.(); } });
@@ -138,19 +146,23 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
       }
     };
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') void find(); });
+    // The wizard is easiest on the phone itself: a code that opens it there (hidden on a phone).
+    phoneLink ??= await apApi.phone(opts.id).catch(() => null);
+    const phone = h('div', { class: 'apw-phone' }, h('p', { class: 'muted' }, t('apw.which.phone')),
+      phoneLink ? h('div', { class: 'apw-phone-qr' }, linkWarning(phoneLink.warning), qr(phoneLink.qr, 'apw.which.qrAlt', true), h('p', { class: 'muted' }, t('apw.which.pc'))) : null);
     if (opts.id) {
       showResult();
-      return h('div', {}, h('p', { class: 'muted' }, t('apw.which.fromList')), h('p', { class: 'muted' }, t('apw.which.phone')), result);
+      return h('div', {}, h('p', {}, t('apw.which.fromList')), phone, result);
     }
     if (st.guide) { models ??= await apApi.models(); showResult(); }
-    return h('div', {}, h('p', { class: 'muted' }, t('apw.which.intro')), h('p', { class: 'muted' }, t('apw.which.phone')),
+    return h('div', {}, h('p', { class: 'muted' }, t('apw.which.intro')), phone,
       h('div', { class: 'row' }, h('label', { class: 'row' }, t('apw.which.name'), input), h('button', { class: 'btn', onclick: () => void find() }, t('apw.which.find'))),
       result);
   }
 
   // ---- 2: the firmware file onto the phone ----
   async function file(): Promise<Node> {
-    const intro = h('p', { class: 'muted' }, t('apw.file.intro'));
+    const intro = h('div', {}, ...paras(t('apw.file.intro')));
     if (!link) {
       const m = targetModel(st);
       if (!m) return fail(t('apw.which.unknown'));
@@ -184,11 +196,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
         download.disabled = false;
       }
     };
-    // ingress: a tip (the address is a guess), the others are errors.
-    const warning = !l.warning ? null : l.warning === 'ingress'
-      ? h('div', { class: 'banner', role: 'note' }, t('lfw.warn.ingress'))
-      : h('div', { class: 'banner warn', role: 'alert' }, t(k('lfw.warn.' + l.warning)));
-    return h('div', { class: 'lfw' }, intro, warning,
+    return h('div', { class: 'lfw' }, intro, linkWarning(l.warning),
       h('div', { class: 'lfw-grid' }, qr(l.qr, 'lfw.qrAlt'),
         h('div', { class: 'lfw-info' },
           badge('lfw.model', l.model), badge('lfw.version', l.current ? `${l.current} → ${l.version}` : l.version),
@@ -202,7 +210,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     let g = st.guide!;
     const box = h('div', {});
     const draw = (): void => {
-      const parts: Node[] = [h('p', { class: 'muted' }, t('apw.join.intro'))];
+      const parts: Node[] = [h('p', {}, t('apw.join.intro'))];
       if (apIsOff(g) && !canSwitchAPOn(g)) { // Gen1: only the way (DECISIONS P20-10)
         parts.push(h('div', { class: 'banner warn', role: 'status' }, t('apw.join.offGen1')));
       } else if (apIsOff(g)) {
@@ -233,9 +241,12 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
   // ---- 4: open the device's page ----
   async function page(): Promise<Node> {
     const g = st.guide!;
-    return h('div', { class: 'lfw' }, h('p', { class: 'muted' }, t('apw.page.intro')),
-      h('div', { class: 'lfw-grid' }, qr(g.pageQR, 'apw.page.qrAlt'),
-        h('div', { class: 'lfw-info' }, pageBadge(g.pageURL), h('p', {}, t('apw.page.steps')))));
+    // The address in the sentence, as a link: on the phone itself it opens in a tab next to the wizard.
+    const [before, after] = t('apw.page.intro', { url: '\u0000' }).split('\u0000');
+    return h('div', { class: 'lfw' },
+      h('p', {}, before ?? '', h('a', { href: g.pageURL, target: '_blank', rel: 'noopener noreferrer' }, g.pageURL), after ?? ''),
+      h('p', { class: 'muted' }, t('apw.page.scan')), qr(g.pageQR, 'apw.page.qrAlt', true),
+      h('p', {}, t('apw.page.steps')));
   }
 
   // ---- 5: wait until the device is back ----

@@ -3,7 +3,7 @@ import { devicesApi, type Device, type DeviceStatus } from '../api';
 import { commandCell, interacting, whenIdle } from '../command';
 import { addressText, allDevices, archiveInUse, compareAddress, onDevicesChanged, scanState, statusMarks } from '../devices';
 import { keepOrReplace, h, icon, ICONS, patch } from '../dom';
-import { dateTime, formatTemp, formatUptime, meterSetText, metersText, moduleText, prefs, uptimeTooltip } from '../format';
+import { formatTemp, formatUptime, meterSetText, metersText, moduleText, prefs, uptimeTooltip } from '../format';
 import { t, type Key } from '../i18n';
 import { confirmDialog, openModal } from '../modal';
 import { openInfo } from '../panels/info';
@@ -21,7 +21,7 @@ import { toast } from '../toast';
 import { selected } from '../selection';
 import { deviceURL, manyAtOnce, openPages } from '../weblinks';
 import { tooltip, whyDisabled } from '../why';
-import { emptyState, statusPill, type Page } from './common';
+import { busySpinner, emptyState, statusPill, statusTip, type Page } from './common';
 
 type ColKey = 'status' | 'type' | 'device' | 'name' | 'keyword' | 'mac' | 'ip' | 'ssid' | 'rssi' | 'cloud' | 'mqtt'
   | 'uptime' | 'temp' | 'measures' | 'logs' | 'source' | 'command';
@@ -52,19 +52,6 @@ const STATUS: Record<DeviceStatus, { cls: string; key: Key }> = {
   searching: { cls: 'searching', key: 'status.searching' },
 };
 
-function statusTip(d: Device): string {
-  const tip = [t(STATUS[d.status]?.key ?? 'status.error')];
-  if (d.rebootRequired) tip.push(t('status.rebootRequired'));
-  if (d.updateAvailable) tip.push(d.updateVersion ? t('status.updateAvailable', { version: d.updateVersion }) : t('status.updateAvailableShort'));
-  if (d.status === 'online' && isBLU(d) && d.lastSeen > 0) tip.push(t('status.bluSeen', { when: dateTime(new Date(d.lastSeen), true) }));
-  if (d.status === 'searching') tip.push(t('status.searchingTip'));
-  if ((d.status === 'offline' || d.status === 'ghost' || d.status === 'searching') && d.lastSeen > 0) tip.push(t('status.lastSeen', { when: dateTime(new Date(d.lastSeen), true) }));
-  if (d.error) tip.push(d.error);
-  if (d.status === 'error') tip.push(t('status.errorTip'));
-  if (d.paused) tip.push(t('logs.paused'));
-  return tip.join(' — ');
-}
-
 function devicePill(d: Device): HTMLElement {
   const s = STATUS[d.status] ?? STATUS.error;
   const label = (d.status === 'online' && isBLU(d) ? 'BLU ' : '') + t(s.key);
@@ -81,7 +68,7 @@ const COLUMNS: Col[] = [
   { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: devicePill, tip: statusTip,
     cmp: (a, b) => a.status.localeCompare(b.status) },
   { key: 'type', label: 'col.type', text: (d) => d.typeName },
-  { key: 'device', label: 'col.device', text: (d) => d.hostname },
+  { key: 'device', label: 'col.device', text: (d) => d.hostname, cell: (d) => (d.status === 'reading' ? h('span', {}, d.hostname, busySpinner()) : d.hostname) },
   { key: 'name', label: 'col.name', text: (d) => d.name },
   { key: 'keyword', label: 'col.keyword', text: (d) => d.keyword ?? '' },
   { key: 'mac', label: 'col.mac', text: (d) => d.mac },

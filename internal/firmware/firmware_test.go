@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -64,7 +65,8 @@ func TestGen1IndexArchiveAndFiles(t *testing.T) {
 		switch {
 		case r.URL.Path == "/index":
 			json.NewEncoder(w).Encode(map[string]any{"isok": true, "data": map[string]any{
-				"SHPLG-S": map[string]string{"url": srv.URL + "/gen1/SHPLG-S.zip", "version": "20230913-113421/v1.14.0-gcb84623"}}})
+				"SHPLG-S": map[string]string{"url": srv.URL + "/gen1/SHPLG-S.zip", "version": "20230913-113421/v1.14.0-gcb84623",
+					"beta_url": srv.URL + "/gen1/SHPLG-S-beta.zip", "beta_ver": "20240101-000000/v1.15.0-beta2-gabc1234"}}})
 		case r.URL.Path == "/gen1/SHPLG-S.zip":
 			w.Write(good)
 		case r.URL.Path == "/archive.php":
@@ -97,12 +99,19 @@ func TestGen1IndexArchiveAndFiles(t *testing.T) {
 		t.Fatalf("index and file are cached: %v", hits)
 	}
 
+	if b, err := x.Beta(ctx, "1", "SHPLG-S"); err != nil || b.Version != "1.15.0-beta2" || b.URL != srv.URL+"/gen1/SHPLG-S-beta.zip" {
+		t.Fatalf("gen1 beta %+v %v", b, err)
+	}
+
 	a, err := x.Latest(ctx, "1", "SHOLD") // not in the official index
 	if err != nil || a.Version != "1.12.2" || a.Source != SourceArchive {
 		t.Fatalf("archive %+v %v", a, err)
 	}
 	if _, err := x.File(ctx, a); err != nil {
 		t.Fatal(err)
+	}
+	if _, err := x.Beta(ctx, "1", "SHOLD"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("the archive has no betas: %v", err)
 	}
 }
 
@@ -142,7 +151,8 @@ func TestGen2IndexOverPinnedTLS(t *testing.T) {
 		case "/update/MiniPMG3":
 			json.NewEncoder(w).Encode(map[string]any{"stable": map[string]string{"version": "2.0.1", "build_id": "20260923-075534/2.0.1-ge1a198b",
 				"url": srv.URL + "/gen2-ntest/MiniPMG3/" + hash(fw)},
-				"alt": map[string]any{"S1PMG4ZB": map[string]any{"stable": map[string]string{"version": "9.9.9"}}}})
+				"beta": map[string]string{"version": "2.1.0-beta1", "build_id": "20261001-000000/2.1.0-beta1-gabc", "url": srv.URL + "/gen2-ntest/MiniPMG3/" + strings.Repeat("b", 64)},
+				"alt":  map[string]any{"S1PMG4ZB": map[string]any{"stable": map[string]string{"version": "9.9.9"}}}})
 		case "/update/Evil":
 			json.NewEncoder(w).Encode(map[string]any{"stable": map[string]string{"version": "1.0", "url": "https://example.com/x/Evil/" + strings.Repeat("a", 64)}})
 		case "/gen2-ntest/MiniPMG3/" + hash(fw):
@@ -174,6 +184,12 @@ func TestGen2IndexOverPinnedTLS(t *testing.T) {
 	// Cached answers without asking; failed lookups are not cached answers.
 	if c := x.Cached("3", "MiniPMG3"); c == nil || c.Version != "2.0.1" {
 		t.Fatalf("cached %+v", c)
+	}
+	if b, err := x.Beta(context.Background(), "3", "MiniPMG3"); err != nil || b.Version != "2.1.0-beta1" || !strings.HasSuffix(b.URL, strings.Repeat("b", 64)) {
+		t.Fatalf("gen2 beta %+v %v", b, err)
+	}
+	if _, err := x.Beta(context.Background(), "2", "Evil"); err == nil {
+		t.Fatal("beta of a refused answer")
 	}
 	if x.Cached("2", "Evil") != nil || x.Cached("2", "Never") != nil || x.Cached("1", "SHPLG-S") != nil {
 		t.Fatal("cached without a good answer")

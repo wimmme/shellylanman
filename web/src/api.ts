@@ -238,7 +238,10 @@ export interface FirmwareRow {
 export const firmwareApi = {
   rows: (ids: string[]) => request<FirmwareRow[]>('GET', '/firmware' + (ids.length ? '?' + idsQuery(ids) : '')),
   update: (items: { id: string; stage: string }[]) => request<{ results: ResultLine[] }>('POST', '/firmware/update', { items, confirm: true }),
+  /** The download link of a version: on ShellyLanMan in local mode (stable), else on Shelly's server. */
+  link: (id: string, stage: 'stable' | 'beta') => request<FirmwareLink>('GET', `/firmware/${encodeURIComponent(id)}/link?stage=${stage}`),
 };
+export interface FirmwareLink { url: string; version: string; local: boolean }
 export interface IndexRow { id: string; key?: string; current?: string; latest?: string; source?: string; newer: boolean; error?: string }
 export interface LocalLink {
   url: string; qr: string; name: string; model: string; current: string; version: string; source: string; fileName: string; expires: number; warning?: string;
@@ -260,7 +263,10 @@ export interface ModelChoice { gen: string; key: string; name: string }
 export const apApi = {
   guide: (q: { id?: string; name?: string }) => request<APGuide>('GET', '/ap/guide?' + new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString()),
   models: () => request<ModelChoice[]>('GET', '/ap/models'),
+  /** The address (and QR code) that opens the firmware wizard on a phone. */
+  phone: (id?: string) => request<PhoneLink>('GET', '/ap/phone' + (id ? '?id=' + encodeURIComponent(id) : '')),
 };
+export interface PhoneLink { url: string; qr: string; warning?: string }
 
 // ---- profiles for new devices (DECISIONS P20-11) ----
 

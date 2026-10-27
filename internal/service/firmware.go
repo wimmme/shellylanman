@@ -600,6 +600,12 @@ func (m *Devices) fwUpdated(d model.Device) {
 	if err != nil {
 		return
 	}
+	// Read the configuration again now: in local mode the running version (and so the
+	// update mark) comes from it, and it is otherwise only read every few polls.
+	select {
+	case e.now <- struct{}{}:
+	default:
+	}
 	go func() {
 		row := m.firmwareRowOf(m.baseContext(), e, true)
 		m.emit(EventFirmware, row)

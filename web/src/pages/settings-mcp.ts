@@ -1,6 +1,7 @@
 // Settings → MCP: the Model Context Protocol server for AI assistants
 // (internal/mcp, DECISIONS.md §18). Not in ShellyScanner; asked for by Wim.
 import { api, type MCPInfo } from '../api';
+import { copyText } from '../clipboard';
 import { h } from '../dom';
 import { t } from '../i18n';
 import { confirmDialog } from '../modal';
@@ -9,7 +10,7 @@ import { toast } from '../toast';
 function copyRow(text: string, label: string): HTMLElement {
   const pre = h('pre', { class: 'json', 'aria-label': label }, text);
   const btn = h('button', { class: 'btn', onclick: async () => {
-    try { await navigator.clipboard.writeText(text); toast(t('mcp.copied'), 'info'); } catch { /* select by hand */ }
+    if (await copyText(text)) toast(t('mcp.copied'), 'info'); // else: select by hand
   } }, t('common.copy'));
   return h('div', { class: 'mcp-snippet' }, h('div', { class: 'row' }, h('strong', {}, label), btn), pre);
 }

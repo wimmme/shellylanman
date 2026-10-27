@@ -1,4 +1,6 @@
+import type { Device } from '../api';
 import { h, icon, ICONS } from '../dom';
+import { dateTime } from '../format';
 import { t, type Key } from '../i18n';
 
 export interface Page {
@@ -17,6 +19,26 @@ export interface Page {
 export function statusPill(cls: string, label: string, marks: { reboot: boolean; update: boolean } = { reboot: false, update: false }): HTMLElement {
   return h('span', { class: 'pill ' + cls + (marks.update ? ' update' : '') }, label, marks.reboot ? ' ↻' : null,
     marks.update ? h('span', { class: 'pill-upd', 'aria-hidden': 'true' }, '⚡') : null);
+}
+
+/** The hover text of a device's status pill, the same on every page. */
+export function statusTip(d: Device): string {
+  const isBLU = d.gen === 'blu' || d.gen === 'bth';
+  const tip = [t(('status.' + d.status) as Key)];
+  if (d.rebootRequired) tip.push(t('status.rebootRequired'));
+  if (d.updateAvailable) tip.push(d.updateVersion ? t('status.updateAvailable', { version: d.updateVersion }) : t('status.updateAvailableShort'));
+  if (d.status === 'online' && isBLU && d.lastSeen > 0) tip.push(t('status.bluSeen', { when: dateTime(new Date(d.lastSeen), true) }));
+  if (d.status === 'searching') tip.push(t('status.searchingTip'));
+  if ((d.status === 'offline' || d.status === 'ghost' || d.status === 'searching') && d.lastSeen > 0) tip.push(t('status.lastSeen', { when: dateTime(new Date(d.lastSeen), true) }));
+  if (d.error) tip.push(d.error);
+  if (d.status === 'error') tip.push(t('status.errorTip'));
+  if (d.paused) tip.push(t('logs.paused'));
+  return tip.join(' — ');
+}
+
+/** The small turning circle after a device's name while it is read or updated (P25-5). */
+export function busySpinner(): HTMLElement {
+  return h('span', { class: 'spinner small', role: 'status', 'aria-label': t('state.loading') });
 }
 
 export function card(title: string, badge: string | null, ...body: (Node | string)[]): HTMLElement {

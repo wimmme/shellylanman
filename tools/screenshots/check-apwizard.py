@@ -63,6 +63,12 @@ with sync_playwright() as p:
     nxt = dlg.get_by_role("button", name="Next")
     check(nxt.is_disabled(), "Next waits for a model")
     check(dlg.get_by_text("easiest from your phone").count() == 1, "device step: the phone tip")
+    phone_qr = dlg.locator(".apw-phone img.lfw-qr.small")
+    phone_qr.wait_for(timeout=5000)
+    check(phone_qr.bounding_box()["width"] < 260, f"device step: a smaller code that opens the wizard on a phone ({phone_qr.bounding_box()['width']})")
+    check(dlg.get_by_text("With the wizard on a computer").count() == 1, "device step: the computer tip under the code")
+    link = pg.evaluate("fetch('api/v1/ap/phone?id=X1').then(r => r.json()).then(l => l.url)")
+    check(link.endswith("/#/firmware?apw=X1"), f"device step: the code opens the wizard ({link})")
 
     # An access point name that says what it is.
     name = dlg.locator("input[type=text]")
@@ -121,6 +127,7 @@ with sync_playwright() as p:
     dlg.locator(".apw-steps li.current").get_by_text("Open page").wait_for()
     dlg.locator("img.lfw-qr").wait_for(timeout=5000)
     check(dlg.get_by_text("http://192.168.33.1").count() >= 1, "page step: the address and its QR code")
+    check(dlg.locator("img.lfw-qr.small").count() == 1 and dlg.get_by_text("Or scan this QR code").count() == 1, "page step: a smaller code, for a computer")
     page_link = dlg.locator("a[href='http://192.168.33.1']")
     check(page_link.count() == 1 and page_link.get_attribute("target") == "_blank", "page step: the address is a link (new tab)")
     pg.screenshot(path="/shots/apw-page.png")
@@ -134,6 +141,14 @@ with sync_playwright() as p:
 
     pg.keyboard.press("Escape")
     check(pg.locator(".modal[role=dialog]").count() == 0, "Escape closes the wizard")
+
+    # The code scanned with a phone: #/firmware?apw=<id> opens the wizard for that device.
+    pg.goto(B + "#/devices")
+    pg.wait_for_timeout(1000)
+    pg.goto(B + "#/firmware?apw=" + mac)
+    pg.locator(".modal[role=dialog]").get_by_text("This device is in your list").wait_for(timeout=10000)
+    check(pg.evaluate("location.hash") == "#/firmware", "the wizard link opens the wizard for its device")
+    pg.keyboard.press("Escape")
     check(not [e for e in errors if "Content Security Policy" in e], f"no CSP errors {errors}")
 
     ph = ctx.new_page()

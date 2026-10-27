@@ -274,3 +274,46 @@ func (m *Devices) deviceClaims(tok string) (linkClaims, bool) {
 	c, ok := s.links[tok]
 	return c, ok
 }
+
+// FirmwareLink is the download link of one version on the Firmware page (its copy button).
+type FirmwareLink struct {
+	URL     string `json:"url"`
+	Version string `json:"version"`
+	Local   bool   `json:"local"` // on ShellyLanMan (local mode), else on Shelly's server
+}
+
+// FirmwareLink: in local mode the stable version on this server, as for a phone (valid
+// LinkTTL; base is the address phones use); otherwise Shelly's own link from the index,
+// stable or beta.
+func (m *Devices) FirmwareLink(ctx context.Context, id, stage, base string) (*FirmwareLink, error) {
+	if stage != StageStable && stage != StageBeta {
+		return nil, invalidField("stage")
+	}
+	e, err := m.entryFor(id)
+	if err != nil {
+		return nil, err
+	}
+	d, info := m.infoOf(e)
+	gen, key, _, ok := fwKey(d, info)
+	if !ok {
+		return nil, ErrNoLocalFW
+	}
+	if stage == StageStable && m.localMode() {
+		l, err := m.LocalDownload(ctx, id, base)
+		if err != nil {
+			return nil, err
+		}
+		return &FirmwareLink{URL: l.URL, Version: l.Version, Local: true}, nil
+	}
+	x := m.FirmwareSource()
+	var l *firmware.Latest
+	if stage == StageBeta {
+		l, err = x.Beta(ctx, gen, key)
+	} else {
+		l, err = x.Latest(ctx, gen, key)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &FirmwareLink{URL: l.URL, Version: l.Version}, nil
+}

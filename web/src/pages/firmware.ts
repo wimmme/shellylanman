@@ -47,6 +47,13 @@ export const firmwarePage: Page = {
     c.querySelector('.card-head')!.append(badge);
     main.append(c);
     show();
+    // #/firmware?apw=<id>: the code in the wizard on a PC, scanned with a phone, opens it here.
+    const apw = /[?&]apw=([^&]*)/.exec(location.hash);
+    if (apw) {
+      history.replaceState(null, '', '#/firmware');
+      const id = decodeURIComponent(apw[1]!);
+      openFirmwareWizard(known(id) ? { id } : {});
+    }
   },
   dispose() { panel?.dispose(); panel = null; },
 };

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/wimmme/shellylanman/internal/firmware"
 	"github.com/wimmme/shellylanman/internal/service"
 )
 
@@ -18,6 +19,7 @@ func (s *server) firmwareRoutes(mux router, h func(http.HandlerFunc) http.Handle
 	mux.HandleFunc("POST /api/v1/firmware/update", h(s.updateFirmware))
 	mux.HandleFunc("GET /api/v1/firmware/index", h(s.firmwareIndex))
 	mux.HandleFunc("POST /api/v1/firmware/{id}/local", h(s.localFirmware))
+	mux.HandleFunc("GET /api/v1/firmware/{id}/link", h(s.firmwareLink))
 	// Reached by phones without a UI session: the token is the authorisation.
 	mux.HandleFunc("GET /fw/{token}/{name}", h(s.firmwareFile))
 }
@@ -70,6 +72,24 @@ func (s *server) localFirmware(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusConflict, err)
 	case errors.Is(err, service.ErrNotFound):
 		writeErr(w, http.StatusNotFound, err)
+	default: // index or network problem
+		writeErr(w, http.StatusBadGateway, err)
+	}
+}
+
+// firmwareLink: the download link behind a version's copy button on the Firmware page.
+func (s *server) firmwareLink(w http.ResponseWriter, r *http.Request) {
+	base, _ := s.phoneBase(r)
+	l, err := s.Devices.FirmwareLink(r.Context(), r.PathValue("id"), r.URL.Query().Get("stage"), base)
+	switch {
+	case err == nil:
+		writeJSON(w, http.StatusOK, l)
+	case errors.Is(err, service.ErrInvalid):
+		writeErr(w, http.StatusBadRequest, err)
+	case errors.Is(err, service.ErrNotFound), errors.Is(err, firmware.ErrNotFound):
+		writeErr(w, http.StatusNotFound, err)
+	case errors.Is(err, service.ErrUpToDate), errors.Is(err, service.ErrNoLocalFW):
+		writeErr(w, http.StatusConflict, err)
 	default: // index or network problem
 		writeErr(w, http.StatusBadGateway, err)
 	}

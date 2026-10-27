@@ -12,6 +12,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   when the Firmware page opens, and *Update* has the device fetch the verified firmware from ShellyLanMan
   (Gen1 `/ota?url=`, Gen2+ `Shelly.Update` with a URL). Stable versions only. The devices must reach ShellyLanMan's
   web port; the address is found automatically and can be set.
+- Firmware page: a copy button after each available version copies its download link — on ShellyLanMan in the new
+  local mode, otherwise Shelly's own link (stable and beta).
+- Access-point wizard: a QR code that opens the wizard on your phone, where it works best.
 
 ### Changed
 - One status colour scheme on Devices, Checklist and Firmware: blue while a device is read or updated (the Checklist
@@ -19,6 +22,18 @@ versions follow [Semantic Versioning](https://semver.org/).
 - A newer firmware is now shown as an orange ring and an orange ⚡ on the status, instead of a small ↑; also on the
   Checklist and Firmware pages.
 - The phone address of the local firmware download moved from *Settings → Network* to *Settings → Firmware*.
+- The status has the same hover text on Devices, Checklist and Firmware, and a turning circle while a device is read
+  or updated on all three.
+- *Backups kept per device* moved from *Settings → Network* to *Settings → Archive*; the Archive tab's boxes now stand
+  in front of their text.
+- Access-point wizard: clearer texts (the password of the device's access point is the one you set in its web UI;
+  the device's address in the sentence) and smaller QR codes for a computer.
+- Copy buttons now also work when ShellyLanMan is opened on a plain http address.
+
+### Fixed
+- After an update in local firmware mode a device kept its orange ring and ⚡ until the next check.
+- Charts: a series hidden with a click on the legend came back with the next reading while the chart was live.
+- Charts: resuming after a pause paused the chart again at once.
 
 ### Documentation
 - README: an animation of a firmware update through the Shelly's own access point.

@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 
 	qrcode "github.com/skip2/go-qrcode"
@@ -150,6 +151,24 @@ func (g *APGuide) codes() error {
 		g.JoinQR = "data:image/png;base64," + base64.StdEncoding.EncodeToString(png)
 	}
 	return nil
+}
+
+// PhoneLink opens the access-point wizard on a phone (step 1 of the wizard on a PC).
+type PhoneLink struct {
+	URL     string `json:"url"`
+	QR      string `json:"qr"`                // data:image/png;base64,…
+	Warning string `json:"warning,omitempty"` // as LocalLink
+}
+
+// WizardLink: the Firmware page at base, opening the wizard for device id (empty: the
+// wizard that asks for an access point's name).
+func WizardLink(base, id string) (*PhoneLink, error) {
+	u := strings.TrimRight(base, "/") + "/#/firmware?apw=" + url.QueryEscape(id)
+	png, err := qrcode.Encode(u, qrcode.Medium, 240)
+	if err != nil {
+		return nil, err
+	}
+	return &PhoneLink{URL: u, QR: "data:image/png;base64," + base64.StdEncoding.EncodeToString(png), Warning: baseWarning(base)}, nil
 }
 
 // WiFiQR is the text of the QR code that makes a phone join an open network.

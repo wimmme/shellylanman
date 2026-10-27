@@ -102,5 +102,6 @@ export const ICONS = {
   moon: 'M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z',
   empty: 'M3 7h18M3 7l2 13h14l2-13M8 7V4h8v3',
   refresh: 'M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5',
+  copy: 'M9 9h11v11H9zM5 15H4V4h11v1',
   radar: 'M12 12l6-6M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5M12 11a1 1 0 1 0 1 1',
 } as const;

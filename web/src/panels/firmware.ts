@@ -7,12 +7,14 @@
 // of the ticked devices. Used as the first tab of Devices settings and on the
 // Firmware page.
 import { ApiError, firmwareApi, localFwApi, type FirmwareRow, type IndexRow } from '../api';
+import { copyText } from '../clipboard';
 import { allDevices, statusMarks } from '../devices';
-import { statusPill } from '../pages/common';
-import { h } from '../dom';
+import { busySpinner, statusPill, statusTip } from '../pages/common';
+import { h, icon, ICONS } from '../dom';
 import { betaCell, count, initialChoice, matches, placeholderRows, requests, selectAll, stableCell, toggle, type Cell, type Choice } from '../firmwarelogic';
 import { t, type Key } from '../i18n';
 import { confirmDialog } from '../modal';
+import { toast } from '../toast';
 import type { EventSocket } from '../socket';
 import { showResults } from './devsettings';
 import { indexCell, localCell, na } from './localfw';
@@ -65,8 +67,21 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
     box.addEventListener('change', () => { choice.set(r.id, toggle(choice.get(r.id) ?? null, col, box.checked)); draw(); });
     const label = h('label', { class: 'row fw-check' }, box, cell.label);
     if (cell.tip) label.title = cell.tip;
-    return label;
+    return r.known ? h('span', { class: 'row fw-cell' }, label, linkButton(r, col)) : label;
   };
+
+  // The copy button after a version: its download link, on ShellyLanMan or on Shelly's server.
+  const linkButton = (r: FirmwareRow, col: 'stable' | 'beta'): HTMLElement => h('button', {
+    type: 'button', class: 'fw-link', title: t('fw.copyLink'), 'aria-label': `${r.name}: ${t('fw.copyLink')}`,
+    onclick: async (e: Event) => {
+      e.stopPropagation();
+      try {
+        const l = await firmwareApi.link(r.id, col);
+        if (await copyText(l.url)) toast(t('fw.linkCopied', { version: l.version }), 'info');
+        else window.prompt(t('fw.copyLink'), l.url);
+      } catch (err) { toast(err instanceof Error ? err.message : String(err)); }
+    },
+  }, icon(ICONS.copy, 14));
 
   const draw = (): void => {
     const shown = rows.filter((r) => matches(r, filter));
@@ -76,10 +91,12 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
       const status = busy ? 'reading' : r.status;
       // The first box is not clicked: it shows whether a stable or beta version is ticked.
       const chosen = !!choice.get(r.id);
+      const dev = allDevices().find((d) => d.id === r.id);
       const tr_ = h('tr', { class: chosen ? 'selected' : undefined },
         h('td', { class: 'sel' }, h('input', { type: 'checkbox', disabled: true, checked: chosen, title: t('fw.selTip'), 'aria-label': `${r.name}: ${t('fw.selTip')}` })),
-        h('td', {}, statusPill(status, t(('status.' + status) as Key), busy ? undefined : statusMarks(allDevices().find((d) => d.id === r.id)))),
-        h('td', {}, r.name),
+        h('td', { title: busy || !dev ? t(('status.' + status) as Key) : statusTip(dev) },
+          statusPill(status, t(('status.' + status) as Key), busy ? undefined : statusMarks(dev))),
+        h('td', {}, r.name, busy ? busySpinner() : null),
         h('td', { title: r.currentBuild ?? '' }, r.current ?? ''),
         h('td', {}, cellNode(r, stableCell(r, tr), 'stable')),
         h('td', {}, cellNode(r, betaCell(r), 'beta')),

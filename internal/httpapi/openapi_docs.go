@@ -106,6 +106,12 @@ var fieldDocs = map[string]string{
 	"LocalLink.qr":      "The link as a QR code, a PNG data URL.",
 	"LocalLink.expires": "Unix milliseconds.",
 
+	"FirmwareLink.url":   "The download link: on ShellyLanMan when `local`, else on Shelly's server.",
+	"FirmwareLink.local": "The link is on ShellyLanMan (local mode, valid for 24 hours).",
+	"PhoneLink.url":      "The address that opens the firmware wizard on a phone.",
+	"PhoneLink.qr":       "The address as a QR code, a PNG data URL.",
+	"PhoneLink.warning":  "`localhost` or `badBase`: phones cannot open it; `ingress`: the address is a guess.",
+
 	"RestoreSource.deviceId": "A backup kept on the server: the device it belongs to…",
 	"RestoreSource.file":     "…and its file name (see `GET /api/v1/backups`).",
 	"RestoreSource.upload":   "Or an uploaded `.sbk`, base64.",

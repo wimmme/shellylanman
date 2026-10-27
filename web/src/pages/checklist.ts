@@ -18,7 +18,7 @@ import { openDeviceSettings } from '../panels/devsettings';
 import { openIdentify } from '../panels/bluidentify';
 import { toast } from '../toast';
 import { openingScope, selected, takeHashIds } from '../selection';
-import { card, emptyState, scopeBanner, statusPill, type Page } from './common';
+import { busySpinner, card, emptyState, scopeBanner, statusPill, statusTip, type Page } from './common';
 
 const COLS: { key: Col; label: Key; tip: Key; good?: boolean }[] = [
   { key: 'eco', label: 'chk.col.eco', tip: 'chk.tip.eco', good: true },
@@ -219,10 +219,11 @@ export const checklistPage: Page = {
           h('td', { class: 'sel' }, h('input', { type: 'checkbox', 'aria-label': r.host, checked: selected.has(r.id),
             onclick: (e: Event) => e.stopPropagation(),
             onchange: () => { if (selected.has(r.id)) selected.delete(r.id); else selected.add(r.id); anchor = r.id; draw(); } })),
-          h('td', {}, (r as { loading?: boolean }).loading // blue while read, as on the other pages (DECISIONS P25-5)
-            ? statusPill('reading', t('status.reading'))
-            : statusPill(r.status, t(('status.' + r.status) as Key), statusMarks(devOf(r.id)))),
-          h('td', {}, r.host, (r as { loading?: boolean }).loading ? h('span', { class: 'spinner small', 'aria-label': t('state.loading') }) : null),
+          h('td', { title: (r as { loading?: boolean }).loading ? t('status.reading') : devOf(r.id) ? statusTip(devOf(r.id)!) : t(('status.' + r.status) as Key) },
+            (r as { loading?: boolean }).loading // blue while read, as on the other pages (DECISIONS P25-5)
+              ? statusPill('reading', t('status.reading'))
+              : statusPill(r.status, t(('status.' + r.status) as Key), statusMarks(devOf(r.id)))),
+          h('td', {}, r.host, (r as { loading?: boolean }).loading ? busySpinner() : null),
           h('td', { class: 'mono' }, r.address.replace(/:80$/, '')),
           ...COLS.map((c) => { const v = cellView(c.key, r[c.key], c.good); return h('td', { class: 'chk ' + v.cls }, v.text); }));
         tbody.append(tr);
