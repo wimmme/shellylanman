@@ -1059,5 +1059,7 @@
   "apw.page.scan": "Of scan deze QR-code als de wizard op je pc openstaat:",
   "fw.copyLink": "Downloadlink kopiëren",
   "fw.linkCopied": "Downloadlink van {version} gekopieerd",
-  "apw.join.needsPass": "Het toestel wil zijn access point alleen aanzetten met een wachtwoord (nieuwere firmware). Stel er een in via de web-UI van het toestel (Instellingen → Wi-Fi → Access point) en verbind er dan zelf mee."
+  "apw.join.needsPass": "Het toestel wil zijn access point alleen aanzetten met een wachtwoord (nieuwere firmware). Stel er een in via de web-UI van het toestel (Instellingen → Wi-Fi → Access point) en verbind er dan zelf mee.",
+  "apw.wait.stuck": "Blijft dit wachten terwijl je telefoon al terug op je eigen wifi zit?",
+  "apw.wait.again": "Opnieuw kijken"
 }

@@ -1059,5 +1059,7 @@
   "apw.page.scan": "O escanea este código QR si el asistente está abierto en tu ordenador:",
   "fw.copyLink": "Copiar enlace de descarga",
   "fw.linkCopied": "Enlace de descarga de {version} copiado",
-  "apw.join.needsPass": "El dispositivo solo activa su punto de acceso con contraseña (firmware reciente). Pon una en la interfaz web del dispositivo (Ajustes → Wi-Fi → Punto de acceso) y conéctate tú mismo."
+  "apw.join.needsPass": "El dispositivo solo activa su punto de acceso con contraseña (firmware reciente). Pon una en la interfaz web del dispositivo (Ajustes → Wi-Fi → Punto de acceso) y conéctate tú mismo.",
+  "apw.wait.stuck": "¿Sigue esperando aunque el teléfono ya ha vuelto a tu wifi?",
+  "apw.wait.again": "Volver a comprobar"
 }

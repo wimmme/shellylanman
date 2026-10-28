@@ -1059,5 +1059,7 @@
   "apw.page.scan": "或者，如果向导在电脑上打开，请扫描此二维码：",
   "fw.copyLink": "复制下载链接",
   "fw.linkCopied": "已复制 {version} 的下载链接",
-  "apw.join.needsPass": "设备只有在设置密码后才会开启接入点（较新的固件）。请在设备的网页界面中设置密码（设置 → Wi-Fi → 接入点），然后自行连接。"
+  "apw.join.needsPass": "设备只有在设置密码后才会开启接入点（较新的固件）。请在设备的网页界面中设置密码（设置 → Wi-Fi → 接入点），然后自行连接。",
+  "apw.wait.stuck": "手机已回到你自己的 Wi-Fi，但仍在等待？",
+  "apw.wait.again": "重新检查"
 }

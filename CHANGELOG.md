@@ -44,6 +44,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   home Wi-Fi. The step no longer waits for ShellyLanMan before it shows, reads the list again every few seconds, and
   the page reconnects at once when the network comes back or the tab is shown again. A device that restarted after
   the wizard was opened also counts, when the phone was back on the home Wi-Fi before the last step was shown.
+  Reads that hang after the phone changes network are ended (8 s; a connection attempt after 10 s), so they no
+  longer hold the browser's connections to ShellyLanMan, and a *Look again* button reads the list at once.
 - Charts: a series hidden with a click on the legend came back with the next reading while the chart was live.
 - Charts: resuming after a pause paused the chart again at once.
 

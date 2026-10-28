@@ -9,6 +9,7 @@ import {
 } from '../aplogic';
 import { copyText } from '../clipboard';
 import { allDevices, loadDevices, onDevicesChanged } from '../devices';
+import { reconnectEvents } from '../socket';
 import { h } from '../dom';
 import { fetchWithProgress, localPath, megabytes, progressText, saveBlob } from '../download';
 import { dateTime } from '../format';
@@ -270,11 +271,15 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     const w = waiting;
     status.textContent = t('apw.wait.waiting', { name });
     const spinner = h('div', { class: 'spinner', 'aria-hidden': 'true' });
+    // Still waiting while the phone is back home: read again now (not pull to refresh, it closes the wizard).
+    const again = h('button', { class: 'btn small' }, t('apw.wait.again'));
+    const stuck = h('p', { class: 'muted' }, t('apw.wait.stuck'), ' ', again);
     let reported = false;
     const check = async (): Promise<void> => {
       if (reported || gone || step !== 'wait' || !cameBack(allDevices().find((d) => d.id === id), w)) return;
       reported = true;
       spinner.remove();
+      stuck.remove();
       status.textContent = t('apw.wait.back', { name });
       try {
         const row = (await firmwareApi.rows([id]))[0];
@@ -282,15 +287,21 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
       } catch { /* the version is a bonus */ }
     };
     const off = onDevicesChanged(() => void check());
-    let asked = 0; // a read that hangs (still on the access point) is not waited for longer than 15 s
-    const poll = setInterval(() => {
-      if (reported || Date.now() - asked < 15_000) return;
-      asked = Date.now();
-      void loadDevices().catch(() => {}).finally(() => { asked = 0; });
-    }, 4000);
+    // A read that hangs (the phone still on the access point, or just off it) is ended after 8 s: hanging
+    // reads hold the browser's few connections to ShellyLanMan, and new ones would wait behind them.
+    let reading = false;
+    const read = async (): Promise<void> => {
+      if (reported || reading) return;
+      reading = true;
+      try { await loadDevices(AbortSignal.timeout(8000)); } catch { /* next time */ }
+      reading = false;
+      void check();
+    };
+    const poll = setInterval(() => void read(), 4000);
     unsub = () => { off(); clearInterval(poll); };
     void check();
-    return h('div', {}, h('p', { class: 'muted' }, t('apw.wait.intro')), h('div', { class: 'row' }, spinner, status), detail,
+    again.addEventListener('click', () => { reconnectEvents(); reading = false; void read(); });
+    return h('div', {}, h('p', { class: 'muted' }, t('apw.wait.intro')), h('div', { class: 'row' }, spinner, status), detail, reported ? null : stuck,
       g.id ? null : h('p', { class: 'muted' }, t('apw.wait.notListed')));
   }
 

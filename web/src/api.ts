@@ -136,8 +136,8 @@ export interface CredentialsInfo { globalSet: boolean; globalUser: string }
 export interface NetInterface { name: string; addrs: string[] }
 
 export const devicesApi = {
-  list: () => request<Device[]>('GET', '/devices'),
-  scan: () => request<ScanState>('GET', '/scan'),
+  list: (signal?: AbortSignal) => request<Device[]>('GET', '/devices', undefined, signal),
+  scan: (signal?: AbortSignal) => request<ScanState>('GET', '/scan', undefined, signal),
   rescan: () => request<unknown>('POST', '/scan'),
   refresh: (ids?: string[]) => request<unknown>('POST', '/devices/refresh', ids ? { ids } : {}),
   reload: (id: string) => request<unknown>('POST', `/devices/${encodeURIComponent(id)}/reload`),

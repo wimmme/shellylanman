@@ -1059,5 +1059,7 @@
   "apw.page.scan": "Oppure scansiona questo codice QR se la procedura è aperta sul PC:",
   "fw.copyLink": "Copia link di download",
   "fw.linkCopied": "Link di download di {version} copiato",
-  "apw.join.needsPass": "Il dispositivo attiva il suo access point solo con una password (firmware recente). Impostala nell'interfaccia web del dispositivo (Impostazioni → Wi-Fi → Access point), poi collegati da solo."
+  "apw.join.needsPass": "Il dispositivo attiva il suo access point solo con una password (firmware recente). Impostala nell'interfaccia web del dispositivo (Impostazioni → Wi-Fi → Access point), poi collegati da solo.",
+  "apw.wait.stuck": "Continua ad attendere anche se il telefono è tornato sulla tua Wi-Fi?",
+  "apw.wait.again": "Controlla di nuovo"
 }

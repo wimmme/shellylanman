@@ -49,8 +49,9 @@ export function scanState(): ScanState | null {
   return scan;
 }
 
-export async function loadDevices(): Promise<void> {
-  const [list, st] = await Promise.all([devicesApi.list(), devicesApi.scan()]);
+/** Read the list again; a signal ends a read that hangs (a phone still on a Shelly's access point). */
+export async function loadDevices(signal?: AbortSignal): Promise<void> {
+  const [list, st] = await Promise.all([devicesApi.list(signal), devicesApi.scan(signal)]);
   devices.clear();
   for (const d of list) devices.set(d.id, d);
   scan = st;

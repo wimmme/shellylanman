@@ -7,6 +7,13 @@ export type ConnState = 'connecting' | 'ok' | 'down';
 
 type Handler = (ev: ServerEvent) => void;
 
+let current: EventSocket | null = null;
+
+/** Connect the page's event socket again at once (the AP wizard's "Look again"). */
+export function reconnectEvents(): void {
+  current?.reconnect();
+}
+
 export class EventSocket {
   private ws: WebSocket | null = null;
   private handlers = new Map<string, Set<Handler>>();
@@ -15,7 +22,9 @@ export class EventSocket {
   private state: ConnState = 'connecting';
   private hiddenAt = 0;
 
-  constructor(private onState: (s: ConnState) => void) {}
+  constructor(private onState: (s: ConnState) => void) {
+    current = this;
+  }
 
   private set(s: ConnState): void {
     this.state = s;
@@ -26,6 +35,11 @@ export class EventSocket {
     this.set('connecting');
     const ws = new WebSocket(wsURL('ws'));
     this.ws = ws;
+    // A phone on a network that does not reach the server may leave the attempt hanging for minutes,
+    // holding one of the browser's few connections to it: give up after 10 s and try again.
+    const opening = setTimeout(() => { if (this.ws === ws && ws.readyState === WebSocket.CONNECTING) this.reconnect(); }, 10_000);
+    ws.addEventListener('open', () => clearTimeout(opening));
+    ws.addEventListener('close', () => clearTimeout(opening));
     ws.onopen = () => {
       this.retry = 0;
       this.set('ok');
