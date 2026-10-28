@@ -46,6 +46,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
   let models: ModelChoice[] | null = null;
   let phoneLink: PhoneLink | null | undefined;
   let gone = false;
+  const opened = Date.now();
 
   const frame = openFrame(t('apw.title'), { onClose: () => { gone = true; unsub?.(); } });
   const stepper = h('ol', { class: 'apw-steps' });
@@ -249,7 +250,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     return h('div', { class: 'lfw' },
       h('p', {}, before ?? '', h('a', { href: g.pageURL, target: '_blank', rel: 'noopener noreferrer' }, g.pageURL), after ?? ''),
       h('p', { class: 'muted' }, t('apw.page.scan')), qr(g.pageQR, 'apw.page.qrAlt', true),
-      h('p', {}, t('apw.page.steps')));
+      ...paras(t('apw.page.steps'), ''));
   }
 
   // ---- 5: wait until the device is back ----
@@ -265,7 +266,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     // The phone may still be on the device's access point: the list it has is the starting point, and
     // nothing here waits for ShellyLanMan. The list is read again every few seconds: a phone that
     // changes network often loses the event connection without noticing.
-    waiting = startWaiting(allDevices().find((d) => d.id === id), Date.now());
+    waiting = startWaiting(allDevices().find((d) => d.id === id), Date.now(), opened);
     const w = waiting;
     status.textContent = t('apw.wait.waiting', { name });
     const spinner = h('div', { class: 'spinner', 'aria-hidden': 'true' });

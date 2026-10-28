@@ -942,7 +942,7 @@
   "apw.page.intro": "Con el teléfono en esa red, abre la página del dispositivo: {url}",
   "apw.page.qrAlt": "Código QR de la dirección del dispositivo",
   "apw.page.url": "Dirección",
-  "apw.page.steps": "En la página: Settings → Firmware, suba el archivo guardado y espere a que el dispositivo se reinicie. Mantenga el teléfono en el punto de acceso hasta que termine; luego devuélvalo a su propia red.",
+  "apw.page.steps": "En la página: Settings → Firmware, sube el archivo que guardaste, actualiza el firmware y espera a que el dispositivo se reinicie.\nDespués cierra la pestaña nueva (http://192.168.33.1) y vuelve a conectarte a tu red wifi.",
   "apw.wait.intro": "ShellyLanMan espera a que el dispositivo vuelva a su red.",
   "apw.wait.waiting": "Esperando a {name}…",
   "apw.wait.back": "{name} ha vuelto.",

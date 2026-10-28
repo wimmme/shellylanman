@@ -129,6 +129,7 @@ with sync_playwright() as p:
     dlg.locator("img.lfw-qr").wait_for(timeout=5000)
     check(dlg.get_by_text("http://192.168.33.1").count() >= 1, "page step: the address and its QR code")
     check(dlg.locator("img.lfw-qr.small").count() == 1 and dlg.get_by_text("Or scan this QR code").count() == 1, "page step: a smaller code, for a computer")
+    check(dlg.get_by_text("Then close the new tab").count() == 1, "page step: close the tab and go back to your own Wi-Fi")
     page_link = dlg.locator("a[href='http://192.168.33.1']")
     check(page_link.count() == 1 and page_link.get_attribute("target") == "_blank", "page step: the address is a link (new tab)")
     pg.screenshot(path="/shots/apw-page.png")

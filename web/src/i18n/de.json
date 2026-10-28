@@ -942,7 +942,7 @@
   "apw.page.intro": "Öffnen Sie mit dem Telefon in diesem Netz die Seite des Geräts: {url}",
   "apw.page.qrAlt": "QR-Code der Adresse des Geräts",
   "apw.page.url": "Adresse",
-  "apw.page.steps": "In der Seite: Settings → Firmware, laden Sie die gespeicherte Datei hoch und warten Sie, bis das Gerät neu gestartet ist. Lassen Sie das Smartphone am Access Point, bis es fertig ist; danach wieder in Ihr eigenes Netz.",
+  "apw.page.steps": "Auf der Seite: Settings → Firmware, laden Sie die gespeicherte Datei hoch, aktualisieren Sie die Firmware und warten Sie, bis das Gerät neu startet.\nSchließen Sie dann den neuen Tab (http://192.168.33.1) und verbinden Sie sich wieder mit Ihrem WLAN.",
   "apw.wait.intro": "ShellyLanMan wartet, bis das Gerät wieder in Ihrem Netz ist.",
   "apw.wait.waiting": "Warten auf {name}…",
   "apw.wait.back": "{name} ist zurück.",

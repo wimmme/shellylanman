@@ -942,7 +942,7 @@
   "apw.page.intro": "手机连接该网络后，打开设备页面：{url}",
   "apw.page.qrAlt": "设备地址的二维码",
   "apw.page.url": "地址",
-  "apw.page.steps": "在页面中：Settings → Firmware，上传保存的文件并等待设备重启。更新完成前请让手机保持连接接入点；之后再切回您自己的网络。",
+  "apw.page.steps": "在页面上：Settings → Firmware，上传你保存的文件，更新固件并等待设备重新启动。\n然后关闭新标签页（http://192.168.33.1），重新连接你自己的 Wi-Fi 网络。",
   "apw.wait.intro": "ShellyLanMan 正在等待设备回到您的网络。",
   "apw.wait.waiting": "正在等待 {name}…",
   "apw.wait.back": "{name} 已回来。",

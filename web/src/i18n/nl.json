@@ -942,7 +942,7 @@
   "apw.page.intro": "Open met de telefoon op dat netwerk de pagina van het toestel: {url}",
   "apw.page.qrAlt": "QR-code van het adres van het toestel",
   "apw.page.url": "Adres",
-  "apw.page.steps": "In de pagina: Settings → Firmware, upload het bestand dat je bewaarde en wacht tot het toestel opnieuw is opgestart. Houd de telefoon op het access point tot het klaar is; zet ze daarna terug op je eigen netwerk.",
+  "apw.page.steps": "Op de pagina: Settings → Firmware, upload het bestand dat je bewaard hebt, update de firmware en wacht tot het toestel opnieuw opstart.\nSluit daarna het nieuwe tabblad (http://192.168.33.1) en verbind opnieuw met je wifi-netwerk.",
   "apw.wait.intro": "ShellyLanMan wacht tot het toestel terug op je netwerk is.",
   "apw.wait.waiting": "Wachten op {name}…",
   "apw.wait.back": "{name} is terug.",

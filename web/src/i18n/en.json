@@ -942,7 +942,7 @@
   "apw.page.intro": "With the phone on that network, open the device's page: {url}",
   "apw.page.qrAlt": "QR code of the device's address",
   "apw.page.url": "Address",
-  "apw.page.steps": "In the page: Settings → Firmware, upload the file you saved and wait until the device has restarted. Keep the phone on the access point until it has finished; then put it back on your own network.",
+  "apw.page.steps": "On the page: Settings → Firmware, upload the file you saved, update the firmware and wait until the device restarts.\nThen close the new tab (http://192.168.33.1) and connect to your own Wi-Fi network again.",
   "apw.wait.intro": "ShellyLanMan is waiting for the device to come back on your network.",
   "apw.wait.waiting": "Waiting for {name}…",
   "apw.wait.back": "{name} is back.",

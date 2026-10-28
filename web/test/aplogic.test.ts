@@ -43,10 +43,14 @@ test('the device to watch: the one in the list, else the MAC of the name', () =>
 test('back after the update: online and restarted, or online when it was not before', () => {
   const w = startWaiting(dev({ uptime: 100000 }), 1000);
   assert.equal(w.baseUptime, 100000);
-  assert.equal(cameBack(dev({ uptime: 100050 }), w), false, 'still the same run');
-  assert.equal(cameBack(dev({ uptime: 20 }), w), true, 'restarted');
+  assert.equal(cameBack(dev({ uptime: 100050 }), w, 2000), false, 'still the same run');
+  assert.equal(cameBack(dev({ uptime: 20 }), w, 2000), true, 'restarted');
   assert.equal(cameBack(dev({ uptime: 20, status: 'offline' }), w), false);
   assert.equal(cameBack(undefined, w), false);
+  // Restarted after the wizard opened but before the last step: the list already had the short uptime.
+  const late = startWaiting(dev({ uptime: 40 }), 300_000, 100_000);
+  assert.equal(cameBack(dev({ uptime: 45 }), late, 305_000), true, 'restarted since the wizard opened');
+  assert.equal(cameBack(dev({ uptime: 900 }), startWaiting(dev({ uptime: 900 }), 300_000, 100_000), 305_000), false, 'running from before the wizard');
   // not online when the wait began (offline, or not in the list): online is enough
   for (const before of [undefined, dev({ status: 'offline' }), dev({ status: 'ghost' })]) {
     const w2 = startWaiting(before, 1000);

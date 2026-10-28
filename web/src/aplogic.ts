@@ -39,23 +39,27 @@ export function watchedId(g: APGuide | undefined): string {
 
 export interface Waiting {
   since: number;
+  /** When the wizard was opened (ms): a device that restarted after that has been updated. */
+  opened: number;
   /** Uptime of the device when the wait began; absent when it was not online then (or not in the list). */
   baseUptime?: number;
 }
 
-export function startWaiting(d: Device | undefined, now: number): Waiting {
-  return { since: now, baseUptime: d && d.status === 'online' && d.uptime >= 0 ? d.uptime : undefined };
+export function startWaiting(d: Device | undefined, now: number, opened = now): Waiting {
+  return { since: now, opened, baseUptime: d && d.status === 'online' && d.uptime >= 0 ? d.uptime : undefined };
 }
 
 /**
  * The device is back after its update: it is online and either it was not before, or it restarted
- * since the wait began (its uptime is lower than it was). A device that is online with the same
- * long uptime has not restarted yet.
+ * since the wait began (its uptime is lower than it was), or since the wizard was opened (its uptime
+ * is shorter than the time since then: the phone may come back to the home network, and the list
+ * be read again, before the last step is shown). A device that is online with the same long uptime
+ * has not restarted yet.
  */
-export function cameBack(d: Device | undefined, w: Waiting): boolean {
+export function cameBack(d: Device | undefined, w: Waiting, now = Date.now()): boolean {
   if (!d || d.status !== 'online') return false;
   if (w.baseUptime === undefined) return true;
-  return d.uptime >= 0 && d.uptime < w.baseUptime;
+  return d.uptime >= 0 && (d.uptime < w.baseUptime || d.uptime * 1000 < now - w.opened);
 }
 
 /** The AP's name for display and for the join QR: the Wi-Fi network, trimmed. */
