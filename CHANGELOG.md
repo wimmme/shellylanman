@@ -58,6 +58,7 @@ versions follow [Semantic Versioning](https://semver.org/).
 - README: a recording of the access-point wizard, from the Firmware page to the device back with its new firmware
   (`tools/screenshots/tour-apw.py`).
 - The simulator's `-vary` makes power, current and temperature readings swing, so recorded charts are not flat.
+- README screenshots taken again with this version (Firmware page with its local-update column, Checklist, Charts).
 
 ## [0.9.13] - 2026-10-22
 
