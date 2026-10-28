@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-28
+
+Firmware updates for Shellys without internet access: ShellyLanMan fetches and checks the firmware and the devices
+download it from ShellyLanMan. Also: clearer update status on every page, and a more reliable access-point wizard.
+
 ### Added
 - **Firmware updates through ShellyLanMan**, for Shellys without internet access (for example in their own VLAN).
   New tab *Settings → Firmware*: choose whether the devices look for updates themselves (as before) or
