@@ -222,8 +222,9 @@ export const checklistPage: Page = {
           h('td', { title: (r as { loading?: boolean }).loading ? t('status.reading') : devOf(r.id) ? statusTip(devOf(r.id)!) : t(('status.' + r.status) as Key) },
             (r as { loading?: boolean }).loading // blue while read, as on the other pages (DECISIONS P25-5)
               ? statusPill('reading', t('status.reading'))
-              : statusPill(r.status, t(('status.' + r.status) as Key), statusMarks(devOf(r.id)))),
-          h('td', {}, r.host, (r as { loading?: boolean }).loading ? busySpinner() : null),
+              : statusPill(r.status, t(('status.' + r.status) as Key), statusMarks(devOf(r.id))),
+            (r as { loading?: boolean }).loading ? busySpinner() : null),
+          h('td', {}, r.host),
           h('td', { class: 'mono' }, r.address.replace(/:80$/, '')),
           ...COLS.map((c) => { const v = cellView(c.key, r[c.key], c.good); return h('td', { class: 'chk ' + v.cls }, v.text); }));
         tbody.append(tr);

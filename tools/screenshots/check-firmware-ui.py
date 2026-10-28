@@ -70,6 +70,10 @@ with sync_playwright() as p:
     pg.goto(B + "#/firmware")
     pg.wait_for_selector("table.fw .pill.update", timeout=30000)
     check(True, "Firmware page shows the mark")
+    # While a row is read, its spinner stands after the status, not after the name.
+    spin = pg.locator("table.fw tbody .spinner")
+    if spin.count():
+        check(pg.locator("table.fw tbody td:nth-child(3) .spinner").count() == 0, "Firmware: the spinner after the status")
     until(lambda: pg.locator("table.fw .spinner").count() == 0)
     ftip = pg.locator("table.fw .pill.update").first.locator("xpath=ancestor::td").get_attribute("title") or ""
     check("update" in ftip.lower(), f"Firmware: the pill's hover text ({ftip})")
@@ -102,6 +106,11 @@ with sync_playwright() as p:
     keep = pg.locator("#backupKeep").bounding_box()
     clear = pg.get_by_role("button", name="Clear archive").bounding_box()
     check(keep["y"] > clear["y"], "Archive: the backups setting under Save / Clear archive")
+    red = pg.get_by_role("button", name="Clear archive")
+    classes = red.evaluate("e => [e.previousElementSibling.className, e.className]")
+    check(classes == ["btn", "btn danger-text"], f"Archive: grey buttons, Clear archive in red letters ({classes})")
+    colours = red.evaluate("e => [getComputedStyle(e).color, getComputedStyle(e.previousElementSibling).color, getComputedStyle(e).backgroundColor, getComputedStyle(e.previousElementSibling).backgroundColor]")
+    check(colours[0] != colours[1] and colours[2] == colours[3], f"Archive: red letters on the same grey ({colours})")
     pg.screenshot(path="/shots/archive.png")
     tabs = pg.locator(".tabs button").all_inner_texts()
     check(tabs[1:3] == ["Network", "Firmware"], f"Firmware tab after Network ({tabs})")

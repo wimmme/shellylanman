@@ -183,6 +183,7 @@ async function boot(): Promise<void> {
   socket.on('update.status', (ev) => { updateStatus = ev.data as UpdateStatus; renderShell(); });
   void api.update().then((u) => { updateStatus = u; if (u.newer) renderShell(); }).catch(() => {});
   socket.connect();
+  socket.watchPage();
   void loadDevices().catch(() => { /* retried on the socket's hello */ });
 
   window.addEventListener('hashchange', renderShell);

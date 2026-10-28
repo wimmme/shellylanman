@@ -65,10 +65,10 @@ function lines(items: string[]): Node {
 }
 
 const COLUMNS: Col[] = [
-  { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: devicePill, tip: statusTip,
+  { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: (d) => (d.status === 'reading' ? h('span', {}, devicePill(d), busySpinner()) : devicePill(d)), tip: statusTip,
     cmp: (a, b) => a.status.localeCompare(b.status) },
   { key: 'type', label: 'col.type', text: (d) => d.typeName },
-  { key: 'device', label: 'col.device', text: (d) => d.hostname, cell: (d) => (d.status === 'reading' ? h('span', {}, d.hostname, busySpinner()) : d.hostname) },
+  { key: 'device', label: 'col.device', text: (d) => d.hostname },
   { key: 'name', label: 'col.name', text: (d) => d.name },
   { key: 'keyword', label: 'col.keyword', text: (d) => d.keyword ?? '' },
   { key: 'mac', label: 'col.mac', text: (d) => d.mac },

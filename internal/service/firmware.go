@@ -453,7 +453,7 @@ func (m *Devices) startTrack(e *entry, d model.Device) {
 		<-ctx.Done()
 		if ctx.Err() == context.DeadlineExceeded { // never came back: stop following it
 			m.stopTrack(d.ID)
-			m.emitFirmware(e)
+			m.emit(EventFirmware, m.firmwareRowOf(m.baseContext(), e, true))
 		}
 	}()
 	if d.Gen != "1" {
@@ -556,6 +556,10 @@ func (m *Devices) readOTA(ctx context.Context, addr, id, component string, e *en
 				m.trackSet(id, func(t *fwTrack) { t.rebooting, t.rebootTime = true, time.Now() })
 				m.emitFirmware(e)
 				return true
+			case "ota_error": // it keeps running its old firmware: show it as it is
+				m.stopTrack(id)
+				m.emit(EventFirmware, m.firmwareRowOf(m.baseContext(), e, true))
+				return true
 			}
 		}
 	}
@@ -571,8 +575,11 @@ func (m *Devices) trackSet(id string, fn func(*fwTrack)) {
 }
 
 // fwUpdated runs on every device update (PanelFWUpdate.update): a device
-// being updated that is back on line — its status changed, it restarted
-// more than 3 s ago, or its uptime went down — is checked again.
+// being updated that is back on line is checked again. The original takes a
+// changed status or a restart announced more than 3 s ago as "back"; a device
+// that missed a poll while downloading, or restarts later than that, was then
+// read with its old firmware. When the uptime is known, only a lower uptime
+// counts (P25-9).
 func (m *Devices) fwUpdated(d model.Device) {
 	t := m.fwTracks()
 	t.mu.Lock()
@@ -582,10 +589,12 @@ func (m *Devices) fwUpdated(d model.Device) {
 		return
 	}
 	changed := d.Status != tr.status ||
-		(!tr.rebootTime.IsZero() && time.Since(tr.rebootTime) > 3*time.Second) ||
-		(d.Uptime >= 0 && tr.uptime >= 0 && d.Uptime < tr.uptime)
+		(!tr.rebootTime.IsZero() && time.Since(tr.rebootTime) > 3*time.Second)
+	if d.Uptime >= 0 && tr.uptime >= 0 {
+		changed = d.Uptime < tr.uptime
+	}
 	back := changed && d.Status == model.StatusOnline
-	if changed {
+	if d.Status != tr.status {
 		tr.status = d.Status
 	}
 	if back {

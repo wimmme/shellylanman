@@ -197,7 +197,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
       }
     };
     return h('div', { class: 'lfw' }, intro, linkWarning(l.warning),
-      h('div', { class: 'lfw-grid' }, qr(l.qr, 'lfw.qrAlt'),
+      h('div', { class: 'lfw-grid' }, qr(l.qr, 'lfw.qrAlt', true),
         h('div', { class: 'lfw-info' },
           badge('lfw.model', l.model), badge('lfw.version', l.current ? `${l.current} → ${l.version}` : l.version),
           badge('lfw.source', t(l.source === 'shelly-tools' ? 'lfw.srcArchive' : 'lfw.srcShelly')),
@@ -259,7 +259,9 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     if (!id) { // a short MAC (older Gen1): the device cannot be told from the list by the name
       return h('div', {}, h('p', {}, t('apw.wait.noId')));
     }
-    await loadDevices().catch(() => {});
+    // The phone may still be on the device's access point: the list it has is the starting point, and
+    // nothing here waits for ShellyLanMan. The list is read again every few seconds: a phone that
+    // changes network often loses the event connection without noticing.
     waiting = startWaiting(allDevices().find((d) => d.id === id), Date.now());
     const w = waiting;
     status.textContent = t('apw.wait.waiting', { name });
@@ -275,7 +277,14 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
         if (row?.valid && row.current) detail.replaceChildren(h('p', {}, t('apw.wait.version', { current: row.current, target: link?.version ?? '' })));
       } catch { /* the version is a bonus */ }
     };
-    unsub = onDevicesChanged(() => void check());
+    const off = onDevicesChanged(() => void check());
+    let asked = 0; // a read that hangs (still on the access point) is not waited for longer than 15 s
+    const poll = setInterval(() => {
+      if (reported || Date.now() - asked < 15_000) return;
+      asked = Date.now();
+      void loadDevices().catch(() => {}).finally(() => { asked = 0; });
+    }, 4000);
+    unsub = () => { off(); clearInterval(poll); };
     void check();
     return h('div', {}, h('p', { class: 'muted' }, t('apw.wait.intro')), h('div', { class: 'row' }, spinner, status), detail,
       g.id ? null : h('p', { class: 'muted' }, t('apw.wait.notListed')));

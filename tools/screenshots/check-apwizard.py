@@ -106,6 +106,7 @@ with sync_playwright() as p:
     got = dlg.locator("img.lfw-qr").count() == 1 or dlg.locator(".banner.warn").count() == 1
     check(got, "firmware step: the QR code, or the banner that the index could not be read")
     if dlg.locator("img.lfw-qr").count() == 1:
+        check(dlg.locator("img.lfw-qr.small").count() == 1, "firmware step: the smaller code, as the other steps")
         check(dlg.get_by_text("press Download").count() == 1, "firmware step: scan on a computer, Download on the phone")
         try:
             with pg.expect_download(timeout=90000) as got_dl:
@@ -133,7 +134,14 @@ with sync_playwright() as p:
     pg.screenshot(path="/shots/apw-page.png")
     nxt.click()
     dlg.locator(".apw-steps li.current").get_by_text("Update").wait_for()
+    # No waiting for ShellyLanMan before the step shows (the phone may still be on the access point).
+    dlg.locator("p[role=status]").wait_for(timeout=2000)
     check("Waiting for" in dlg.locator("p[role=status]").inner_text(), "wait step: waiting for the device")
+    # It reads the list again by itself, without the event connection.
+    reads = []
+    pg.on("request", lambda r: reads.append(r.url) if r.url.endswith("/api/v1/devices") else None)
+    pg.wait_for_timeout(9000)
+    check(len(reads) >= 1, f"wait step: the list is read again ({len(reads)})")
     check(not nxt.is_visible(), "no Next after the last step")
     dlg.get_by_role("button", name="Back").click()
     dlg.locator(".apw-steps li.current").get_by_text("Open page").wait_for()

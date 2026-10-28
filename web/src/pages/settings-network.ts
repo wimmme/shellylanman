@@ -135,10 +135,10 @@ export async function archive(body: HTMLElement): Promise<void> {
     h('label', { class: 'row check-line' }, use, t('archive.use')),
     h('label', { class: 'row check-line' }, auto, t('archive.autoReload')),
     h('div', { class: 'row' },
-      h('button', { class: 'btn primary', onclick: async () => {
+      h('button', { class: 'btn', onclick: async () => {
         try { await devicesApi.updateSettings({ archive: arc }); res.ok(); } catch (e) { res.fail(e); }
       } }, t('common.save')),
-      h('button', { class: 'btn danger', onclick: async () => {
+      h('button', { class: 'btn danger-text', onclick: async () => {
         if (await confirmDialog(t('archive.clear'), t('archive.clearConfirm'), t('archive.clear'))) {
           try { await devicesApi.clearArchive(); res.ok(); } catch (e) { res.fail(e); }
         }

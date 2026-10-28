@@ -12,16 +12,23 @@ export class EventSocket {
   private handlers = new Map<string, Set<Handler>>();
   private retry = 0;
   private timer: ReturnType<typeof setTimeout> | undefined;
+  private state: ConnState = 'connecting';
+  private hiddenAt = 0;
 
   constructor(private onState: (s: ConnState) => void) {}
 
+  private set(s: ConnState): void {
+    this.state = s;
+    this.onState(s);
+  }
+
   connect(): void {
-    this.onState('connecting');
+    this.set('connecting');
     const ws = new WebSocket(wsURL('ws'));
     this.ws = ws;
     ws.onopen = () => {
       this.retry = 0;
-      this.onState('ok');
+      this.set('ok');
     };
     ws.onmessage = (m) => {
       let ev: ServerEvent;
@@ -30,10 +37,37 @@ export class EventSocket {
       this.handlers.get('*')?.forEach((h) => h(ev));
     };
     ws.onclose = () => {
-      this.onState('down');
+      if (this.ws !== ws) return; // replaced by reconnect()
+      this.set('down');
       clearTimeout(this.timer);
       this.timer = setTimeout(() => this.connect(), backoff(this.retry++));
     };
+  }
+
+  /** Drop the connection, whatever state it seems to be in, and connect again at once. */
+  reconnect(): void {
+    clearTimeout(this.timer);
+    this.retry = 0;
+    const old = this.ws;
+    this.ws = null;
+    if (old) {
+      old.onmessage = null;
+      old.close();
+    }
+    this.connect();
+  }
+
+  /**
+   * A phone that changes network (a Shelly's access point and back) or puts the tab away often
+   * keeps a dead connection without a close event, or waits out a long backoff: connect again
+   * when the network comes back, and when the page is shown again after a while or while down.
+   */
+  watchPage(): void {
+    window.addEventListener('online', () => this.reconnect());
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { this.hiddenAt = Date.now(); return; }
+      if (this.state !== 'ok' || Date.now() - this.hiddenAt > 10_000) this.reconnect();
+    });
   }
 
   /** Subscribe to one event type, or '*' for all. Returns an unsubscribe function. */

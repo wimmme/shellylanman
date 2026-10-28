@@ -178,12 +178,30 @@ func TestBackFromUpdateRereadsConfig(t *testing.T) {
 	m.mu.Lock()
 	d := e.dev
 	m.mu.Unlock()
+	d.Uptime = 1000
 	m.startTrack(e, d)
+	tracked := func() bool {
+		t := m.fwTracks()
+		t.mu.Lock()
+		defer t.mu.Unlock()
+		return t.tracks[d.ID] != nil
+	}
+	// A poll missed while it downloads is not a restart: it still runs its old firmware.
+	d.Status = model.StatusOffline
+	m.fwUpdated(d)
+	d.Status, d.Uptime = model.StatusOnline, 1010
+	m.fwUpdated(d)
+	if !tracked() {
+		t.Fatal("back on line with a higher uptime ended the update")
+	}
 	before := reads()
 	d.Status = model.StatusOffline
 	m.fwUpdated(d) // restarting
-	d.Status = model.StatusOnline
+	d.Status, d.Uptime = model.StatusOnline, 3
 	m.fwUpdated(d) // back
+	if tracked() {
+		t.Fatal("a lower uptime did not end the update")
+	}
 	for end := time.Now().Add(3 * time.Second); reads() == before; time.Sleep(20 * time.Millisecond) {
 		if time.Now().After(end) {
 			t.Fatalf("configuration not read again: %v", g1.Calls())

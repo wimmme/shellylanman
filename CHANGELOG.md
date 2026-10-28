@@ -22,16 +22,21 @@ versions follow [Semantic Versioning](https://semver.org/).
 - A newer firmware is now shown as an orange ring and an orange ⚡ on the status, instead of a small ↑; also on the
   Checklist and Firmware pages.
 - The phone address of the local firmware download moved from *Settings → Network* to *Settings → Firmware*.
-- The status has the same hover text on Devices, Checklist and Firmware, and a turning circle while a device is read
-  or updated on all three.
+- The status has the same hover text on Devices, Checklist and Firmware, and a turning circle after it while a
+  device is read or updated on all three.
 - *Backups kept per device* moved from *Settings → Network* to *Settings → Archive*; the Archive tab's boxes now stand
-  in front of their text.
+  in front of their text, and its buttons are grey like on the other tabs (*Clear archive* in red letters).
 - Access-point wizard: clearer texts (the password of the device's access point is the one you set in its web UI;
-  the device's address in the sentence) and smaller QR codes for a computer.
+  the device's address in the sentence) and smaller QR codes for a computer, on every step.
 - Copy buttons now also work when ShellyLanMan is opened on a plain http address.
 
 ### Fixed
-- After an update in local firmware mode a device kept its orange ring and ⚡ until the next check.
+- After an update a device could stay on its old version on the Firmware page, with the orange ring and ⚡, until the
+  next check: a device that missed a poll while it downloaded was taken as "back" before it restarted. It now
+  counts as back only when its uptime went down (or the device reports an update error).
+- Access-point wizard, last step: it kept waiting after the phone went back from the device's access point to the
+  home Wi-Fi. The step no longer waits for ShellyLanMan before it shows, reads the list again every few seconds, and
+  the page reconnects at once when the network comes back or the tab is shown again.
 - Charts: a series hidden with a click on the legend came back with the next reading while the chart was live.
 - Charts: resuming after a pause paused the chart again at once.
 

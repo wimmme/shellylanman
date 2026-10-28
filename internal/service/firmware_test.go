@@ -83,10 +83,27 @@ func TestFirmwareRowsAndUpdate(t *testing.T) {
 	if row := m.firmwareRow(e, fwInfo{}, true, true); !row.Updating || !row.Rebooting || row.Progress != 42 || row.Preselect {
 		t.Fatalf("row while rebooting %+v", row)
 	}
-	// Back on line: no longer followed.
+	// Back on line after a restart (a lower uptime): no longer followed. On line again with
+	// the same uptime is not a restart (P25-9).
 	m.setStatus(e, model.StatusOffline)
 	m.setStatus(e, model.StatusOnline)
+	time.Sleep(100 * time.Millisecond)
+	if !track("AABBCC000002", func(*fwTrack) bool { return true }) {
+		t.Fatal("back on line without a restart")
+	}
+	m.setStatus(e, model.StatusOffline)
+	m.apply(e, func(d *model.Device) { d.Uptime = 0 })
+	m.setStatus(e, model.StatusOnline)
 	waitFor(t, "back on line", func() bool { return !track("AABBCC000002", func(*fwTrack) bool { return true }) })
+
+	// An update that fails ends the follow-up too.
+	waitFor(t, "ws closed", func() bool { return g2.RPCClients() == 0 })
+	if res, err := m.FirmwareUpdate(ctx, []FirmwareRequest{{ID: "AABBCC000002", Stage: StageStable}}); err != nil || res[0].Result != ResultOK {
+		t.Fatalf("second update %+v %v", res, err)
+	}
+	waitFor(t, "ws client", func() bool { return g2.RPCClients() > 0 })
+	g2.Notify(map[string]any{"component": "sys", "event": "ota_error"})
+	waitFor(t, "update error", func() bool { return !track("AABBCC000002", func(*fwTrack) bool { return true }) })
 
 	if _, err := m.FirmwareUpdate(ctx, []FirmwareRequest{{ID: "AABBCC000002", Stage: "nightly"}}); err == nil {
 		t.Fatal("unknown stage accepted")

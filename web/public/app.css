@@ -156,6 +156,7 @@ table.data tbody tr:hover td{background:rgba(99,130,190,.05)}
 .btn:hover{background:rgba(99,130,190,.1)}
 .btn.primary{background:var(--accent-rx);border-color:var(--accent-rx);color:#fff}
 .btn.danger{background:var(--accent-err);border-color:var(--accent-err);color:#fff}
+.btn.danger-text{color:var(--accent-err)}
 .btn.icon{padding:6px;border:none}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;max-width:420px}
