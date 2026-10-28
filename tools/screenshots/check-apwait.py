@@ -47,7 +47,7 @@ with sync_playwright() as p:
         if restarted["on"]:
             for d in body:
                 if d["id"] == mac:
-                    d["uptime"] = 7
+                    d["uptime"] = 2
         route.fulfill(response=resp, body=json.dumps(body))
     pg.route("**/api/v1/devices", devices)
 
@@ -74,6 +74,7 @@ with sync_playwright() as p:
         dlg.locator("p[role=status]", has_text="is back").wait_for(timeout=30000)
         check(True, f"the last step reports the device back ({time.time() - t0:.1f} s)")
         check(dlg.get_by_role("button", name="Look again").count() == 0, "no Look again once back")
+        check(dlg.locator(".apw-content .spinner").count() == 0, "no spinner once back")
     except Exception:
         check(False, "the last step reports the device back within 30 s: " + dlg.locator("p[role=status]").inner_text())
     pg.screenshot(path="/shots/apw-wait.png")
@@ -102,8 +103,23 @@ with sync_playwright() as p:
     try:
         dlg.locator("p[role=status]", has_text="is back").wait_for(timeout=30000)
         check(True, f"on the last step while off line: back once on line ({time.time() - t0:.1f} s)")
+        check(dlg.locator(".apw-content .spinner").count() == 0, "no spinner once back")
     except Exception:
         check(False, "on the last step while off line: back within 30 s: " + dlg.locator("p[role=status]").inner_text())
+    # Wim's order: back on the home Wi-Fi, list read again, then the last step: back at once.
+    pg.keyboard.press("Escape")
+    pg.goto(B + "#/firmware?apw=" + mac)
+    dlg.get_by_text("This device is in your list").wait_for(timeout=10000)
+    for name in ["Firmware", "Join", "Open page"]:
+        nxt.click()
+        dlg.locator(".apw-steps li.current").get_by_text(name).wait_for(timeout=20000)
+    pg.evaluate("fetch('api/v1/devices')")
+    pg.wait_for_timeout(5000)
+    nxt.click()
+    dlg.locator("p[role=status]", has_text="is back").wait_for(timeout=10000)
+    check(dlg.locator(".apw-content .spinner").count() == 0 and dlg.get_by_role("button", name="Look again").count() == 0,
+          "back at once when the last step shows: no spinner, no button")
+    pg.screenshot(path="/shots/apw-wait-back.png")
     check(not [e for e in errors if "Content Security Policy" in e], f"no CSP errors {errors}")
     br.close()
 

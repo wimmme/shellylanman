@@ -46,6 +46,7 @@ versions follow [Semantic Versioning](https://semver.org/).
   the wizard was opened also counts, when the phone was back on the home Wi-Fi before the last step was shown.
   Reads that hang after the phone changes network are ended (8 s; a connection attempt after 10 s), so they no
   longer hold the browser's connections to ShellyLanMan, and a *Look again* button reads the list at once.
+  A device already back when the step shows no longer leaves its spinner turning.
 - Charts: a series hidden with a click on the legend came back with the next reading while the chart was live.
 - Charts: resuming after a pause paused the chart again at once.
 

@@ -299,10 +299,11 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     };
     const poll = setInterval(() => void read(), 4000);
     unsub = () => { off(); clearInterval(poll); };
-    void check();
     again.addEventListener('click', () => { reconnectEvents(); reading = false; void read(); });
-    return h('div', {}, h('p', { class: 'muted' }, t('apw.wait.intro')), h('div', { class: 'row' }, spinner, status), detail, reported ? null : stuck,
+    const box = h('div', {}, h('p', { class: 'muted' }, t('apw.wait.intro')), h('div', { class: 'row' }, spinner, status), detail, stuck,
       g.id ? null : h('p', { class: 'muted' }, t('apw.wait.notListed')));
+    void check(); // after the step is built: a device back already takes the spinner and the button out of it
+    return box;
   }
 
   void show();
