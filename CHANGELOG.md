@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-28
+
+The first stable release: 0.10.0, installed and tested on a production Home Assistant, with no other change. From
+here on the REST API, the MCP tools and the files in `/data` stay compatible within 1.x.
+
 ## [0.10.0] - 2026-10-28
 
 Firmware updates for Shellys without internet access: ShellyLanMan fetches and checks the firmware and the devices

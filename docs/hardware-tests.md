@@ -298,3 +298,13 @@ rotated afterwards.
 | Options `port: 3092`, `mcp_local_port: 8197` | listening on 3092 and `127.0.0.1:8197`; `GET /api/v1/server` `{"port":3092,"source":"app","ingress":"172.30.32.1:63804","mcpLocal":"127.0.0.1:8197"}`; `GET /api/v1/status` `localUrl` `http://127.0.0.1:8197`; app *started*, so the health check follows the port (`/data/listen.port`) |
 | Found on the way | the Supervisor writes `options.json` over several lines: the start script's option parser fixed |
 | Release 0.9.3 | both repositories released (image, app image, GitHub releases); the dev app `local_shellylanman_dev` stays on `ha-test` for Wim to look at; the production install is Wim's |
+
+## Firmware through ShellyLanMan, release 0.10.0 → 1.0.0 (2026-10-27/28, Wim, his own Shellys and his production Home Assistant)
+
+| Check | Result |
+|---|---|
+| Local mode (*Settings → Firmware*), *Update* on the Firmware page | the device fetched the firmware from ShellyLanMan and came back on the new version (Wim: "works") |
+| Access-point wizard, whole procedure from the phone | worked after the fixes of P25-9..13 (Wim: "fully OK"); AP with Wim's own password |
+| AP on without password, firmware 2.0.3 (LedKeukenOnderSchakelaar, i4 G3, with Wim's yes) | `{enable:true}` refused (-103 pass empty), `{enable:true,is_open:true}` accepted (P25-11); AP left off |
+| Release 0.10.0 on Wim's production Home Assistant | app 0.9.13 → 0.10.0; Wim: "everything works" — basis for 1.0.0 (P24-4) |
+| Not tested on hardware | Gen1 local update (`/ota?url=`) |
