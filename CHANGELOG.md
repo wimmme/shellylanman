@@ -34,6 +34,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - After an update a device could stay on its old version on the Firmware page, with the orange ring and ⚡, until the
   next check: a device that missed a poll while it downloaded was taken as "back" before it restarted. It now
   counts as back only when its uptime went down (or the device reports an update error).
+- Firmware page: the status column now follows the device live. A device that answered with an error once, just
+  after its restart, stayed "error" there until the next check.
 - Access-point wizard, last step: it kept waiting after the phone went back from the device's access point to the
   home Wi-Fi. The step no longer waits for ShellyLanMan before it shows, reads the list again every few seconds, and
   the page reconnects at once when the network comes back or the tab is shown again.

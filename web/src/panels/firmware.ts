@@ -8,7 +8,7 @@
 // Firmware page.
 import { ApiError, firmwareApi, localFwApi, type FirmwareRow, type IndexRow } from '../api';
 import { copyText } from '../clipboard';
-import { allDevices, statusMarks } from '../devices';
+import { allDevices, onDevicesChanged, statusMarks } from '../devices';
 import { busySpinner, statusPill, statusTip } from '../pages/common';
 import { h, icon, ICONS } from '../dom';
 import { betaCell, count, initialChoice, matches, placeholderRows, requests, selectAll, stableCell, toggle, type Cell, type Choice } from '../firmwarelogic';
@@ -88,10 +88,11 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
     tbody.replaceChildren(...shown.map((r) => {
       // Blue while read or updated, the restart included (DECISIONS P25-5).
       const busy = checking.has(r.id) || !!r.updating || !!r.rebooting;
-      const status = busy ? 'reading' : r.status;
+      // The status is the device's own, live: the row's is from when it was read (P25-10).
+      const dev = allDevices().find((d) => d.id === r.id);
+      const status = busy ? 'reading' : dev?.status ?? r.status;
       // The first box is not clicked: it shows whether a stable or beta version is ticked.
       const chosen = !!choice.get(r.id);
-      const dev = allDevices().find((d) => d.id === r.id);
       const tr_ = h('tr', { class: chosen ? 'selected' : undefined },
         h('td', { class: 'sel' }, h('input', { type: 'checkbox', disabled: true, checked: chosen, title: t('fw.selTip'), 'aria-label': `${r.name}: ${t('fw.selTip')}` })),
         h('td', { title: busy || !dev ? t(('status.' + status) as Key) : statusTip(dev) },
@@ -191,6 +192,18 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
     draw();
   };
   rowListeners.add(onRow);
+  // Redraw when a shown device changes status or marks, not on every reading.
+  const seen = new Map<string, string>();
+  const offDevices = onDevicesChanged(() => {
+    let changed = false;
+    for (const d of allDevices()) {
+      if (!rows.some((r) => r.id === d.id)) continue;
+      const m = statusMarks(d);
+      const key = `${d.status}/${m.reboot}/${m.update}`;
+      if (seen.get(d.id) !== key) { seen.set(d.id, key); changed = true; }
+    }
+    if (changed) draw();
+  });
 
   const el = h('div', { class: 'fw-panel' }, body,
     h('div', { class: 'toolbar' },
@@ -220,6 +233,6 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
       draw();
       return true;
     },
-    dispose() { rowListeners.delete(onRow); gen++; },
+    dispose() { rowListeners.delete(onRow); offDevices(); gen++; },
   };
 }
