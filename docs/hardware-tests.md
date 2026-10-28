@@ -308,3 +308,4 @@ rotated afterwards.
 | AP on without password, firmware 2.0.3 (LedKeukenOnderSchakelaar, i4 G3, with Wim's yes) | `{enable:true}` refused (-103 pass empty), `{enable:true,is_open:true}` accepted (P25-11); AP left off |
 | Release 0.10.0 on Wim's production Home Assistant | app 0.9.13 → 0.10.0; Wim: "everything works" — basis for 1.0.0 (P24-4) |
 | Not tested on hardware | Gen1 local update (`/ota?url=`) |
+| Gen1 local update (`/ota?url=`), 1.0.0 (Wim, 2026-10-28) | works: a Gen1 Shelly updated through the local mode came back on the new version |

@@ -6,8 +6,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-
 - Czech (`cs`) translation of the user interface.
+
+### Documentation
+- Hardware tests: the local firmware update also tested on a Gen1 Shelly.
 
 ## [1.0.0] - 2026-10-28
 
