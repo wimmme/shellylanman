@@ -61,12 +61,18 @@ dimmer's slider), Checklist, Firmware, Charts, script editor, device info, logs
 (the "Porch light" simulator plays `tools/screenshots/log/_log.jsonl`), About, and a
 phone with its menu, and the Identify BLU devices wizard. Copy the PNGs to `docs/images/` and check them before committing.
 
-The README tour (Devices → Checklist → Firmware → Charts) is a recording of the same
-setup; ffmpeg on the Docker host turns it into `tour.mp4` and `tour.gif` in
-`./screenshots-out` (the GIF goes to `docs/images/`, the MP4 is for posts elsewhere):
+The README tour (`tour.py`: Devices, a device's menu and settings, Checklist, Charts,
+Firmware with the AP wizard, Log, Settings, About) and the AP-wizard recording
+(`tour-apw.py`) are recordings of the same setup (helpers in `tourlib.py`; the
+simulators run with `-vary`, so charts are not flat). ffmpeg on the Docker host turns
+them into `<name>.mp4` and `<name>.gif` in `./screenshots-out` (the GIF goes to
+`docs/images/`, `tour-apw.gif` as `firmware-ap-wizard.gif`; the MP4 is for posts
+elsewhere). Run both steps in one `tools/remote.sh` call: it wipes the remote tree,
+`screenshots-out` included.
 
 ```sh
 SCRIPT=tour.py sh tools/screenshots/run.sh && sh tools/screenshots/video.sh
+SCRIPT=tour-apw.py sh tools/screenshots/run.sh && NAME=tour-apw sh tools/screenshots/video.sh
 ```
 
 `SCRIPT=<file> sh tools/screenshots/run.sh` runs another script from that directory

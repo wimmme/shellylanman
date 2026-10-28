@@ -52,8 +52,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 - README: an animation of a firmware update through the Shelly's own access point.
-- README: a short tour of the pages, recorded with simulated devices (`tools/screenshots/tour.py`,
-  turned into MP4 and GIF by `tools/screenshots/video.sh`).
+- README: a tour of the pages, recorded with simulated devices (`tools/screenshots/tour.py`, turned into MP4 and
+  GIF by `tools/screenshots/video.sh`): Devices with a device's menu, Device info and its Settings, one and three
+  devices selected, Checklist, Charts, Firmware with the access-point wizard, Log, every Settings tab, About.
+- README: a recording of the access-point wizard, from the Firmware page to the device back with its new firmware
+  (`tools/screenshots/tour-apw.py`).
+- The simulator's `-vary` makes power, current and temperature readings swing, so recorded charts are not flat.
 
 ## [0.9.13] - 2026-10-22
 

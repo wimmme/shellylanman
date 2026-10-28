@@ -68,7 +68,6 @@ with sync_playwright() as p:
     pg.wait_for_timeout(1500)
     nxt.click()
     dlg.locator(".apw-steps li.current").get_by_text("Update").wait_for(timeout=5000)
-    check(dlg.get_by_role("button", name="Look again").count() == 1, "a Look again button while waiting")
     t0 = time.time()
     try:
         dlg.locator("p[role=status]", has_text="is back").wait_for(timeout=30000)
@@ -93,6 +92,7 @@ with sync_playwright() as p:
     dlg.locator(".apw-steps li.current").get_by_text("Update").wait_for(timeout=5000)
     pg.wait_for_timeout(5000)
     check(dlg.locator("p[role=status]", has_text="is back").count() == 0, "off line, not back yet")
+    check(dlg.get_by_role("button", name="Look again").count() == 1, "a Look again button while waiting")
     restarted["on"] = True
     ctx.set_offline(False)
     try:  # gone already when the device was seen back first

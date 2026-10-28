@@ -16,7 +16,14 @@ while read -r dir name; do
   # It also says a newer stable firmware exists (the orange ring and ⚡, check-firmware-ui.py).
   if [ "$dir" = gen3/MiniPMG3 ]; then
     cp tools/screenshots/script/*.json "/tmp/fx/$i/"
+    # Its access point is on and open, as from the factory (the AP wizard, tour-apw.py).
+    echo '{"ap":{"ssid":"ShellyMiniPMG3-AABBCC000001","is_open":true,"enable":true},"sta":{"ssid":"Home","enable":true,"is_open":false,"ipv4mode":"dhcp","ip":null,"netmask":null,"gw":null,"nameserver":null},"sta1":{"ssid":null,"enable":false,"is_open":true,"ipv4mode":"dhcp","ip":null,"netmask":null,"gw":null,"nameserver":null},"roam":{"rssi_thr":-80,"interval":60}}' > "/tmp/fx/$i/rpc_WiFi.GetConfig.json"
     sed -i 's/"available_updates": {}/"available_updates": {"stable": {"version": "2.0.3"}}/'       "/tmp/fx/$i/rpc_Shelly.GetStatus.json" "/tmp/fx/$i/rpc_Sys.GetStatus.json"
+  fi
+  # And one its Wi-Fi settings (the device Settings dialog in tour.py).
+  if [ "$dir" = gen1/SHPLG-S ]; then
+    echo '{"enabled":true,"ssid":"Home","ipv4_method":"dhcp","ip":null,"gw":null,"mask":null,"dns":null}' > "/tmp/fx/$i/settings_sta.json"
+    echo '{"enabled":false,"ssid":null,"ipv4_method":"dhcp","ip":null,"gw":null,"mask":null,"dns":null}' > "/tmp/fx/$i/settings_sta1.json"
   fi
   # And one a live log (the Logs window).
   if [ "$dir" = gen2/Plus1 ]; then cp tools/screenshots/log/_log.jsonl "/tmp/fx/$i/"; fi
@@ -27,7 +34,7 @@ while read -r dir name; do
   fi
   sed -i -e "s/AABBCC000001/AABBCC0000$n/g" -e "s/aabbcc000001/aabbcc0000$nl/g" \
     -e "s/AA:BB:CC:00:00:01/AA:BB:CC:00:00:$n/g" -e "s/\"Test\"/\"$name\"/g" "/tmp/fx/$i/"*
-  /tmp/sim -addr "127.0.0.$i" -port 80 "/tmp/fx/$i" &
+  /tmp/sim -vary -addr "127.0.0.$i" -port 80 "/tmp/fx/$i" &
   i=$((i + 1))
 done <<'EOF'
 gen1/SHPLG-S Garden pump

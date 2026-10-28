@@ -50,6 +50,9 @@ type Device struct {
 	// 2.0+ (401, challenge only in WWW-Authenticate, empty body) instead of
 	// the older challenge in the JSON body.
 	FW2Auth bool
+	// Vary makes the served power and current readings swing slowly around the fixture's
+	// values, so charts in recordings are not flat lines (shellysim -vary).
+	Vary bool
 	// RPCError, when set, may refuse an RPC call: a non-zero code is answered as the
 	// device's error with that message (e.g. -103 for an invalid argument).
 	RPCError func(method, params string) (code int, message string)
@@ -198,6 +201,9 @@ func (d *Device) serveGet(w http.ResponseWriter, r *http.Request) {
 		d.loadStatus()
 		b, _ := json.Marshal(d.status)
 		d.mu.Unlock()
+		if d.Vary {
+			b = vary(b, d.id, time.Now())
+		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(b)
 	case d.gen1 && strings.HasPrefix(r.URL.Path, "/relay/") && q.Get("turn") != "":

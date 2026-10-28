@@ -36,7 +36,7 @@ first-time user, an MCP server for AI assistants, a Home Assistant app and integ
 eight languages. No desktop, no VNC, no Java, no cloud.
 
 <p align="center">
-  <img src="docs/images/tour.gif" alt="A tour: tick devices on the Devices page, then the same selection on Checklist, Firmware and Charts" width="800">
+  <img src="docs/images/tour.gif" alt="A tour: the Devices page with a device's menu, Device info and its settings, one and then three devices selected; the same selection on Checklist and Charts; Firmware with the access-point wizard; the Log; every Settings tab; About" width="800">
 </p>
 
 [Why](#-why-shellylanman) · [Quick start](#-quick-start) · [Features](#-features) ·
@@ -334,6 +334,13 @@ recording):
 
 <p>
   <img src="docs/images/firmware-local-update.gif" alt="Animation: pick the Shelly, download the firmware, join the Shelly's access point, upload the file at 192.168.33.1, wait while it flashes, back in ShellyLanMan with the new version" width="720">
+</p>
+
+The same in ShellyLanMan itself, recorded with a simulated device (the part on the phone, at
+192.168.33.1, happens outside it):
+
+<p>
+  <img src="docs/images/firmware-ap-wizard.gif" alt="Recording: the Firmware page, the wizard's five steps (the device, the firmware file with its QR code, joining the access point, the device's page, waiting), the device back with its new version" width="720">
 </p>
 
 ## 🤖 AI assistants (MCP)

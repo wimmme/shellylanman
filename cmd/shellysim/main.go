@@ -2,6 +2,9 @@
 //
 //	shellysim -port 8081 testdata/gen1/SHPLG-S testdata/gen2/Plus1
 //
+// With -vary, power and current readings swing around the fixture's values
+// (recordings of the Charts page).
+//
 // Each fixture directory gets its own port, counting up from -port. Useful for
 // trying ShellyLanMan without hardware (IP scan of 127.0.0.1) and for tests.
 package main
@@ -19,6 +22,7 @@ import (
 func main() {
 	port := flag.Int("port", 8081, "first port")
 	addr := flag.String("addr", "127.0.0.1", "address to bind")
+	varies := flag.Bool("vary", false, "power and current readings swing around the fixture's values")
 	flag.Parse()
 	if flag.NArg() == 0 {
 		fmt.Fprintln(os.Stderr, "usage: shellysim [-addr 127.0.0.1] [-port 8081] fixture-dir...")
@@ -30,6 +34,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("%s: %v", dir, err)
 		}
+		d.Vary = *varies
 		listen := fmt.Sprintf("%s:%d", *addr, *port+i)
 		log.Printf("%s on http://%s", dir, listen)
 		go func() { errc <- http.ListenAndServe(listen, d) }()

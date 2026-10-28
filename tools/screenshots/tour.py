@@ -1,134 +1,121 @@
-"""The README tour: a short recording of a running ShellyLanMan with simulated
-devices (Devices → Checklist → Firmware → Charts).
+"""The README tour: a recording of a running ShellyLanMan with simulated devices.
 
     SCRIPT=tour.py sh tools/screenshots/run.sh && sh tools/screenshots/video.sh
 
-Writes one PNG per screen change to /shots/tour/ and an ffmpeg concat list with
-how long each one shows (concat.txt); video.sh turns them into tour.mp4 and
-tour.gif. Waits for loading (the Firmware index, chart history) are cut out.
+Devices (scroll, a device's menu with Device info and its Settings with every tab, one
+device and then three selected), Checklist, Charts, Firmware with the access-point
+wizard, Log, Settings with every tab, About. Writes /shots/tour/ (tourlib.py);
+video.sh turns it into tour.mp4 and tour.gif.
 """
-import os
-import time
-
 from playwright.sync_api import sync_playwright
 
-B = "http://127.0.0.1:3082/"
-DIR = "/shots/tour/"
-W, H = 1280, 800
-QUIET = "try { localStorage.setItem('sl_noauth_dismissed', '1') } catch (e) {}"
-# Columns that do not fit at this width, as in shoot.py.
-COLS = """try { localStorage.setItem('sl_cols_default', JSON.stringify(['keyword', 'mac', 'ssid', 'logs',
-  'device', 'mqtt', 'uptime', 'source', 'cloud', 'hostname'])) } catch (e) {}"""
-# A recording shows no mouse pointer: draw one that follows the mouse.
-POINTER = """addEventListener('DOMContentLoaded', () => {
-  const p = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  p.setAttribute('viewBox', '0 0 24 24'); p.setAttribute('width', '26'); p.setAttribute('height', '26');
-  const a = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  a.setAttribute('d', 'M3 2l7.5 19 2.6-7.9 7.9-2.6z');
-  a.setAttribute('fill', '#fff'); a.setAttribute('stroke', '#000'); a.setAttribute('stroke-width', '1.4');
-  p.appendChild(a);
-  Object.assign(p.style, { position: 'fixed', left: '-40px', top: '-40px', zIndex: 2147483647,
-    pointerEvents: 'none', transition: 'transform 120ms' });
-  document.documentElement.appendChild(p);
-  addEventListener('mousemove', e => { p.style.left = (e.clientX - 3) + 'px'; p.style.top = (e.clientY - 2) + 'px'; }, true);
-  addEventListener('mousedown', () => { p.style.transform = 'scale(0.8)'; }, true);
-  addEventListener('mouseup', () => { p.style.transform = ''; }, true);
-});"""
-
-os.makedirs(DIR, exist_ok=True)
-os.chmod(DIR, 0o777)  # created as root: the next tools/remote.sh run must be able to remove it
-frames = []  # [file, seconds]
-last = None
-mouse = [W / 2, H / 2]
-
-
-def capture(pg, cut=False):
-    """Takes a frame; the previous one lasts until now (or briefly, after a cut)."""
-    global last
-    now = time.monotonic()
-    if frames:
-        frames[-1][1] = 0.1 if cut else now - last
-    name = f"{len(frames):04d}.png"
-    pg.screenshot(path=DIR + name)
-    frames.append([name, 0.1])
-    last = time.monotonic() if cut else now
-
-
-def hold(pg, seconds):
-    end = time.monotonic() + seconds
-    while time.monotonic() < end:
-        capture(pg)
-
-
-def move(pg, loc, steps=10):
-    box = loc.bounding_box()
-    x, y = box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
-    x0, y0 = mouse
-    for i in range(1, steps + 1):
-        f = i / steps
-        f = f * f * (3 - 2 * f)
-        pg.mouse.move(x0 + (x - x0) * f, y0 + (y - y0) * f)
-        capture(pg)
-    mouse[:] = [x, y]
-
-
-def click(pg, loc):
-    move(pg, loc)
-    pg.mouse.down(); capture(pg)
-    pg.mouse.up(); capture(pg)
+from tourlib import B, H, Recorder, context
 
 
 def row(pg, name):
     return pg.locator("table.devices tbody tr", has_text=name)
 
 
-def nav(pg, label):
-    click(pg, pg.locator(".nav a", has_text=label))
+def pick(rec, name, ctrl=False):
+    """A click on the device's name cell: selects it (with Ctrl: adds it)."""
+    cell = row(rec.pg, name).locator("td", has_text=name).first
+    if ctrl:
+        rec.pg.keyboard.down("Control")
+    rec.click(cell)
+    if ctrl:
+        rec.pg.keyboard.up("Control")
+
+
+def menu(rec, name, item):
+    rec.click(row(rec.pg, name).locator("td", has_text=name).first, button="right")
+    rec.hold(0.8)
+    rec.click(rec.pg.locator(".ctx-menu button", has_text=item))
+
+
+def close(rec):
+    rec.click(rec.pg.locator(".modal footer button").last)
+    rec.hold(0.4)
 
 
 with sync_playwright() as p:
     br = p.chromium.launch()
-    ctx = br.new_context(color_scheme="dark", viewport={"width": W, "height": H})
-    for s in (QUIET, COLS, POINTER):
-        ctx.add_init_script(s)
-    pg = ctx.new_page()
+    pg = context(br).new_page()
 
     # Warm up: the Firmware page fetches Shelly's index once, the charts need history.
     pg.goto(B + "#/firmware"); pg.wait_for_timeout(8000)
-    pg.wait_for_timeout(30000)
+    # A phone address, as a real installation has (else the wizard warns that localhost does not work on a phone).
+    pg.evaluate("fetch('api/v1/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phoneBaseURL: 'http://192.168.1.20:3082' }) })")
+    pg.wait_for_timeout(40000)
     pg.goto(B + "#/devices"); pg.reload(); pg.wait_for_timeout(3000)
-    pg.mouse.move(*mouse)
+    rec = Recorder(pg, "tour")
 
-    hold(pg, 2.5)
-    # Scroll the table up, then tick devices further down as they come into view.
-    pg.evaluate("document.querySelector('.main').scrollTo({ top: 240, behavior: 'smooth' })")
-    hold(pg, 1)
-    for name in ("Garden pump", "Porch light", "Living room", "Heat pump"):
-        box = row(pg, name).locator("td.sel input")
-        if box.bounding_box()["y"] > H - 60:
-            pg.evaluate("n => document.querySelector('.main').scrollBy({ top: n, behavior: 'smooth' })",
-                        box.bounding_box()["y"] - H / 2)
-            hold(pg, 0.8)
-        click(pg, box)
-        hold(pg, 0.3)
-    hold(pg, 1)
+    # Devices: the whole list, scrolled down and back.
+    rec.hold(2.5)
+    rec.scroll(".main", 400, 1.5)
+    rec.scroll(".main", 0, 1.2)
 
-    nav(pg, "Checklist")
-    pg.wait_for_timeout(1500); capture(pg, cut=True)
-    hold(pg, 3.5)
+    # One device: its menu, Device info, then its Settings with every tab.
+    pick(rec, "Garden pump")
+    rec.hold(1.5)
+    menu(rec, "Garden pump", "Device info")
+    rec.wait(2500)
+    rec.hold(3)
+    close(rec)
+    menu(rec, "Garden pump", "Settings")
+    rec.wait(2500)
+    rec.hold(1.5)
+    tabs = pg.locator(".modal .cfg .tabs button")
+    for i in range(1, tabs.count()):
+        rec.click(tabs.nth(i))
+        rec.wait(1200)
+        rec.hold(1.3)
+    close(rec)
 
-    nav(pg, "Firmware")
-    pg.wait_for_timeout(3000); capture(pg, cut=True)
-    hold(pg, 3.5)
+    # One device selected, then three: the toolbar offers what fits the selection.
+    pick(rec, "Porch light")
+    rec.hold(1.5)
+    pick(rec, "Living room", ctrl=True)
+    pick(rec, "Heat pump", ctrl=True)
+    rec.hold(2)
 
-    nav(pg, "Charts")
-    pg.wait_for_timeout(2500); capture(pg, cut=True)
-    hold(pg, 4.5)
-    frames[-1][1] = 1.0
+    # The same three on Checklist and Charts.
+    rec.nav("Checklist")
+    rec.wait(2500)
+    rec.hold(3.5)
+    rec.nav("Charts")
+    rec.wait(2500)
+    rec.hold(6)
+
+    # Firmware, and the wizard that updates a device through its own access point.
+    rec.nav("Firmware")
+    rec.wait(4000)
+    rec.hold(2.5)
+    rec.click(pg.locator("table.fw tbody tr", has_text="Heat pump").locator("td").last.locator("button"))
+    dlg = pg.locator(".modal[role=dialog]")
+    rec.wait(2000)
+    rec.hold(3)
+    nxt = dlg.get_by_role("button", name="Next")
+    for _ in range(3):  # firmware file, join the access point, open its page
+        rec.click(nxt)
+        rec.wait(2500)
+        rec.hold(2.5)
+    rec.click(dlg.get_by_role("button", name="Close"))
+    rec.hold(0.5)
+
+    # Log, Settings with every tab, About.
+    rec.nav("Log")
+    rec.wait(1500)
+    rec.hold(3)
+    rec.nav("Settings")
+    rec.wait(1500)
+    rec.hold(1.5)
+    tabs = pg.locator(".tabs button[data-tab]")
+    for i in range(1, tabs.count()):
+        rec.click(tabs.nth(i))
+        rec.wait(800)
+        rec.hold(1.3)
+    rec.nav("About")
+    rec.wait(1500)
+    rec.hold(4)
+    rec.save()
     br.close()
-
-with open(DIR + "concat.txt", "w") as f:
-    for name, d in frames:
-        f.write(f"file '{name}'\nduration {d:.3f}\n")
-    f.write(f"file '{frames[-1][0]}'\n")
-print(len(frames), "frames,", round(sum(d for _, d in frames), 1), "s")
