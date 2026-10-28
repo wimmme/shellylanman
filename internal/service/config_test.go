@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -260,6 +261,34 @@ func TestChecklist(t *testing.T) {
 	lines, _, _ = m.ChecklistApply(ctx, ChecklistAction{IDs: []string{"AABBCC000001"}, Action: CheckAP, Value: true})
 	if len(lines) != 1 || lines[0].Result != ResultFail || hasCall(g1, "GET /settings/ap?enabled=true") {
 		t.Fatalf("AP on Gen1: %+v %v", lines, g1.Calls())
+	}
+}
+
+// Firmware 2.x refuses an access point that is not open and has no password: it is then
+// switched on as an open one; a device that accepts the plain call keeps its password (P25-11).
+func TestAPOnWithoutPassword(t *testing.T) {
+	m, _, ctx := newService(t, nil)
+	var refuse atomic.Bool
+	refuse.Store(true)
+	g2 := plus1(t, m, ctx, nil, func(d *sim.Device) {
+		d.RPCError = func(method, params string) (int, string) {
+			if refuse.Load() && method == "WiFi.SetConfig" && !strings.Contains(params, "is_open") {
+				return -103, "Invalid argument 'pass': should not be empty!"
+			}
+			return 0, ""
+		}
+	})
+	lines, _, err := m.ChecklistApply(ctx, ChecklistAction{IDs: []string{"AABBCC000002"}, Action: CheckAP, Value: true})
+	if err != nil || len(lines) != 0 || !hasCall(g2, `RPC WiFi.SetConfig {"config":{"ap":{"enable":true,"is_open":true}}}`) {
+		t.Fatalf("AP on, open: %v %+v %v", err, lines, g2.Calls())
+	}
+	refuse.Store(false)
+	before := len(g2.Calls())
+	lines, _, _ = m.ChecklistApply(ctx, ChecklistAction{IDs: []string{"AABBCC000002"}, Action: CheckAP, Value: true})
+	for _, c := range g2.Calls()[before:] {
+		if strings.Contains(c, "is_open") {
+			t.Fatalf("a device that accepts the plain call was opened: %+v %v", lines, g2.Calls())
+		}
 	}
 }
 

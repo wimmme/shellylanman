@@ -9,6 +9,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/wimmme/shellylanman/internal/model"
 	"github.com/wimmme/shellylanman/internal/parse"
+	"github.com/wimmme/shellylanman/internal/shelly"
 )
 
 // Checklist cell values, as the Java table: Boolean, String, Integer, a list
@@ -451,7 +453,14 @@ func (m *Devices) checkAction(ctx context.Context, t cfgTarget, a ChecklistActio
 		// Gen2+ only, as in the original. Gen1 `/settings/ap?enabled=true` took a Gen1 plug off the
 		// LAN in a test (2026-10-07, DECISIONS P20-10): not offered.
 		if !t.gen1 {
-			return g2call(ctx, c, "WiFi.SetConfig", map[string]any{"config": map[string]any{"ap": map[string]any{"enable": a.Value}}})
+			err := g2call(ctx, c, "WiFi.SetConfig", map[string]any{"config": map[string]any{"ap": map[string]any{"enable": a.Value}}})
+			// Firmware 2.x refuses to switch on an access point that is not open and has no
+			// password ("Invalid argument 'pass'"); it accepts it as an open one, as from the
+			// factory (P20 §3). Only then: a password someone set stays as it is (P25-11).
+			if a.Value && needsAPPass(err) {
+				err = g2call(ctx, c, "WiFi.SetConfig", map[string]any{"config": map[string]any{"ap": map[string]any{"enable": true, "is_open": true}}})
+			}
+			return err
 		}
 	case CheckRoaming:
 		if t.gen1 {
@@ -507,4 +516,11 @@ func setAutoFW(ctx context.Context, e *entry, mode string) error {
 		"calls":    []any{map[string]any{"method": "Shelly.Update", "params": map[string]any{"stage": mode}, "origin": "shelly_service"}},
 		"enable":   true,
 	})
+}
+
+// needsAPPass: the device refused to switch its access point on without a password
+// (firmware 2.x: -103 "Invalid argument 'pass': should not be empty!").
+func needsAPPass(err error) bool {
+	var api *shelly.APIError
+	return errors.As(err, &api) && strings.Contains(api.Message, "'pass'")
 }

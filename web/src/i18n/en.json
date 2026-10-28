@@ -1058,5 +1058,6 @@
   "apw.which.qrAlt": "QR code that opens this wizard on your phone",
   "apw.page.scan": "Or scan this QR code when the wizard is open on your computer:",
   "fw.copyLink": "Copy download link",
-  "fw.linkCopied": "Download link of {version} copied"
+  "fw.linkCopied": "Download link of {version} copied",
+  "apw.join.needsPass": "The device will only switch its access point on with a password (newer firmware). Set one in the device's own web UI (Settings → Wi-Fi → Access point), then join it yourself."
 }

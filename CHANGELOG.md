@@ -34,6 +34,9 @@ versions follow [Semantic Versioning](https://semver.org/).
 - After an update a device could stay on its old version on the Firmware page, with the orange ring and ⚡, until the
   next check: a device that missed a poll while it downloaded was taken as "back" before it restarted. It now
   counts as back only when its uptime went down (or the device reports an update error).
+- Access-point wizard and Checklist: switching on the access point of a device on firmware 2.x failed with
+  "Invalid argument 'pass'" when it had no password. It is then switched on as an open access point, as from the
+  factory; an access point that has a password keeps it. A remaining refusal is explained in the page's language.
 - Firmware page: the status column now follows the device live. A device that answered with an error once, just
   after its restart, stayed "error" there until the next check.
 - Access-point wizard, last step: it kept waiting after the phone went back from the device's access point to the

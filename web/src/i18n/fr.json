@@ -1058,5 +1058,6 @@
   "apw.which.qrAlt": "Code QR qui ouvre cet assistant sur votre téléphone",
   "apw.page.scan": "Ou scannez ce code QR si l'assistant est ouvert sur votre ordinateur :",
   "fw.copyLink": "Copier le lien de téléchargement",
-  "fw.linkCopied": "Lien de téléchargement de {version} copié"
+  "fw.linkCopied": "Lien de téléchargement de {version} copié",
+  "apw.join.needsPass": "L'appareil n'active son point d'accès qu'avec un mot de passe (firmware récent). Définissez-en un dans l'interface web de l'appareil (Paramètres → Wi-Fi → Point d'accès), puis connectez-vous vous-même."
 }

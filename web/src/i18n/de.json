@@ -1058,5 +1058,6 @@
   "apw.which.qrAlt": "QR-Code, der diesen Assistenten auf dem Telefon öffnet",
   "apw.page.scan": "Oder scannen Sie diesen QR-Code, wenn der Assistent auf dem PC geöffnet ist:",
   "fw.copyLink": "Download-Link kopieren",
-  "fw.linkCopied": "Download-Link von {version} kopiert"
+  "fw.linkCopied": "Download-Link von {version} kopiert",
+  "apw.join.needsPass": "Das Gerät schaltet seinen Access Point nur mit einem Passwort ein (neuere Firmware). Legen Sie eines in der Weboberfläche des Geräts fest (Einstellungen → WLAN → Access Point) und verbinden Sie sich dann selbst."
 }

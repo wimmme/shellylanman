@@ -50,6 +50,9 @@ type Device struct {
 	// 2.0+ (401, challenge only in WWW-Authenticate, empty body) instead of
 	// the older challenge in the JSON body.
 	FW2Auth bool
+	// RPCError, when set, may refuse an RPC call: a non-zero code is answered as the
+	// device's error with that message (e.g. -103 for an invalid argument).
+	RPCError func(method, params string) (code int, message string)
 
 	behave map[string]Behaviour // _behaviour.json, by request URI
 
@@ -366,6 +369,12 @@ func (d *Device) serveRPC(w http.ResponseWriter, body []byte) {
 		params = "{}"
 	}
 	d.logCall("RPC " + req.Method + " " + params)
+	if d.RPCError != nil {
+		if code, msg := d.RPCError(req.Method, params); code != 0 {
+			writeJSON(w, http.StatusBadRequest, map[string]any{"id": req.ID, "src": d.id, "error": rpcError{code, msg}})
+			return
+		}
+	}
 	reply := func(result any) {
 		writeJSON(w, http.StatusOK, map[string]any{"id": req.ID, "src": d.id, "result": result})
 	}

@@ -222,7 +222,10 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
             toast(t('apw.join.switchedOn'), 'info');
             g = st.guide = await apApi.guide({ id: g.id });
             draw();
-          } catch (e) { toast(msg(e)); on.removeAttribute('disabled'); }
+          } catch (e) { // the device's own words are English: its refusal of an AP without a password is explained
+            toast(msg(e).includes("'pass'") ? t('apw.join.needsPass') : msg(e));
+            on.removeAttribute('disabled');
+          }
         } }, t('apw.join.switchOn'));
         parts.push(h('div', { class: 'banner warn', role: 'status' }, t('apw.join.off')), h('div', { class: 'row' }, on));
       }
