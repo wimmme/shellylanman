@@ -181,7 +181,7 @@ func TestDeviceCredentialsOnlyOnTrustedPaths(t *testing.T) {
 	if r := do(t, "GET", srv.URL+url, "", nil); r.StatusCode != 403 {
 		t.Fatalf("no token, nothing stored: %d", r.StatusCode)
 	}
-	if err := devs.SetGlobalCredentials(shelly.Credentials{User: "admin", Password: "s3cret"}); err != nil {
+	if err := devs.SetGlobalCredentials(context.Background(), shelly.Credentials{User: "admin", Password: "s3cret"}); err != nil {
 		t.Fatal(err)
 	}
 	// The open LAN port: never without the MCP token at access level configure.

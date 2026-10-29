@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 
@@ -64,7 +65,8 @@ func (m *Devices) writeCred(name string, c shelly.Credentials) error {
 
 // SetGlobalCredentials stores (or with an empty password clears) the default
 // credentials and reloads every device that is not logged in.
-func (m *Devices) SetGlobalCredentials(c shelly.Credentials) error {
+func (m *Devices) SetGlobalCredentials(ctx context.Context, c shelly.Credentials) (err error) {
+	defer func() { m.action(ctx, "credentials.global", DeviceRef{}, err, "user", c.User) }() // never the password
 	if err := m.writeCred(secretGlobal, c); err != nil {
 		return err
 	}
@@ -77,7 +79,8 @@ func (m *Devices) SetGlobalCredentials(c shelly.Credentials) error {
 }
 
 // SetDeviceCredentials stores credentials for one device and reloads it.
-func (m *Devices) SetDeviceCredentials(id string, c shelly.Credentials) error {
+func (m *Devices) SetDeviceCredentials(ctx context.Context, id string, c shelly.Credentials) (err error) {
+	defer func() { m.action(ctx, "credentials.device", m.refOf(id), err, "user", c.User) }() // never the password
 	if _, ok := m.Get(id); !ok {
 		return ErrNotFound
 	}

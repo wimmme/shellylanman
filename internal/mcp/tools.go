@@ -18,7 +18,7 @@ import (
 type Service interface {
 	List() []model.Device
 	Command(ctx context.Context, id string, cmd service.Command) error
-	Reboot(ids []string) error
+	Reboot(ctx context.Context, ids []string) error
 	Firmware(ctx context.Context, ids []string) ([]service.FirmwareRow, error)
 	FirmwareUpdate(ctx context.Context, reqs []service.FirmwareRequest) ([]service.ResultLine, error)
 	Backup(ctx context.Context, ids []string) ([]service.ResultLine, error)
@@ -39,8 +39,8 @@ type Service interface {
 	ConfigApply(ctx context.Context, ids []string, section string, body any) ([]service.ResultLine, error)
 	Scenes() ([]service.Scene, error)
 	Scene(name string) (service.Scene, error)
-	SceneSave(sc service.Scene, overwrite bool) (service.Scene, error)
-	SceneDelete(name string) error
+	SceneSave(ctx context.Context, sc service.Scene, overwrite bool) (service.Scene, error)
+	SceneDelete(ctx context.Context, name string) error
 	SceneRunNow(ctx context.Context, name string) (service.SceneRun, error)
 }
 
@@ -573,7 +573,7 @@ var tools = []tool{
 			if err != nil {
 				return nil, err
 			}
-			if err := s.Reboot(ids(list)); err != nil {
+			if err := s.Reboot(ctx, ids(list)); err != nil {
 				return nil, err
 			}
 			return map[string]any{"rebooting": ids(list)}, nil

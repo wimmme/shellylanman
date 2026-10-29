@@ -135,7 +135,7 @@ func (s *server) listDeferred(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) cancelDeferred(w http.ResponseWriter, r *http.Request) {
-	if err := s.Devices.CancelDeferred(r.PathValue("id")); err != nil {
+	if err := s.Devices.CancelDeferred(r.Context(), r.PathValue("id")); err != nil {
 		code := http.StatusConflict
 		if errors.Is(err, service.ErrNotFound) {
 			code = http.StatusNotFound

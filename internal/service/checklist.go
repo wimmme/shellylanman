@@ -415,6 +415,11 @@ func (m *Devices) ChecklistApply(ctx context.Context, a ChecklistAction) ([]Resu
 		} else {
 			err = m.checkAction(ctx, t, a)
 		}
+		attrs := []any{"value", a.Value}
+		if a.Mode != "" {
+			attrs = append(attrs, "mode", a.Mode)
+		}
+		m.action(ctx, "checklist."+a.Action, DeviceRef{ID: id, Name: descName(d)}, err, attrs...)
 		if err != nil {
 			lines = append(lines, ResultLine{DeviceRef: DeviceRef{ID: id, Name: descName(d)}, Result: ResultFail, Message: msgOf(err)})
 		}

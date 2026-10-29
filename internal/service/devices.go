@@ -680,7 +680,9 @@ func (m *Devices) Reload(id string) bool {
 }
 
 // Remove deletes a stored (ghost) device from the list and the archive.
-func (m *Devices) Remove(id string) error {
+func (m *Devices) Remove(ctx context.Context, id string) (err error) {
+	ref := m.refOf(id)
+	defer func() { m.action(ctx, "archive.remove", ref, err) }()
 	m.mu.Lock()
 	e, ok := m.devs[id]
 	if !ok {

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"os"
 	"strings"
@@ -40,7 +41,7 @@ func TestProfileName(t *testing.T) {
 
 func TestProfileCRUDAndPasswords(t *testing.T) {
 	m, st, _ := newService(t, nil)
-	v, err := m.SaveProfile(ProfileInput{Profile: store.Profile{Name: " Home ", NamePattern: "{model} {mac4}", WiFiSSID: "HomeNet",
+	v, err := m.SaveProfile(context.Background(), ProfileInput{Profile: store.Profile{Name: " Home ", NamePattern: "{model} {mac4}", WiFiSSID: "HomeNet",
 		Login: &store.ProfileLogin{Enabled: true, User: "admin"}, MQTT: &store.ProfileMQTT{Enabled: true, Server: "broker:1883", User: "u"}},
 		LoginPassword: sp("secret1"), MQTTPassword: sp("mq1")})
 	if err != nil || v.ID == "" || v.Name != "Home" || !v.LoginPasswordSet || !v.MQTTPasswordSet {
@@ -60,16 +61,16 @@ func TestProfileCRUDAndPasswords(t *testing.T) {
 	// Changing without passwords keeps them; "" removes; switching login off drops its password.
 	in := ProfileInput{Profile: v.Profile}
 	in.Name = "Home 2"
-	if v, err = m.SaveProfile(in); err != nil || !v.LoginPasswordSet || v.Name != "Home 2" {
+	if v, err = m.SaveProfile(context.Background(), in); err != nil || !v.LoginPasswordSet || v.Name != "Home 2" {
 		t.Fatalf("keep: %+v %v", v, err)
 	}
 	in.Login = &store.ProfileLogin{Enabled: false}
-	if v, err = m.SaveProfile(in); err != nil || v.LoginPasswordSet || !v.MQTTPasswordSet {
+	if v, err = m.SaveProfile(context.Background(), in); err != nil || v.LoginPasswordSet || !v.MQTTPasswordSet {
 		t.Fatalf("login off: %+v %v", v, err)
 	}
 	in.MQTT = &store.ProfileMQTT{Enabled: true, Server: "b:1", User: "u"}
 	in.MQTTPassword = sp("")
-	if _, err := m.SaveProfile(in); !errors.Is(err, ErrInvalid) {
+	if _, err := m.SaveProfile(context.Background(), in); !errors.Is(err, ErrInvalid) {
 		t.Fatalf("MQTT with a user and no password: %v", err)
 	}
 	// Validation.
@@ -80,24 +81,24 @@ func TestProfileCRUDAndPasswords(t *testing.T) {
 		{Profile: store.Profile{Name: "x", MQTT: &store.ProfileMQTT{Enabled: true}}},
 		{Profile: store.Profile{Name: "x", NamePattern: strings.Repeat("a", 65)}},
 	} {
-		if _, err := m.SaveProfile(bad); !errors.Is(err, ErrInvalid) {
+		if _, err := m.SaveProfile(context.Background(), bad); !errors.Is(err, ErrInvalid) {
 			t.Errorf("%+v: %v", bad.Profile, err)
 		}
 	}
-	if _, err := m.SaveProfile(ProfileInput{Profile: store.Profile{ID: "nope", Name: "x"}}); !errors.Is(err, ErrNoProfile) {
+	if _, err := m.SaveProfile(context.Background(), ProfileInput{Profile: store.Profile{ID: "nope", Name: "x"}}); !errors.Is(err, ErrNoProfile) {
 		t.Fatalf("unknown id: %v", err)
 	}
 	list, _ := m.Profiles()
 	if len(list) != 1 {
 		t.Fatalf("%d profiles", len(list))
 	}
-	if err := m.DeleteProfile(v.ID); err != nil {
+	if err := m.DeleteProfile(context.Background(), v.ID); err != nil {
 		t.Fatal(err)
 	}
 	if _, ok, _ := st.Secret("profile:" + v.ID + ":mqtt"); ok {
 		t.Fatal("its passwords go with it")
 	}
-	if err := m.DeleteProfile(v.ID); !errors.Is(err, ErrNoProfile) {
+	if err := m.DeleteProfile(context.Background(), v.ID); !errors.Is(err, ErrNoProfile) {
 		t.Fatalf("delete twice: %v", err)
 	}
 }
@@ -105,7 +106,7 @@ func TestProfileCRUDAndPasswords(t *testing.T) {
 func TestApplyProfileGen1(t *testing.T) {
 	m, st, ctx := newService(t, nil)
 	g1 := plugS(t, m, ctx, nil, "AABBCC000001")
-	v, err := m.SaveProfile(ProfileInput{Profile: store.Profile{Name: "Home", NamePattern: "{model} {mac4}", NTP: "pool.ntp.org", Cloud: bp(false),
+	v, err := m.SaveProfile(context.Background(), ProfileInput{Profile: store.Profile{Name: "Home", NamePattern: "{model} {mac4}", NTP: "pool.ntp.org", Cloud: bp(false),
 		Eco: bp(true), AP: bp(true), AutoFW: "stable",
 		MQTT:  &store.ProfileMQTT{Enabled: true, Server: "broker:1883", User: "mq"},
 		Login: &store.ProfileLogin{Enabled: true, User: "admin"}},
@@ -160,7 +161,7 @@ func TestApplyProfileGen1(t *testing.T) {
 
 func TestApplyProfileErrors(t *testing.T) {
 	m, _, ctx := newService(t, nil)
-	v, _ := m.SaveProfile(ProfileInput{Profile: store.Profile{Name: "x", NTP: "pool.ntp.org"}})
+	v, _ := m.SaveProfile(context.Background(), ProfileInput{Profile: store.Profile{Name: "x", NTP: "pool.ntp.org"}})
 	if _, err := m.ApplyProfile(ctx, v.ID, "NOPE"); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("unknown device: %v", err)
 	}

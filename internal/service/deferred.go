@@ -194,7 +194,8 @@ func descName(d model.Device) string {
 }
 
 // CancelDeferred cancels a waiting task.
-func (m *Devices) CancelDeferred(id string) error {
+func (m *Devices) CancelDeferred(ctx context.Context, id string) (err error) {
+	defer func() { m.action(ctx, "deferred.cancel", DeviceRef{}, err, "task", id) }()
 	q := &m.deferred
 	q.mu.Lock()
 	found := false
@@ -240,6 +241,11 @@ func (m *Devices) runDeferred(id string) {
 
 	go func() {
 		msg := m.execDeferred(tid, id, typ, sealed)
+		result := ResultOK
+		if msg != "" {
+			result = ResultFail
+		}
+		m.actionResult(WithActor(context.Background(), Actor{Source: SourceDeferred}), "deferred."+typ, m.refOf(id), result, msg)
 		q.mu.Lock()
 		for i := range q.tasks {
 			if q.tasks[i].ID == tid {

@@ -40,7 +40,7 @@ func (s *server) deviceRoutes(mux router) {
 		if !readJSON(w, r, &body) {
 			return
 		}
-		switch err := s.Devices.IdentifyBLU(body.Gateway, body.Duration); {
+		switch err := s.Devices.IdentifyBLU(r.Context(), body.Gateway, body.Duration); {
 		case errors.Is(err, service.ErrIdentifyBusy):
 			writeErr(w, http.StatusConflict, err)
 		case errors.Is(err, service.ErrNotFound):
@@ -119,7 +119,7 @@ func (s *server) reboot(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "no devices")
 		return
 	}
-	if err := s.Devices.Reboot(body.IDs); err != nil {
+	if err := s.Devices.Reboot(r.Context(), body.IDs); err != nil {
 		writeErr(w, deviceErrorCode(err), err)
 		return
 	}
@@ -168,7 +168,7 @@ func (s *server) getDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) removeDevice(w http.ResponseWriter, r *http.Request) {
-	if err := s.Devices.Remove(r.PathValue("id")); err != nil {
+	if err := s.Devices.Remove(r.Context(), r.PathValue("id")); err != nil {
 		code := http.StatusConflict
 		if errors.Is(err, service.ErrNotFound) {
 			code = http.StatusNotFound
@@ -206,7 +206,7 @@ func (s *server) putDeviceCredentials(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &b) {
 		return
 	}
-	if err := s.Devices.SetDeviceCredentials(r.PathValue("id"), shelly.Credentials{User: b.User, Password: b.Password}); err != nil {
+	if err := s.Devices.SetDeviceCredentials(r.Context(), r.PathValue("id"), shelly.Credentials{User: b.User, Password: b.Password}); err != nil {
 		code := http.StatusInternalServerError
 		if errors.Is(err, service.ErrNotFound) {
 			code = http.StatusNotFound
@@ -227,7 +227,7 @@ func (s *server) putCredentials(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &b) {
 		return
 	}
-	if err := s.Devices.SetGlobalCredentials(shelly.Credentials{User: b.User, Password: b.Password}); err != nil {
+	if err := s.Devices.SetGlobalCredentials(r.Context(), shelly.Credentials{User: b.User, Password: b.Password}); err != nil {
 		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -244,7 +244,7 @@ func (s *server) rescan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) clearArchive(w http.ResponseWriter, r *http.Request) {
-	if err := s.Devices.ClearArchive(); err != nil {
+	if err := s.Devices.ClearArchive(r.Context()); err != nil {
 		writeErr(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -356,9 +356,9 @@ func (s *server) putNote(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body) {
 		return
 	}
-	err := s.Devices.SetNote(r.PathValue("id"), body.Note, body.Keyword)
+	err := s.Devices.SetNote(r.Context(), r.PathValue("id"), body.Note, body.Keyword)
 	if err == nil && body.Name != nil {
-		err = s.Devices.SetBLUName(r.PathValue("id"), *body.Name)
+		err = s.Devices.SetBLUName(r.Context(), r.PathValue("id"), *body.Name)
 	}
 	if err != nil {
 		code := deviceErrorCode(err)

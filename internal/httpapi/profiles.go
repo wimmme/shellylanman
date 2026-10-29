@@ -47,7 +47,7 @@ func (s *server) createProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	in.ID = "" // a new one
-	v, err := s.Devices.SaveProfile(in)
+	v, err := s.Devices.SaveProfile(r.Context(), in)
 	if err != nil {
 		writeErr(w, profileErrorCode(err), err)
 		return
@@ -61,7 +61,7 @@ func (s *server) updateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	in.ID = r.PathValue("id")
-	v, err := s.Devices.SaveProfile(in)
+	v, err := s.Devices.SaveProfile(r.Context(), in)
 	if err != nil {
 		writeErr(w, profileErrorCode(err), err)
 		return
@@ -70,7 +70,7 @@ func (s *server) updateProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) deleteProfile(w http.ResponseWriter, r *http.Request) {
-	if err := s.Devices.DeleteProfile(r.PathValue("id")); err != nil {
+	if err := s.Devices.DeleteProfile(r.Context(), r.PathValue("id")); err != nil {
 		writeErr(w, profileErrorCode(err), err)
 		return
 	}

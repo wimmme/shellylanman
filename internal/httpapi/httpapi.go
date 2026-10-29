@@ -109,7 +109,7 @@ func build(cfg Config) (http.Handler, *server) {
 	mux.Handle("GET /ws", cfg.Hub)
 	mux.HandleFunc("GET /", s.static)
 	s.routes = mux.patterns
-	return securityHeaders(s.sameOrigin(s.requireLogin(mux))), s
+	return securityHeaders(s.sameOrigin(s.requireLogin(withActor(mux, webSource)))), s
 }
 
 // health is unauthenticated by design and says nothing about the version.

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -35,6 +36,7 @@ import (
 	"github.com/wimmme/shellylanman/internal/hub"
 	"github.com/wimmme/shellylanman/internal/listen"
 	"github.com/wimmme/shellylanman/internal/logbuf"
+	"github.com/wimmme/shellylanman/internal/logfile"
 	"github.com/wimmme/shellylanman/internal/service"
 	"github.com/wimmme/shellylanman/internal/shelly"
 	"github.com/wimmme/shellylanman/internal/store"
@@ -59,9 +61,19 @@ func main() {
 	}
 
 	// The log also goes into a ring buffer for the Log page (DECISIONS §27).
+	// It is also kept in data/logs, rotated, so it survives a restart (DECISIONS P26-3).
 	logs := logbuf.New(logbuf.DefaultSize)
-	log := slog.New(logs.Handler(slog.NewTextHandler(os.Stdout, nil)))
+	var out io.Writer = os.Stdout
+	lf, lfErr := logfile.Open(filepath.Join(*dataDir, "logs"), "shellylanman.log", logfile.DefaultMaxSize, logfile.DefaultKeep)
+	if lfErr == nil {
+		defer lf.Close()
+		out = io.MultiWriter(os.Stdout, lf)
+	}
+	log := slog.New(logs.Handler(slog.NewTextHandler(out, nil)))
 	slog.SetDefault(log)
+	if lfErr != nil {
+		log.Warn("no log file: the log only goes to stdout", "err", lfErr)
+	}
 	if err := run(log, logs, *port, *dataDir, splitList(*origins), *ingress, *ingressFrom, *mcpLocal); err != nil {
 		log.Error("fatal", "err", err)
 		os.Exit(1)

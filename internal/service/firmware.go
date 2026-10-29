@@ -70,7 +70,8 @@ type fwInfo struct {
 
 // fwTrack follows an update until the device is back (PanelFWUpdate.DeviceFirmware).
 type fwTrack struct {
-	uptime     int // uptime when the update was sent (Gen1: a lower uptime means rebooted)
+	from       string // the running firmware build when the update was sent, for the action log
+	uptime     int    // uptime when the update was sent (Gen1: a lower uptime means rebooted)
 	status     model.Status
 	rebootTime time.Time // ota_success / scheduled_restart seen
 	progress   int
@@ -352,7 +353,9 @@ func (m *Devices) FirmwareUpdate(ctx context.Context, reqs []FirmwareRequest) ([
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, m.updateOne(ctx, e, r.Stage != StageBeta, true))
+		line := m.updateOne(ctx, e, r.Stage != StageBeta, true)
+		m.actionResult(ctx, "firmware.update", line.DeviceRef, line.Result, line.Message, "stage", r.Stage)
+		out = append(out, line)
 	}
 	return out, nil
 }
@@ -407,7 +410,7 @@ func (m *Devices) sendUpdate(ctx context.Context, e *entry, stable bool) error {
 			bctx, cancel := context.WithTimeout(m.baseContext(), 10*time.Minute)
 			defer cancel()
 			if _, err := blu.gw.Get(bctx, "/rpc/BluTrv.UpdateFirmware?id="+blu.index); err != nil {
-				m.log.Debug("BluTrv.UpdateFirmware", "device", d.ID, "err", err)
+				m.action(ctx, "firmware.result", DeviceRef{ID: d.ID, Name: descName(d)}, err)
 			}
 		}()
 		return nil
@@ -447,12 +450,13 @@ func (m *Devices) startTrack(e *entry, d model.Device) {
 	if old, ok := t.tracks[d.ID]; ok {
 		old.cancel()
 	}
-	t.tracks[d.ID] = &fwTrack{uptime: d.Uptime, status: d.Status, progress: -1, cancel: cancel}
+	t.tracks[d.ID] = &fwTrack{from: m.runningBuild(e), uptime: d.Uptime, status: d.Status, progress: -1, cancel: cancel}
 	t.mu.Unlock()
 	go func() {
 		<-ctx.Done()
 		if ctx.Err() == context.DeadlineExceeded { // never came back: stop following it
 			m.stopTrack(d.ID)
+			m.actionResult(ctx, "firmware.result", DeviceRef{ID: d.ID, Name: descName(d)}, resultTimeout, "not back with a new firmware within 15 minutes")
 			m.emit(EventFirmware, m.firmwareRowOf(m.baseContext(), e, true))
 		}
 	}()
@@ -538,6 +542,7 @@ func (m *Devices) readOTA(ctx context.Context, addr, id, component string, e *en
 					Component string `json:"component"`
 					Event     string `json:"event"`
 					Progress  int    `json:"progress_percent"`
+					Msg       string `json:"msg"`
 				} `json:"events"`
 			} `json:"params"`
 		}
@@ -558,6 +563,11 @@ func (m *Devices) readOTA(ctx context.Context, addr, id, component string, e *en
 				return true
 			case "ota_error": // it keeps running its old firmware: show it as it is
 				m.stopTrack(id)
+				msg := ev.Msg
+				if msg == "" {
+					msg = "the device reported an update error"
+				}
+				m.actionResult(ctx, "firmware.result", m.refOf(id), ResultFail, msg)
 				m.emit(EventFirmware, m.firmwareRowOf(m.baseContext(), e, true))
 				return true
 			}
@@ -597,6 +607,7 @@ func (m *Devices) fwUpdated(d model.Device) {
 	if d.Status != tr.status {
 		tr.status = d.Status
 	}
+	from := tr.from
 	if back {
 		tr.cancel()
 		delete(t.tracks, d.ID)
@@ -617,8 +628,42 @@ func (m *Devices) fwUpdated(d model.Device) {
 	}
 	go func() {
 		row := m.firmwareRowOf(m.baseContext(), e, true)
+		m.fwResult(d, from, row)
 		m.emit(EventFirmware, row)
 	}()
+}
+
+// fwResult logs how an update ended once the device is back: the new version,
+// or the old one still running (the update failed without saying so, as a
+// Gen1 device does).
+func (m *Devices) fwResult(d model.Device, from string, row FirmwareRow) {
+	ctx, ref := context.Background(), DeviceRef{ID: d.ID, Name: descName(d)}
+	to := row.CurrentBuild
+	switch {
+	case !row.Valid || to == "" || from == "":
+		m.actionResult(ctx, "firmware.result", ref, ResultOK, "", "note", "back on line; version not known", "version", row.Current)
+	case to == from:
+		m.actionResult(ctx, "firmware.result", ref, resultUnchanged, "back on line with the same firmware", "version", row.Current)
+	default:
+		m.actionResult(ctx, "firmware.result", ref, ResultOK, "", "from", ShortVersion(from), "to", row.Current)
+	}
+}
+
+// runningBuild is the firmware build the device runs according to the last
+// reads: Gen1 /status update.old_version or /settings fw, Gen2+ the
+// configuration's sys.device.fw_id; /shelly (read once) only as a last resort.
+// "" when not known (a BLU TRV).
+func (m *Devices) runningBuild(e *entry) string {
+	m.mu.Lock()
+	rawStatus, rawConfig, rawShelly := e.rawStatus, e.rawConfig, e.rawShelly
+	m.mu.Unlock()
+	st, cfg, sh := parseJSON(rawStatus), parseJSON(rawConfig), parseJSON(rawShelly)
+	for _, v := range []*ojson.Value{st.Path("update", "old_version"), cfg.Get("fw"), cfg.Path("sys", "device", "fw_id"), sh.Get("fw_id"), sh.Get("fw")} {
+		if b := text(v, ""); b != "" {
+			return b
+		}
+	}
+	return ""
 }
 
 // runFWTask executes a deferred firmware update.

@@ -161,7 +161,8 @@ func (m *Devices) upsertRelay(gw *entry, mac string, info relayInfo) {
 }
 
 // SetBLUName names a relayed BLU device (stored in the archive, P14-3).
-func (m *Devices) SetBLUName(id, name string) error {
+func (m *Devices) SetBLUName(ctx context.Context, id, name string) (err error) {
+	defer func() { m.action(ctx, "blu.name", m.refOf(id), err, "to", strings.TrimSpace(name)) }()
 	e, err := m.entryFor(id)
 	if err != nil {
 		return err
@@ -234,7 +235,8 @@ func (m *Devices) BLUGateways() []model.Device {
 // on a gateway for seconds and reports each BLU device that answers — one in
 // pairing mode tells its model — as EventBLUDiscovered; a listed device gets
 // the model on its row (kept in the archive). DECISIONS P14-4.
-func (m *Devices) IdentifyBLU(gwID string, seconds int) error {
+func (m *Devices) IdentifyBLU(ctx context.Context, gwID string, seconds int) (err error) {
+	defer func() { m.action(ctx, "blu.identify", m.refOf(gwID), err, "seconds", seconds) }()
 	if seconds < 10 || seconds > 180 {
 		seconds = 90
 	}

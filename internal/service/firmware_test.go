@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -58,9 +59,14 @@ func TestFirmwareRowsAndUpdate(t *testing.T) {
 		t.Fatalf("gen1 asks the device to check: %v", g1.Calls())
 	}
 
+	logs := captureLog(m)
 	res, err := m.FirmwareUpdate(ctx, []FirmwareRequest{{ID: "AABBCC000001", Stage: StageBeta}, {ID: "AABBCC000002", Stage: StageStable}})
 	if err != nil || res[0].Result != ResultOK || res[1].Result != ResultOK {
 		t.Fatalf("update %+v %v", res, err)
+	}
+	if logs.find(`msg="action firmware.update"`, "device=AABBCC000001", "stage=beta", "result=ok") == "" ||
+		logs.find(`msg="action firmware.update"`, "device=AABBCC000002", "stage=stable", "result=ok") == "" {
+		t.Fatalf("update not in the log: %s", logs)
 	}
 	if !hasCall(g1, "GET /ota?beta=true") || !hasCall(g2, `RPC Shelly.Update {"stage":"stable"}`) {
 		t.Fatalf("update calls %v %v", g1.Calls(), g2.Calls())
@@ -95,6 +101,10 @@ func TestFirmwareRowsAndUpdate(t *testing.T) {
 	m.apply(e, func(d *model.Device) { d.Uptime = 0 })
 	m.setStatus(e, model.StatusOnline)
 	waitFor(t, "back on line", func() bool { return !track("AABBCC000002", func(*fwTrack) bool { return true }) })
+	// The simulated device restarted with the firmware it had: the update did not take.
+	waitFor(t, "result in the log", func() bool {
+		return logs.find(`msg="action firmware.result"`, "device=AABBCC000002", "result=unchanged", "version=1.7.5") != ""
+	})
 
 	// An update that fails ends the follow-up too.
 	waitFor(t, "ws closed", func() bool { return g2.RPCClients() == 0 })
@@ -102,8 +112,11 @@ func TestFirmwareRowsAndUpdate(t *testing.T) {
 		t.Fatalf("second update %+v %v", res, err)
 	}
 	waitFor(t, "ws client", func() bool { return g2.RPCClients() > 0 })
-	g2.Notify(map[string]any{"component": "sys", "event": "ota_error"})
+	g2.Notify(map[string]any{"component": "sys", "event": "ota_error", "msg": "download failed"})
 	waitFor(t, "update error", func() bool { return !track("AABBCC000002", func(*fwTrack) bool { return true }) })
+	if got := logs.find(`msg="action firmware.result"`, "result=fail"); !strings.Contains(got, `error="download failed"`) || !strings.Contains(got, "level=WARN") {
+		t.Fatalf("update error in the log: %q", got)
+	}
 
 	if _, err := m.FirmwareUpdate(ctx, []FirmwareRequest{{ID: "AABBCC000002", Stage: "nightly"}}); err == nil {
 		t.Fatal("unknown stage accepted")

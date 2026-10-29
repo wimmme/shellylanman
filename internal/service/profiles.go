@@ -155,7 +155,8 @@ func (in *ProfileInput) validate(hadLoginPw, hadMQTTPw bool) error {
 }
 
 // SaveProfile creates a profile (empty id) or changes one.
-func (m *Devices) SaveProfile(in ProfileInput) (ProfileView, error) {
+func (m *Devices) SaveProfile(ctx context.Context, in ProfileInput) (v ProfileView, err error) {
+	defer func() { m.action(ctx, "profile.save", DeviceRef{}, err, "profile", v.Name) }()
 	m.profMu.Lock()
 	defer m.profMu.Unlock()
 	list, err := m.loadProfiles()
@@ -214,7 +215,8 @@ func (m *Devices) SaveProfile(in ProfileInput) (ProfileView, error) {
 }
 
 // DeleteProfile removes a profile and its passwords.
-func (m *Devices) DeleteProfile(id string) error {
+func (m *Devices) DeleteProfile(ctx context.Context, id string) (err error) {
+	defer func() { m.action(ctx, "profile.delete", DeviceRef{}, err, "profile", id) }()
 	m.profMu.Lock()
 	defer m.profMu.Unlock()
 	list, err := m.loadProfiles()
@@ -318,7 +320,8 @@ func planOf(p store.Profile, d model.Device) []PlanStep {
 // ApplyProfile sets a profile on a device that is on the network (confirmed by the caller). Every
 // step is tried; a step the device has no setting for is skipped. The login comes last: once it is
 // on, ShellyLanMan keeps the new login for the device (as the settings dialog does) and goes on with it.
-func (m *Devices) ApplyProfile(ctx context.Context, profileID, deviceID string) ([]ProfileStep, error) {
+func (m *Devices) ApplyProfile(ctx context.Context, profileID, deviceID string) (steps []ProfileStep, err error) {
+	defer func() { m.action(ctx, "profile.apply", m.refOf(deviceID), stepsErr(steps, err), "profile", profileID) }()
 	m.profMu.Lock()
 	p, err := m.profile(profileID)
 	m.profMu.Unlock()

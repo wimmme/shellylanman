@@ -107,7 +107,8 @@ func toArchived(d model.Device) store.ArchivedDevice {
 }
 
 // ClearArchive empties the archive (Settings → Archive) and rescans.
-func (m *Devices) ClearArchive() error {
+func (m *Devices) ClearArchive(ctx context.Context) (err error) {
+	defer func() { m.action(ctx, "archive.clear", DeviceRef{}, err) }()
 	m.mu.Lock()
 	m.archive = map[string]store.ArchivedDevice{}
 	m.mu.Unlock()
@@ -131,7 +132,8 @@ var ErrNoArchive = errors.New("notes need the archive (Settings → Archive)")
 // SetNote stores a device's note and keyword (NotesEditor save); the
 // keyword is cut to 32 characters. Only with the archive in use, like the
 // original's Notes action.
-func (m *Devices) SetNote(id, note, keyword string) error {
+func (m *Devices) SetNote(ctx context.Context, id, note, keyword string) (err error) {
+	defer func() { m.action(ctx, "note", m.refOf(id), err, "keyword", keyword) }()
 	if !m.store.Settings().Archive.Use {
 		return ErrNoArchive
 	}

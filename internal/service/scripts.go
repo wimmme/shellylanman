@@ -118,7 +118,8 @@ func scriptOf(s *ojson.Value) ScriptInfo {
 }
 
 // ScriptCreate: Script.Create (no name: the device picks one), then its config.
-func (m *Devices) ScriptCreate(ctx context.Context, id, name string) (ScriptInfo, error) {
+func (m *Devices) ScriptCreate(ctx context.Context, id, name string) (si ScriptInfo, err error) {
+	defer func() { m.action(ctx, "script.create", m.refOf(id), err, "script", si.ID, "scriptName", name) }()
 	c, _, err := m.g2conn(id)
 	if err != nil {
 		return ScriptInfo{}, err
@@ -140,7 +141,8 @@ func (m *Devices) ScriptCreate(ctx context.Context, id, name string) (ScriptInfo
 }
 
 // ScriptUpdate renames and/or enables a script (Script.SetConfig).
-func (m *Devices) ScriptUpdate(ctx context.Context, id string, sid int, name *string, enable *bool) error {
+func (m *Devices) ScriptUpdate(ctx context.Context, id string, sid int, name *string, enable *bool) (err error) {
+	defer func() { m.action(ctx, "script.update", m.refOf(id), err, scriptUpdateAttrs(sid, name, enable)...) }()
 	c, _, err := m.g2conn(id)
 	if err != nil {
 		return err
@@ -159,7 +161,8 @@ func (m *Devices) ScriptUpdate(ctx context.Context, id string, sid int, name *st
 }
 
 // ScriptDelete: Script.Delete.
-func (m *Devices) ScriptDelete(ctx context.Context, id string, sid int) error {
+func (m *Devices) ScriptDelete(ctx context.Context, id string, sid int) (err error) {
+	defer func() { m.action(ctx, "script.delete", m.refOf(id), err, "script", sid) }()
 	c, _, err := m.g2conn(id)
 	if err != nil {
 		return err
@@ -170,7 +173,14 @@ func (m *Devices) ScriptDelete(ctx context.Context, id string, sid int) error {
 
 // ScriptRun starts or stops a script. withLog (the editor) first switches
 // the device's websocket debug log on, like ScriptFrame.activateLogConnection.
-func (m *Devices) ScriptRun(ctx context.Context, id string, sid int, run, withLog bool) error {
+func (m *Devices) ScriptRun(ctx context.Context, id string, sid int, run, withLog bool) (err error) {
+	defer func() {
+		name := "script.stop"
+		if run {
+			name = "script.start"
+		}
+		m.action(ctx, name, m.refOf(id), err, "script", sid)
+	}()
 	c, d, err := m.g2conn(id)
 	if err != nil {
 		return err
@@ -195,7 +205,8 @@ func enableSocketLog(ctx context.Context, c *shelly.Conn, d model.Device) {
 }
 
 // ScriptLogOn prepares the log of a running script shown in the editor.
-func (m *Devices) ScriptLogOn(ctx context.Context, id string) error {
+func (m *Devices) ScriptLogOn(ctx context.Context, id string) (err error) {
+	defer func() { m.action(ctx, "script.debuglog", m.refOf(id), err) }()
 	c, d, err := m.g2conn(id)
 	if err != nil {
 		return err
@@ -224,7 +235,8 @@ func (m *Devices) ScriptCode(ctx context.Context, id string, sid int) (string, e
 }
 
 // ScriptPutCode: Script.PutCode in segments of 1024 characters (append after the first).
-func (m *Devices) ScriptPutCode(ctx context.Context, id string, sid int, code string) error {
+func (m *Devices) ScriptPutCode(ctx context.Context, id string, sid int, code string) (err error) {
+	defer func() { m.action(ctx, "script.code", m.refOf(id), err, "script", sid, "bytes", len(code)) }() // never the code itself
 	c, _, err := m.g2conn(id)
 	if err != nil {
 		return err
@@ -302,7 +314,8 @@ func (m *Devices) kvsList(ctx context.Context, c *shelly.Conn) ([]KVItem, error)
 }
 
 // KVSSet adds or edits an item (KVS.Set) and returns it with its new etag.
-func (m *Devices) KVSSet(ctx context.Context, id, key, value string) (KVItem, error) {
+func (m *Devices) KVSSet(ctx context.Context, id, key, value string) (_ KVItem, err error) {
+	defer func() { m.action(ctx, "kvs.set", m.refOf(id), err, "key", key) }() // never the value: it may be a secret
 	if key == "" {
 		return KVItem{}, invalidField("key")
 	}
@@ -319,7 +332,8 @@ func (m *Devices) KVSSet(ctx context.Context, id, key, value string) (KVItem, er
 }
 
 // KVSDelete: KVS.Delete.
-func (m *Devices) KVSDelete(ctx context.Context, id, key string) error {
+func (m *Devices) KVSDelete(ctx context.Context, id, key string) (err error) {
+	defer func() { m.action(ctx, "kvs.delete", m.refOf(id), err, "key", key) }()
 	c, _, err := m.g2conn(id)
 	if err != nil {
 		return err

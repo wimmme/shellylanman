@@ -7,6 +7,14 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Czech (`cs`) translation of the user interface.
+- **Every action in the log.** Firmware updates, backups, restores, reboots, checklist switches (eco, access point,
+  Bluetooth, roaming, automatic update, …), Devices settings, scripts and KVS, switching, RPC writes, scenes,
+  profiles, credentials, notes, the archive and deferred tasks each write a line `action …` per device: what was
+  done, the result, and who asked (web UI, Home Assistant sidebar, MCP, integration, deferred task) with the
+  client's address. Failures are warnings. No passwords, KVS values or script code.
+- **A firmware update is followed to its end in the log**: the new version, *unchanged* (the device came back with
+  the firmware it had: the update did not take), the device's own error, or not back within 15 minutes.
+- The log is also written to `/data/logs/shellylanman.log` (5 files of 1 MB), so it survives a restart.
 
 ### Changed
 - Chart.js 4.6.1 (was 4.5.1) on the Charts page.

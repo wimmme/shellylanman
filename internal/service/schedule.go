@@ -20,7 +20,10 @@ import (
 // DeviceRPC runs one RPC method on a Gen2+ device (the scheduler's calls and
 // the "test method" button). For a BLU TRV the call goes to its gateway as
 // BluTrv.Call {id, method, params} (BluTRV.getTRVJSON).
-func (m *Devices) DeviceRPC(ctx context.Context, id, method string, params json.RawMessage) (json.RawMessage, error) {
+func (m *Devices) DeviceRPC(ctx context.Context, id, method string, params json.RawMessage) (_ json.RawMessage, err error) {
+	if ClassifyRPC(method) != RPCRead { // reads are not actions; the parameters may hold passwords
+		defer func() { m.action(ctx, "rpc", m.refOf(id), err, "method", method) }()
+	}
 	if strings.TrimSpace(method) == "" {
 		return nil, invalidField("method")
 	}

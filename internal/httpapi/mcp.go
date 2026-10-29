@@ -60,6 +60,7 @@ func MCPLocal(cfg Config) http.Handler {
 	local.HandleFunc("GET /api/v1/backups", s.listBackups)
 	local.HandleFunc("POST /api/v1/backup", s.backup)
 	local.HandleFunc("POST /api/v1/scan", s.rescan)
+	handler := withActor(local, localSource)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host, _, _ := net.SplitHostPort(r.RemoteAddr)
 		if ip := net.ParseIP(host); ip == nil || !ip.IsLoopback() {
@@ -70,7 +71,7 @@ func MCPLocal(cfg Config) http.Handler {
 			http.NotFound(w, r)
 			return
 		}
-		local.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 	})
 }
 

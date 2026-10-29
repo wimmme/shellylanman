@@ -116,6 +116,7 @@ func (m *Devices) Command(ctx context.Context, id string, cmd Command) error {
 	default:
 		err = gen2Command(ctx, e.conn, mod, cmd)
 	}
+	m.action(ctx, "command", m.refOf(id), err, commandAttrs(cmd)...)
 	if err != nil {
 		return err
 	}
@@ -123,6 +124,27 @@ func (m *Devices) Command(ctx context.Context, id string, cmd Command) error {
 		m.refreshStatus(ctx, e) // the original updates the module from the answer; one status read does the same
 	}
 	return nil
+}
+
+// commandAttrs: what a command did, for the action log.
+func commandAttrs(cmd Command) []any {
+	a := []any{"key", cmd.Key, "do", cmd.Action}
+	if cmd.Value != nil {
+		a = append(a, "value", num(*cmd.Value))
+	}
+	if len(cmd.RGB) > 0 {
+		a = append(a, "rgb", fmt.Sprint(cmd.RGB))
+	}
+	if cmd.White != nil {
+		a = append(a, "white", *cmd.White)
+	}
+	if cmd.Timer != nil {
+		a = append(a, "timer", num(*cmd.Timer))
+	}
+	if cmd.Action == ActionEvent {
+		a = append(a, "event", cmd.Event)
+	}
+	return a
 }
 
 func val(cmd Command) (float64, error) {
@@ -582,8 +604,8 @@ func Rebootable(d model.Device) bool {
 // Reboot restarts the given devices (MainView.rebootAction + Devices.reboot):
 // per device, refresh is paused, the status shows "reading", the reboot is
 // sent and after 3 s refresh resumes. It returns at once; the devices'
-// states arrive as events.
-func (m *Devices) Reboot(ids []string) error {
+// states arrive as events. ctx only says who asked (the action log).
+func (m *Devices) Reboot(ctx context.Context, ids []string) error {
 	m.mu.Lock()
 	var targets []*entry
 	for _, id := range ids {
@@ -615,8 +637,9 @@ func (m *Devices) Reboot(ids []string) error {
 				default:
 				}
 			}()
-			if err := m.reboot(run, e); err != nil {
-				m.log.Debug("reboot", "device", e.dev.ID, "err", err)
+			err := m.reboot(run, e)
+			m.action(ctx, "reboot", m.refOf(e.dev.ID), err)
+			if err != nil {
 				return
 			}
 			m.setStatus(e, model.StatusReading)

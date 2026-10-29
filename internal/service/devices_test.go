@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -82,7 +83,9 @@ func newService(t *testing.T, mutate func(*store.Settings)) (*Devices, *store.St
 	ProbeTimeout = 2 * time.Second
 	errorsRetryAfter, ghostsRetryAfter = time.Hour, time.Hour
 	rec := &recorder{}
-	m := NewDevices(st, shelly.NewClient(), rec.emit, nil)
+	logs := &logLines{}
+	m := NewDevices(st, shelly.NewClient(), rec.emit, slog.New(slog.NewTextHandler(logs, nil)))
+	testLogs.Store(m, logs)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(func() { cancel(); m.Wait() })
 	m.Start(ctx)
@@ -161,7 +164,7 @@ func TestProtectedGen2NeedsCredentials(t *testing.T) {
 	if _, err := m.DeviceCredentials("AABBCC000002"); err != ErrNoCredentials {
 		t.Fatalf("credentials before any are stored: %v", err)
 	}
-	if err := m.SetGlobalCredentials(shelly.Credentials{User: "someone", Password: "s3cret"}); err != nil {
+	if err := m.SetGlobalCredentials(context.Background(), shelly.Credentials{User: "someone", Password: "s3cret"}); err != nil {
 		t.Fatal(err)
 	}
 	waitDevice(t, m, "AABBCC000002", online)
@@ -182,7 +185,7 @@ func TestProtectedGen1PerDeviceCredentials(t *testing.T) {
 	addr := startSim(t, dir, func(d *sim.Device) { d.User, d.Password = "admin", "pw" })
 	m.handle(ctx, addr, "shellyplug-s-aabbcc000003", true)
 	waitDevice(t, m, "AABBCC000003", func(d model.Device) bool { return d.Status == model.StatusLogin })
-	if err := m.SetDeviceCredentials("AABBCC000003", shelly.Credentials{User: "admin", Password: "pw"}); err != nil {
+	if err := m.SetDeviceCredentials(context.Background(), "AABBCC000003", shelly.Credentials{User: "admin", Password: "pw"}); err != nil {
 		t.Fatal(err)
 	}
 	waitDevice(t, m, "AABBCC000003", online)
@@ -284,7 +287,7 @@ func TestArchiveGhostsAndNotes(t *testing.T) {
 		t.Fatalf("archive = %+v", arc)
 	}
 	// Only ghosts can be removed.
-	if err := m.Remove("AABBCC000001"); err == nil {
+	if err := m.Remove(context.Background(), "AABBCC000001"); err == nil {
 		t.Fatal("online device removed")
 	}
 }

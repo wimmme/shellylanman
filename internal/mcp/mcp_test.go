@@ -41,7 +41,10 @@ func (f *fake) Command(_ context.Context, id string, c service.Command) error {
 	f.commands = append(f.commands, id+" "+c.Key+" "+c.Action)
 	return nil
 }
-func (f *fake) Reboot(ids []string) error { f.rebooted = append(f.rebooted, ids...); return nil }
+func (f *fake) Reboot(_ context.Context, ids []string) error {
+	f.rebooted = append(f.rebooted, ids...)
+	return nil
+}
 func (f *fake) Firmware(context.Context, []string) ([]service.FirmwareRow, error) {
 	return []service.FirmwareRow{{ID: "A1", Current: "1.0"}}, nil
 }
@@ -103,11 +106,11 @@ func (f *fake) Scene(name string) (service.Scene, error) {
 	}
 	return service.Scene{}, service.ErrNoScene
 }
-func (f *fake) SceneSave(sc service.Scene, _ bool) (service.Scene, error) {
+func (f *fake) SceneSave(_ context.Context, sc service.Scene, _ bool) (service.Scene, error) {
 	f.scenes = append(f.scenes, sc)
 	return sc, nil
 }
-func (f *fake) SceneDelete(string) error { f.scenes = nil; return nil }
+func (f *fake) SceneDelete(context.Context, string) error { f.scenes = nil; return nil }
 func (f *fake) SceneRunNow(_ context.Context, name string) (service.SceneRun, error) {
 	return service.SceneRun{Scene: name, Status: "ok"}, nil
 }

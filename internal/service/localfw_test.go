@@ -3,6 +3,7 @@ package service
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -101,18 +102,18 @@ func TestSetNote(t *testing.T) {
 	m, st, ctx := newService(t, nil)
 	plugS(t, m, ctx, nil, "AABBCC000001")
 	long := strings.Repeat("é", 40)
-	if err := m.SetNote("AABBCC000001", "line 1\nline 2", long); err != nil {
+	if err := m.SetNote(context.Background(), "AABBCC000001", "line 1\nline 2", long); err != nil {
 		t.Fatal(err)
 	}
 	d, _ := m.Get("AABBCC000001")
 	if d.Note != "line 1\nline 2" || len([]rune(d.Keyword)) != 32 {
 		t.Fatalf("note %q keyword %q", d.Note, d.Keyword)
 	}
-	if err := m.SetNote("NOPE", "", ""); !errors.Is(err, ErrNotFound) {
+	if err := m.SetNote(context.Background(), "NOPE", "", ""); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("unknown: %v", err)
 	}
 	st.Update(func(s *store.Settings) { s.Archive.Use = false })
-	if err := m.SetNote("AABBCC000001", "x", ""); !errors.Is(err, ErrNoArchive) {
+	if err := m.SetNote(context.Background(), "AABBCC000001", "x", ""); !errors.Is(err, ErrNoArchive) {
 		t.Fatalf("archive off: %v", err)
 	}
 }

@@ -554,7 +554,7 @@ var configTools = []tool{
 					warnings = append(warnings, fmt.Sprintf("action %d: %s", i+1, warn))
 				}
 			}
-			saved, err := s.SceneSave(sc, a.Overwrite)
+			saved, err := s.SceneSave(ctx, sc, a.Overwrite)
 			if err != nil {
 				return nil, err
 			}
@@ -580,7 +580,7 @@ var configTools = []tool{
 			if err := needConfirm(a.Confirm, "deleting a scene"); err != nil {
 				return nil, err
 			}
-			if err := s.SceneDelete(a.Name); err != nil {
+			if err := s.SceneDelete(ctx, a.Name); err != nil {
 				return nil, err
 			}
 			return map[string]any{"deleted": a.Name}, nil

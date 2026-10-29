@@ -244,6 +244,7 @@ Assistant's Shelly integration, so you do not type them twice.
 | `sessions.json` | Logged-in browsers when a UI password is set (only hashes of the session ids) |
 | `backups/<device>/*.sbk` | Device backups (newest N per device, setting) |
 | `firmware/` | Verified firmware files of the local download (cache) |
+| `logs/shellylanman.log*` | ShellyLanMan's log (as on the Log page and in the container log), 5 files of 1 MB at most |
 
 Chart readings are kept in memory only (24 hours). Details:
 [`ARCHITECTURE.md` §2.6](ARCHITECTURE.md).
@@ -303,7 +304,7 @@ if you switch it on (off by default). No telemetry.
 | **Charts** | Power, energy, voltage, temperature, RSSI and more for the selected devices, with 24 hours of history, zoom, pause and CSV export. |
 | **Firmware** | Current, stable and beta firmware of the selected devices (or all), update with live progress, and a wizard with QR codes to update a device through its own access point (also one ShellyLanMan does not know). |
 | **Deferred** | Actions for offline devices, run when the device comes back. |
-| **Log** | ShellyLanMan's own log: the last 1000 lines of this run, live, with a filter by level and text, pause, clear and copy. Kept in memory only. |
+| **Log** | ShellyLanMan's own log: the last 1000 lines of this run, live, with a filter by level and text, pause, clear and copy. Every change ShellyLanMan makes — firmware updates and how they ended, backups, restores, reboots, checklist switches, settings sent to devices, scripts, KVS, switching, scenes — is a line `action …` with the device, the result and who asked (web UI, Home Assistant sidebar, MCP, integration, deferred task) with the client's address. The same lines go to the container log and to `logs/` in the data folder. |
 | **Settings** | Scan mode and IP ranges, archive, profiles for new Shellys (name, login, MQTT, time server, …), device credentials, backups, the ports in use and where they are set, script editor, appearance (palette, font, how device pages open) and language. |
 | **About** | What is running (version, runtime, uptime), release notes, dependencies with their licences, credits and help. |
 

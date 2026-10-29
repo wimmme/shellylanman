@@ -202,7 +202,7 @@ func TestDeferredTaskRunsWhenBackOnline(t *testing.T) {
 	if l := m.Deferred(); l[1].Status != DefSuccess || !hasCall(g2, `RPC MQTT.SetConfig {"config":{"enable":false}}`) {
 		t.Fatalf("not run: %+v %v", l, g2.Calls())
 	}
-	if err := m.CancelDeferred(m.Deferred()[1].ID); !errors.Is(err, ErrBadCommand) {
+	if err := m.CancelDeferred(context.Background(), m.Deferred()[1].ID); !errors.Is(err, ErrBadCommand) {
 		t.Fatalf("cancel a finished task: %v", err)
 	}
 }

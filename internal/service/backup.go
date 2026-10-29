@@ -197,6 +197,7 @@ func (m *Devices) Backup(ctx context.Context, ids []string) ([]ResultLine, error
 			return nil, err
 		}
 		line, _ := m.backupOne(ctx, e, true)
+		m.actionResult(ctx, "backup", line.DeviceRef, line.Result, line.Message)
 		out = append(out, line)
 	}
 	return out, nil
@@ -339,7 +340,13 @@ func (m *Devices) Restore(ctx context.Context, id string, src RestoreSource, ans
 	if err != nil {
 		return RestoreResult{}, err
 	}
-	return m.restoreData(ctx, e, data, answers, true)
+	res, err := m.restoreData(ctx, e, data, answers, true)
+	if err != nil {
+		m.action(ctx, "restore", m.refOf(id), err)
+	} else {
+		m.actionResult(ctx, "restore", m.refOf(id), res.Result, strings.Join(res.Problems, "; "))
+	}
+	return res, err
 }
 
 func (m *Devices) restoreData(ctx context.Context, e *entry, data []byte, answers sbk.Answers, mayQueue bool) (RestoreResult, error) {
@@ -392,6 +399,7 @@ func (m *Devices) restoreData(ctx context.Context, e *entry, data []byte, answer
 // "restore host X?" question or reports an error stops that device.
 func (m *Devices) RestoreMulti(ctx context.Context, ids []string) ([]ResultLine, error) {
 	var out []ResultLine
+	defer func() { m.actionLines(ctx, "restore", out, "backup", "newest") }() // also the devices done before an error
 	for _, id := range ids {
 		e, err := m.entryFor(id)
 		if err != nil {

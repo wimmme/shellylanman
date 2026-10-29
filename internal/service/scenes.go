@@ -128,7 +128,8 @@ func (m *Devices) Scene(name string) (Scene, error) {
 }
 
 // SceneSave adds a scene, or replaces the one with the same name when overwrite is set.
-func (m *Devices) SceneSave(sc Scene, overwrite bool) (Scene, error) {
+func (m *Devices) SceneSave(ctx context.Context, sc Scene, overwrite bool) (_ Scene, err error) {
+	defer func() { m.action(ctx, "scene.save", DeviceRef{}, err, "scene", sc.Name) }()
 	sc.Name = strings.TrimSpace(sc.Name)
 	if err := m.validateScene(sc); err != nil {
 		return Scene{}, err
@@ -155,7 +156,8 @@ func (m *Devices) SceneSave(sc Scene, overwrite bool) (Scene, error) {
 }
 
 // SceneDelete removes a scene.
-func (m *Devices) SceneDelete(name string) error {
+func (m *Devices) SceneDelete(ctx context.Context, name string) (err error) {
+	defer func() { m.action(ctx, "scene.delete", DeviceRef{}, err, "scene", name) }()
 	m.scenes.mu.Lock()
 	defer m.scenes.mu.Unlock()
 	if err := m.loadScenes(); err != nil {
@@ -204,12 +206,15 @@ func (m *Devices) validateScene(sc Scene) error {
 
 // SceneRunNow runs every action in order; a failing action does not stop the
 // others (a partial run can be repeated: scenes should set absolute states).
-func (m *Devices) SceneRunNow(ctx context.Context, name string) (SceneRun, error) {
+func (m *Devices) SceneRunNow(ctx context.Context, name string) (run SceneRun, err error) {
+	defer func() { // each step has its own line (command, rpc)
+		m.action(ctx, "scene.run", DeviceRef{}, err, "scene", name, "status", run.Status)
+	}()
 	sc, err := m.Scene(name)
 	if err != nil {
 		return SceneRun{}, err
 	}
-	run := SceneRun{Scene: sc.Name}
+	run = SceneRun{Scene: sc.Name}
 	ok := 0
 	for i, a := range sc.Actions {
 		step := SceneStep{Index: i + 1, Device: a.Device, Result: ResultOK}

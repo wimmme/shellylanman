@@ -66,13 +66,13 @@ func TestRelayedBLURows(t *testing.T) {
 	}
 
 	// A name of its own (archive); not for other devices.
-	if err := m.SetBLUName(relayID, " Keuken knoppen "); err != nil {
+	if err := m.SetBLUName(context.Background(), relayID, " Keuken knoppen "); err != nil {
 		t.Fatal(err)
 	}
 	if d, _ = m.Get(relayID); d.Name != "Keuken knoppen" {
 		t.Fatalf("name %q", d.Name)
 	}
-	if err := m.SetBLUName("AABBCC0000D1", "x"); err == nil {
+	if err := m.SetBLUName(context.Background(), "AABBCC0000D1", "x"); err == nil {
 		t.Fatal("named a gateway")
 	}
 
@@ -121,13 +121,13 @@ func TestIdentifyBLU(t *testing.T) {
 	if gws := m.BLUGateways(); len(gws) != 1 || gws[0].ID != "AABBCC0000D1" {
 		t.Fatalf("gateways %+v", gws)
 	}
-	if err := m.IdentifyBLU(relayID, 30); err != ErrNotBLUGateway {
+	if err := m.IdentifyBLU(context.Background(), relayID, 30); err != ErrNotBLUGateway {
 		t.Fatalf("a BLU row as gateway: %v", err)
 	}
-	if err := m.IdentifyBLU("AABBCC0000D1", 30); err != nil {
+	if err := m.IdentifyBLU(context.Background(), "AABBCC0000D1", 30); err != nil {
 		t.Fatal(err)
 	}
-	if err := m.IdentifyBLU("AABBCC0000D1", 30); err != ErrIdentifyBusy {
+	if err := m.IdentifyBLU(context.Background(), "AABBCC0000D1", 30); err != ErrIdentifyBusy {
 		t.Fatalf("second run: %v", err)
 	}
 	d := waitDevice(t, m, relayID, func(d model.Device) bool { return d.TypeID == "BLU7" })
@@ -151,7 +151,7 @@ func TestIdentifyBLU(t *testing.T) {
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
-	if err := m.IdentifyBLU("AABBCC0000D1", 30); err != nil { // free again
+	if err := m.IdentifyBLU(context.Background(), "AABBCC0000D1", 30); err != nil { // free again
 		t.Fatalf("after the run: %v", err)
 	}
 }

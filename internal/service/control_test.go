@@ -80,7 +80,7 @@ func TestGen2CommandsWithAuthentication(t *testing.T) {
 	simd, addr := startSimDev(t, fixtureDir(t, "gen2/Plus1", map[string]string{
 		"shelly.json": `{"id":"shellyplus1-aabbcc000001","mac":"AABBCC000001","model":"SNSW-001X16EU","gen":2,"app":"Plus1","auth_en":true}`,
 	}), func(d *sim.Device) { d.Password = "secret" })
-	if err := m.SetGlobalCredentials(shelly.Credentials{User: "admin", Password: "secret"}); err != nil {
+	if err := m.SetGlobalCredentials(context.Background(), shelly.Credentials{User: "admin", Password: "secret"}); err != nil {
 		t.Fatal(err)
 	}
 	m.handle(ctx, addr, "shellyplus1-aabbcc000001", true)
@@ -107,7 +107,7 @@ func TestGen2PostCommands(t *testing.T) {
 		"rpc_Shelly.GetConfig.json": `{"sys":{"device":{"name":"Hall"}},"thermostat:0":{"name":"Living","type":"heating"}}`,
 		"rpc_Shelly.GetStatus.json": `{"sys":{"uptime":10},"thermostat:0":{"enable":true,"target_C":21,"output":false},"temperature:0":{"tC":20}}`,
 	}), func(d *sim.Device) { d.Password = "pw" })
-	m.SetGlobalCredentials(shelly.Credentials{User: "admin", Password: "pw"})
+	m.SetGlobalCredentials(context.Background(), shelly.Credentials{User: "admin", Password: "pw"})
 	m.handle(ctx, addr, "shellywalldisplay-aabbcc000002", true)
 	d := waitDevice(t, m, "AABBCC000002", func(d model.Device) bool { return online(d) && len(d.Modules) == 1 })
 	if d.Layout != "thermostat" {
@@ -138,7 +138,7 @@ func TestGen2PostCommandsFirmware2Auth(t *testing.T) {
 		"rpc_Shelly.GetConfig.json": `{"sys":{"device":{"name":"Hall"}},"thermostat:0":{"name":"Living","type":"heating"}}`,
 		"rpc_Shelly.GetStatus.json": `{"sys":{"uptime":10},"thermostat:0":{"enable":true,"target_C":21,"output":false},"temperature:0":{"tC":20}}`,
 	}), func(d *sim.Device) { d.Password = "pw"; d.FW2Auth = true })
-	m.SetGlobalCredentials(shelly.Credentials{User: "admin", Password: "pw"})
+	m.SetGlobalCredentials(context.Background(), shelly.Credentials{User: "admin", Password: "pw"})
 	m.handle(ctx, addr, "shellywalldisplay-aabbcc000002", true)
 	d := waitDevice(t, m, "AABBCC000002", func(d model.Device) bool { return online(d) && len(d.Modules) == 1 })
 	for _, v := range []float64{22.5, 23} { // the second call reuses the nonce
@@ -232,7 +232,7 @@ func TestReboot(t *testing.T) {
 	simd, addr := startSimDev(t, fixtureDir(t, "gen1/SHPLG-S", nil), nil)
 	m.handle(ctx, addr, "shellyplug-s-aabbcc000001", true)
 	waitDevice(t, m, "AABBCC000001", online)
-	if err := m.Reboot([]string{"AABBCC000001"}); err != nil {
+	if err := m.Reboot(context.Background(), []string{"AABBCC000001"}); err != nil {
 		t.Fatal(err)
 	}
 	if d, _ := m.Get("AABBCC000001"); d.Status != model.StatusReading {
@@ -246,7 +246,7 @@ func TestReboot(t *testing.T) {
 		t.Fatalf("calls %v", simd.Calls())
 	}
 	waitDevice(t, m, "AABBCC000001", online) // refresh resumes after the pause
-	if err := m.Reboot([]string{"nope"}); !errors.Is(err, ErrNotFound) {
+	if err := m.Reboot(context.Background(), []string{"nope"}); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("unknown id: %v", err)
 	}
 }
@@ -259,7 +259,7 @@ func TestCommandOnStoredDevice(t *testing.T) {
 	if err := m.Command(context.Background(), "X", Command{Key: "relay/0", Action: ActionOn}); !errors.Is(err, ErrNoConnection) {
 		t.Fatalf("ghost: %v", err)
 	}
-	if err := m.Reboot([]string{"X"}); !errors.Is(err, ErrBadCommand) {
+	if err := m.Reboot(context.Background(), []string{"X"}); !errors.Is(err, ErrBadCommand) {
 		t.Fatalf("reboot ghost: %v", err)
 	}
 }

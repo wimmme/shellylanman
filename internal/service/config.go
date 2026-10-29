@@ -1040,14 +1040,18 @@ func (m *Devices) ConfigApply(ctx context.Context, ids []string, section string,
 		}
 		out, err = m.applyWiFi(ctx, ts, section, a)
 	case LoginApply:
+		section = SectionLogin
 		out, err = m.applyLogin(ctx, ts, a)
 	case MQTTApply:
+		section = SectionMQTT
 		out, err = m.applyMQTT(ctx, ts, a)
 	case OthersApply:
+		section = SectionOthers
 		out, err = m.applyOthers(ctx, ts, a)
 	default:
 		return nil, invalidField("section")
 	}
+	m.actionLines(ctx, "config."+section, out) // the values stay out: they hold passwords
 	if err == nil {
 		for _, t := range ts {
 			if t.usable() {
