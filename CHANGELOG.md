@@ -8,6 +8,9 @@ versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 - Czech (`cs`) translation of the user interface.
 
+### Changed
+- Chart.js 4.6.1 (was 4.5.1) on the Charts page.
+
 ### Documentation
 - Hardware tests: the local firmware update also tested on a Gen1 Shelly.
 
