@@ -107,8 +107,9 @@ func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body) {
 		return
 	}
-	wasOn := s.Store.Settings().MCP.Enabled
-	_, err := s.Store.Update(func(st *store.Settings) {
+	was := s.Store.Settings().MCP
+	wasOn := was.Enabled
+	next, err := s.Store.Update(func(st *store.Settings) {
 		if body.Enabled != nil {
 			st.MCP.Enabled = *body.Enabled
 		}
@@ -117,8 +118,12 @@ func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 	if err != nil {
+		s.action(r, "mcp.settings", err)
 		writeErr(w, http.StatusBadRequest, err)
 		return
+	}
+	if next.MCP != was {
+		s.action(r, "mcp.settings", nil, "enabled", next.MCP.Enabled, "access", next.MCP.Access)
 	}
 	// Switching on without a token would refuse every client: make one.
 	info := s.mcpInfo()
@@ -127,6 +132,7 @@ func (s *server) putMCP(w http.ResponseWriter, r *http.Request) {
 	}
 	if info.Enabled && !info.HasToken {
 		tok, err := s.makeMCPToken()
+		s.action(r, "mcp.token", err, "why", "switched on without a token") // never the token
 		if err != nil {
 			writeErr(w, http.StatusInternalServerError, err)
 			return
@@ -143,6 +149,7 @@ func (s *server) newMCPToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tok, err := s.makeMCPToken()
+	s.action(r, "mcp.token", err) // a new token: the old one stops working; never the token itself
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, err)
 		return

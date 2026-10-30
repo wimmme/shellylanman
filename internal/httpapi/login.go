@@ -175,7 +175,7 @@ func (s *server) tooMany(w http.ResponseWriter, wait time.Duration) {
 
 // checkPassword verifies pw against the stored hash with the slowdown for
 // wrong tries (P15-6). It answers the request itself when it returns false.
-func (s *server) checkPassword(w http.ResponseWriter, r *http.Request, pw, hash string) bool {
+func (s *server) checkPassword(w http.ResponseWriter, r *http.Request, pw, hash, action string) bool {
 	client := clientAddr(r)
 	if wait := s.guard.limiter.Wait(client); wait > 0 {
 		s.tooMany(w, wait)
@@ -183,7 +183,7 @@ func (s *server) checkPassword(w http.ResponseWriter, r *http.Request, pw, hash 
 	}
 	if !auth.Verify(pw, hash) {
 		n, wait := s.guard.limiter.Fail(client)
-		s.Log.Warn("wrong UI password", "from", client, "tries", n)
+		s.action(r, action, auth.ErrWrong, "tries", n)
 		e := apiError{Code: CodeWrongPassword, Message: auth.ErrWrong.Error()}
 		if wait > 0 {
 			e.RetryAfter = int((wait + time.Second - 1) / time.Second)
@@ -206,7 +206,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 		writeCoded(w, http.StatusConflict, apiError{Code: CodeNoPassword, Message: "no password is set"})
 		return
 	}
-	if !s.checkPassword(w, r, body.Password, hash) {
+	if !s.checkPassword(w, r, body.Password, hash, "login") {
 		return
 	}
 	id, err := s.guard.sessions.Create(body.Remember)
@@ -215,7 +215,7 @@ func (s *server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	setSessionCookie(w, r, id, body.Remember)
-	s.Log.Info("logged in", "from", clientAddr(r))
+	s.action(r, "login", nil, "remember", body.Remember)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -224,6 +224,7 @@ func (s *server) logout(w http.ResponseWriter, r *http.Request) {
 		s.guard.sessions.End(c.Value)
 	}
 	clearSessionCookie(w, r)
+	s.action(r, "logout", nil)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -237,7 +238,7 @@ func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &body) {
 		return
 	}
-	if hash := s.passwordHash(); hash != "" && !viaIngress(r) && !s.checkPassword(w, r, body.Current, hash) {
+	if hash := s.passwordHash(); hash != "" && !viaIngress(r) && !s.checkPassword(w, r, body.Current, hash, "password.set") {
 		return
 	}
 	if body.Password == "" {
@@ -247,7 +248,7 @@ func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 		}
 		s.guard.sessions.EndAll()
 		clearSessionCookie(w, r)
-		s.Log.Warn("UI password switched off", "from", clientAddr(r))
+		s.action(r, "password.off", nil)
 		writeJSON(w, http.StatusOK, map[string]bool{"authEnabled": false})
 		return
 	}
@@ -269,6 +270,6 @@ func (s *server) setPassword(w http.ResponseWriter, r *http.Request) {
 			setSessionCookie(w, r, id, false)
 		}
 	}
-	s.Log.Info("UI password set", "from", clientAddr(r))
+	s.action(r, "password.set", nil) // never the password
 	writeJSON(w, http.StatusOK, map[string]bool{"authEnabled": true})
 }

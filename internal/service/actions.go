@@ -70,6 +70,12 @@ func msgOrEmpty(err error) string {
 // actionResult logs an action with an explicit result (ok, queued, fail, …)
 // and the device's or ShellyLanMan's message.
 func (m *Devices) actionResult(ctx context.Context, name string, dev DeviceRef, result, msg string, attrs ...any) {
+	LogAction(ctx, m.log, name, dev, result, msg, attrs...)
+}
+
+// LogAction writes one action line to log, also for the HTTP layer's own
+// actions (settings, password, MCP): see the top of this file.
+func LogAction(ctx context.Context, log *slog.Logger, name string, dev DeviceRef, result, msg string, attrs ...any) {
 	level := slog.LevelInfo
 	if result != ResultOK && result != ResultQueued {
 		level = slog.LevelWarn
@@ -91,7 +97,7 @@ func (m *Devices) actionResult(ctx context.Context, name string, dev DeviceRef, 
 	if a.Addr != "" {
 		args = append(args, "addr", a.Addr)
 	}
-	m.log.Log(context.Background(), level, "action "+name, args...)
+	log.Log(context.Background(), level, "action "+name, args...)
 }
 
 // actionLines logs the result lines of an action on several devices.

@@ -1,7 +1,9 @@
 package httpapi
 
 import (
+	"encoding/json"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/wimmme/shellylanman/internal/service"
@@ -43,4 +45,38 @@ func localSource(r *http.Request) string {
 		return service.SourceMCP
 	}
 	return service.SourceIntegration
+}
+
+// action logs one of the HTTP layer's own actions (settings, UI password, MCP)
+// like the service's (DECISIONS P26-5); err nil is ok.
+func (s *server) action(r *http.Request, name string, err error, attrs ...any) {
+	result, msg := service.ResultOK, ""
+	if err != nil {
+		result, msg = service.ResultFail, err.Error()
+	}
+	service.LogAction(r.Context(), s.Log, name, service.DeviceRef{}, result, msg, attrs...)
+}
+
+// changedSettings names the top-level settings that differ between before and
+// after, each with its new value as compact JSON (the settings hold no secrets:
+// those are in the store's secrets).
+func changedSettings(before, after any) []any {
+	var b, a map[string]json.RawMessage
+	bj, _ := json.Marshal(before)
+	aj, _ := json.Marshal(after)
+	if json.Unmarshal(bj, &b) != nil || json.Unmarshal(aj, &a) != nil {
+		return nil
+	}
+	keys := make([]string, 0, len(a))
+	for k, v := range a {
+		if string(b[k]) != string(v) {
+			keys = append(keys, k)
+		}
+	}
+	slices.Sort(keys)
+	out := []any{"changed", strings.Join(keys, ",")}
+	for _, k := range keys {
+		out = append(out, k, string(a[k]))
+	}
+	return out
 }

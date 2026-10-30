@@ -153,6 +153,7 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 	if !readJSON(w, r, &patch) {
 		return
 	}
+	before := s.Store.Settings()
 	next, err := s.Store.Update(func(st *store.Settings) {
 		if patch.FirstRunDone != nil {
 			st.FirstRunDone = *patch.FirstRunDone
@@ -187,8 +188,12 @@ func (s *server) putSettings(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 	if err != nil {
+		s.action(r, "settings", err)
 		writeErr(w, http.StatusBadRequest, err)
 		return
+	}
+	if changed := changedSettings(before, next); len(changed) > 1 && changed[1] != "" {
+		s.action(r, "settings", nil, changed...)
 	}
 	s.Hub.Broadcast(hub.Event{Type: "settings.changed", Data: next})
 	if s.Updates != nil {

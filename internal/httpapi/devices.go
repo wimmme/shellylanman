@@ -239,6 +239,7 @@ func (s *server) getScan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) rescan(w http.ResponseWriter, r *http.Request) {
+	s.action(r, "scan", nil)
 	go s.Devices.Rescan()
 	w.WriteHeader(http.StatusAccepted)
 }
