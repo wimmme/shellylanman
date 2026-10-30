@@ -98,6 +98,7 @@ type Devices struct {
 
 	deferred deferredQueue // tasks for devices that were off line (Phase 5)
 	fw       fwState       // firmware updates being followed (Phase 7)
+	watching watchState    // what the devices did, for the log (events.go)
 	fwOnce   sync.Once
 
 	fwIndex     *firmware.Index // Shelly firmware index for the local download (Phase 7)
@@ -719,6 +720,7 @@ func (m *Devices) setStatus(e *entry, s model.Status) {
 // updated runs after a device changed: a device that is on line runs its
 // next deferred task (DeferrablesContainer listens to UPDATE events).
 func (m *Devices) updated(d model.Device) {
+	m.watch(d)
 	m.fwUpdated(d)
 	m.recordSample(d)
 	if d.Status == model.StatusOnline && m.deferredWaiting(d.ID) {

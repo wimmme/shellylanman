@@ -450,6 +450,7 @@ func (m *Devices) startTrack(e *entry, d model.Device) {
 	if old, ok := t.tracks[d.ID]; ok {
 		old.cancel()
 	}
+	m.expectRestart(d.ID)
 	t.tracks[d.ID] = &fwTrack{from: m.runningBuild(e), uptime: d.Uptime, status: d.Status, progress: -1, cancel: cancel}
 	t.mu.Unlock()
 	go func() {

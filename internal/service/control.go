@@ -637,6 +637,7 @@ func (m *Devices) Reboot(ctx context.Context, ids []string) error {
 				default:
 				}
 			}()
+			m.expectRestart(e.dev.ID)
 			err := m.reboot(run, e)
 			m.action(ctx, "reboot", m.refOf(e.dev.ID), err)
 			if err != nil {

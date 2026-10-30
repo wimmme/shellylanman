@@ -14,6 +14,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   client's address. Failures are warnings. No passwords, KVS values or script code.
 - ShellyLanMan's own settings in the log too: which settings changed and their new values, MCP on/off and access,
   a new MCP token, log in (and wrong passwords), log out, the UI password set or switched off, and a rescan.
+- What the devices do, as `event device.…` lines: off line and back (with how long), a restart ShellyLanMan did
+  not ask for (power cut, crash), a new device, a changed IP address, credentials refused, and a newer firmware
+  offered (once per version). Battery devices that sleep are left out.
 - **A firmware update is followed to its end in the log**: the new version, *unchanged* (the device came back with
   the firmware it had: the update did not take), the device's own error, or not back within 15 minutes.
 - The log is also written to `/data/logs/shellylanman.log` (5 files of 1 MB), so it survives a restart.
