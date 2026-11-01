@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Czech (`cs`) translation of the user interface.
+
 ## [1.0.0] - 2026-10-28
 
 The first stable release: 0.10.0, installed and tested on a production Home Assistant, with no other change. From
