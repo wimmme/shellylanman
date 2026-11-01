@@ -99,7 +99,7 @@ pip install openapi-spec-validator && python -c "import json; from openapi_spec_
 
 ## 4. Translations
 
-Every UI string is in all eight catalogues `web/src/i18n/*.json` (a test checks equal
+Every UI string is in all nine catalogues `web/src/i18n/*.json` (a test checks equal
 keys and placeholders). The files are `json.dumps(…, ensure_ascii=False, indent=2)`
 with a final newline, so a small script that loads, changes and dumps them keeps the
 format; insert new keys next to related ones.

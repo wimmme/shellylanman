@@ -753,3 +753,9 @@ can go ahead; a README section on setting up a Proxmox container yourself. Wim b
 | P27-2 | **A systemd unit** `packaging/shellylanman.service`: runs as a system user `shellylanman`, data in `/var/lib/shellylanman` (`StateDirectory`, `SHELLYLANMAN_DATA`), options with `systemctl edit`. No sandbox options beyond `NoNewPrivileges` for now: namespace options can fail in an unprivileged LXC; tightened once tested on Proxmox | Works the same in a Proxmox LXC and on any systemd Linux |
 | P27-3 | **README *Without Docker (Proxmox LXC, any Linux)***: create the container, install from the latest release with checksum check, update, options, forgotten password. In an LXC the container has its own LAN address, so mDNS works without host networking | Wim |
 | P27-4 | **No community-scripts script yet**: it is submitted when the requirements are met (spring 2027 at the earliest), after testing on Wim's Proxmox host | Their requirements |
+
+## 37. Czech, the ninth UI language (2026-11-01, Wim)
+
+A contribution: KissmanCZ (Jan Pichrt) translated the UI to Czech (pull request #8, merged by Wim). Extends F3: the
+UI languages are en, nl, de, fr, es, it, bg, zh and **cs**; new UI strings go into all nine catalogues (the test
+enforces equal keys and placeholders). The Home Assistant integration keeps its own eight for now.

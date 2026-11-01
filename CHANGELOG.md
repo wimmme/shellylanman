@@ -6,7 +6,7 @@ versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
-- Czech (`cs`) translation of the user interface.
+- Czech (`cs`) translation of the user interface, by [KissmanCZ](https://github.com/KissmanCZ).
 - **Every action in the log.** Firmware updates, backups, restores, reboots, checklist switches (eco, access point,
   Bluetooth, roaming, automatic update, …), Devices settings, scripts and KVS, switching, RPC writes, scenes,
   profiles, credentials, notes, the archive and deferred tasks each write a line `action …` per device: what was

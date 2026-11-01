@@ -33,7 +33,7 @@ It started from [ShellyScanner](https://github.com/usnasoft/shellyscanner) by us
 and is built on its basis — its features, terminology and Shelly know-how — then
 developed further as a web application of its own: pages that work together for a
 first-time user, an MCP server for AI assistants, a Home Assistant app and integration,
-eight languages. No desktop, no VNC, no Java, no cloud.
+nine languages. No desktop, no VNC, no Java, no cloud.
 
 <p align="center">
   <img src="docs/images/tour.gif" alt="A tour: the Devices page with a device's menu, Device info and its settings, one and then three devices selected; the same selection on Checklist and Charts; Firmware with the access-point wizard; the Log; every Settings tab; About" width="800">
@@ -55,7 +55,7 @@ eight languages. No desktop, no VNC, no Java, no cloud.
   get their updates from ShellyLanMan (*Settings → Firmware*), and a QR code gives your
   phone the firmware file to update a device through its own access point.
 - **In your language** — English, Nederlands, Deutsch, Français, Español, Italiano,
-  Български, 中文.
+  Čeština, Български, 中文.
 - **Better than the phone app** — Shelly's own app is built around the cloud and shows
   only part of what the devices can do. ShellyLanMan talks to the devices directly, in
   any browser, also on your phone, with every setting, script, schedule and backup.
@@ -69,7 +69,7 @@ eight languages. No desktop, no VNC, no Java, no cloud.
 - **More than ShellyScanner** — on top of all of ShellyScanner's functions: pages that
   work together (one selection for Devices, Checklist and Firmware, buttons that say
   why they are not available), the MCP server and Home Assistant support above, scenes,
-  eight languages, colour palettes (the Home Assistant look by default), installable as
+  nine languages, colour palettes (the Home Assistant look by default), installable as
   an app, release notes in the app.
 
 ## 🚀 Quick start

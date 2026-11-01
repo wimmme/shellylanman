@@ -90,7 +90,7 @@ internal/fixture   fixture naming + scrubbing (public repo!)
   (`<meta name="csp-nonce">`, as CodeMirror's `EditorView.cspNonce`). A UI change
   that the unit tests cannot see is checked in a browser under the real CSP
   (`tools/screenshots/`, e.g. `check-editor.py`). Every UI string in every catalogue in `web/src/i18n/`
-  (en, nl, de, fr, es, it, bg, zh; a test enforces equal keys and placeholders).
+  (en, nl, de, fr, es, it, bg, zh, cs; a test enforces equal keys and placeholders).
 
 ## Workflow
 
