@@ -39,7 +39,7 @@ const (
 )
 
 // Languages the UI ships with.
-var Languages = []string{"en", "nl", "de", "fr", "es", "it", "bg", "zh"}
+var Languages = []string{"en", "nl", "de", "fr", "es", "it", "bg", "zh", "cs"}
 
 // Settings are the application settings visible to the UI. Secrets are kept
 // apart and never leave the store in clear text except through Secret.
