@@ -244,22 +244,33 @@ func (m *Devices) Rescan() {
 		m.browser = b
 		m.scan.MDNSActive = true
 		m.mu.Unlock()
-		go func() {
-			err := b.Run(run, func(in discovery.Instance) {
-				m.mu.Lock()
-				m.scan.Instances++
-				m.mu.Unlock()
-				m.emitScan()
-				m.handle(run, net.JoinHostPort(in.IP.String(), strconv.Itoa(in.Port)), in.Name, true)
-			})
+		found := func(in discovery.Instance) {
 			m.mu.Lock()
-			m.scan.MDNSActive = false
-			if err != nil && run.Err() == nil {
-				m.scan.MDNSError = err.Error()
-				m.log.Error("mdns", "err", err)
-			}
+			m.scan.Instances++
 			m.mu.Unlock()
 			m.emitScan()
+			m.handle(run, net.JoinHostPort(in.IP.String(), strconv.Itoa(in.Port)), in.Name, true)
+		}
+		go func() {
+			logged := ""
+			keepBrowsing(run, func(ctx context.Context) error {
+				m.mu.Lock()
+				m.scan.MDNSActive, m.scan.MDNSError = true, ""
+				m.mu.Unlock()
+				return b.Run(ctx, found)
+			}, mdnsRetry, func(err error) {
+				m.mu.Lock()
+				m.scan.MDNSActive = false
+				if err != nil {
+					m.scan.MDNSError = err.Error()
+				}
+				m.mu.Unlock()
+				m.emitScan()
+				if err != nil && err.Error() != logged { // once per cause, not every retry
+					logged = err.Error()
+					m.log.Error("mdns", "err", err, "retry", mdnsRetry.String())
+				}
+			})
 		}()
 	case store.ScanIP:
 		endAfter := searchProbeAfter + ProbeTimeout // the last address probes are answered
@@ -299,6 +310,32 @@ func (m *Devices) after(ctx context.Context, d time.Duration, fn func(context.Co
 	case <-ctx.Done():
 	case <-time.After(d):
 		fn(ctx)
+	}
+}
+
+// mdnsRetry: how long after a failed or stopped mDNS browser it is tried again.
+// It fails when ShellyLanMan starts before the network has an address (an LXC
+// whose DHCP is late); without a retry, discovery waited for the next rescan.
+var mdnsRetry = 10 * time.Second
+
+// keepBrowsing runs browse until ctx is done, again every after when it
+// returns early; stopped is called after each run with its error (nil: it
+// stopped without one). Each run has its own context, so what it started ends
+// with it.
+func keepBrowsing(ctx context.Context, browse func(context.Context) error, every time.Duration, stopped func(error)) {
+	for ctx.Err() == nil {
+		runCtx, cancel := context.WithCancel(ctx)
+		err := browse(runCtx)
+		cancel()
+		if ctx.Err() != nil {
+			return
+		}
+		stopped(err)
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(every):
+		}
 	}
 }
 

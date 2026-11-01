@@ -26,6 +26,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 - Chart.js 4.6.1 (was 4.5.1) on the Charts page.
 
+### Fixed
+- mDNS discovery stayed off when ShellyLanMan started before the network had an address (for example in a Proxmox
+  container whose DHCP answers late) until the next rescan; it is now tried again every 10 seconds. Reported by
+  [KissmanCZ](https://github.com/KissmanCZ).
+
 ### Documentation
 - Hardware tests: the local firmware update also tested on a Gen1 Shelly.
 
