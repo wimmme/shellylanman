@@ -142,7 +142,8 @@ docker run -d --name shellylanman --network host -v shellylanman-data:/data \
 ```
 
 Images are published for `linux/amd64` and `linux/arm64` (Raspberry Pi 4/5 with
-a 64-bit OS). Tags: `latest`, `X.Y` and `X.Y.Z`.
+a 64-bit OS). Tags: `latest`, `X.Y` and `X.Y.Z`. No Docker? See
+[Without Docker](#without-docker-proxmox-lxc-any-linux).
 
 ### Update
 
@@ -163,6 +164,48 @@ docker run --rm -v shellylanman_data:/data -v "$PWD":/backup alpine   tar czf /b
 (`docker volume ls` shows the volume's name: compose prefixes it with the project
 directory, e.g. `shellylanman_data`; the `docker run` example uses `shellylanman-data`). To go back, start the previous tag with the saved
 volume content.
+
+### Without Docker (Proxmox LXC, any Linux)
+
+Every release after v1.0.0 also has ready-made tarballs for Linux (`amd64` and
+`arm64`): ShellyLanMan is a single program, nothing else needs to be installed. In a
+Proxmox container it gets its own address on your LAN, so mDNS discovery works without
+host networking.
+
+**1. A container in Proxmox** (skip on another Linux machine): *Create CT* with a
+Debian 13 template, unprivileged, 1 core, 512 MB memory, 2 GB disk, network on the
+bridge of your LAN (`vmbr0`) with DHCP or a fixed address. Start it and open its
+console (log in as root).
+
+**2. Install** — `V` becomes the latest [release](https://github.com/wimmme/shellylanman/releases);
+set `ARCH` to `arm64` on a Raspberry Pi with a 64-bit OS:
+
+```sh
+apt update && apt install -y curl ca-certificates
+ARCH=amd64
+V=$(curl -fsSL https://api.github.com/repos/wimmme/shellylanman/releases/latest | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p')
+curl -fsSLO https://github.com/wimmme/shellylanman/releases/download/v$V/shellylanman_${V}_linux_$ARCH.tar.gz
+curl -fsSLO https://github.com/wimmme/shellylanman/releases/download/v$V/SHA256SUMS
+sha256sum --ignore-missing -c SHA256SUMS
+tar -xzf shellylanman_${V}_linux_$ARCH.tar.gz && cd shellylanman_${V}_linux_$ARCH
+useradd --system --no-create-home --shell /usr/sbin/nologin shellylanman
+install -m 0755 shellylanman /usr/local/bin/shellylanman
+install -m 0644 shellylanman.service /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now shellylanman
+```
+
+Open `http://<container-address>:3082`. It runs as the user `shellylanman`; its data
+(what Docker keeps in `/data`) is in `/var/lib/shellylanman`, its log in
+`journalctl -u shellylanman` and `/var/lib/shellylanman/logs/`.
+
+**Update**: the first five commands again (download, check and unpack the latest),
+then `install -m 0755 shellylanman /usr/local/bin/shellylanman && systemctl restart shellylanman`.
+
+**Options** (the variables under [Configuration](#configuration)): `systemctl edit shellylanman`,
+add them under `[Service]`, e.g. `Environment=SHELLYLANMAN_PORT=8080`, and
+`systemctl restart shellylanman`. A forgotten password: add
+`Environment=SHELLYLANMAN_RESET_PASSWORD=1` that way, restart, remove the line and
+restart again.
 
 ### Forgotten password
 
@@ -245,6 +288,8 @@ Assistant's Shelly integration, so you do not type them twice.
 | `backups/<device>/*.sbk` | Device backups (newest N per device, setting) |
 | `firmware/` | Verified firmware files of the local download (cache) |
 | `logs/shellylanman.log*` | ShellyLanMan's log (as on the Log page and in the container log), 5 files of 1 MB at most |
+
+Without Docker, this directory is `/var/lib/shellylanman`.
 
 Chart readings are kept in memory only (24 hours). Details:
 [`ARCHITECTURE.md` §2.6](ARCHITECTURE.md).

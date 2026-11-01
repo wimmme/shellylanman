@@ -23,3 +23,5 @@ jobs:
         run: docker buildx build --target test .
       - name: Production image builds
         run: docker buildx build .
+      - name: Release tarballs build and start
+        run: sh tools/dist-check.sh

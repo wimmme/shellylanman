@@ -117,7 +117,8 @@ base of the app), then `shellylanman-ha`.
 3. `sh tools/verify.sh` (also checks that the release notes can be extracted).
 4. Commit `release: vX.Y.Z`, tag `vX.Y.Z`, push `main`, then the tag.
 5. Wait for the *Publish image* and *Test* workflows (`gh run watch`); the publish
-   workflow creates the GitHub release from the CHANGELOG section.
+   workflow creates the GitHub release from the CHANGELOG section, with the tarballs of
+   `tools/dist.sh` (`sh tools/dist.sh X.Y.Z` builds them locally to look at).
 
 **shellylanman-ha** — the app and the integration are released separately (DECISIONS P24-1):
 

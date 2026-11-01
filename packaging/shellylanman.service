@@ -1,0 +1,29 @@
+# ShellyLanMan as a systemd service, without Docker (README: "Without Docker").
+#
+#   useradd --system --no-create-home --shell /usr/sbin/nologin shellylanman
+#   install -m 0755 shellylanman /usr/local/bin/shellylanman
+#   install -m 0644 shellylanman.service /etc/systemd/system/
+#   systemctl daemon-reload && systemctl enable --now shellylanman
+#
+# Options (SHELLYLANMAN_PORT, SHELLYLANMAN_ORIGINS, …): `systemctl edit shellylanman`
+# and add them under [Service] as Environment=…; the log: `journalctl -u shellylanman`.
+[Unit]
+Description=ShellyLanMan - Shelly devices on the LAN
+Documentation=https://github.com/wimmme/shellylanman
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=shellylanman
+Group=shellylanman
+# systemd creates /var/lib/shellylanman, owned by the user above.
+StateDirectory=shellylanman
+StateDirectoryMode=0700
+Environment=SHELLYLANMAN_DATA=/var/lib/shellylanman
+ExecStart=/usr/local/bin/shellylanman
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

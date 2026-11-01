@@ -4,6 +4,7 @@
 #
 #   docker build -t shellylanman .                 production image
 #   docker build --target test .                   all checks (what CI runs)
+#   sh tools/dist.sh 1.2.3                         release tarballs (target binary)
 #
 # The web and Go build stages run on the BUILD platform (--platform=$BUILDPLATFORM):
 # JavaScript is the same everywhere and Go cross-compiles, so a multi-arch build
@@ -44,6 +45,10 @@ ARG COMMIT=
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath \
       -ldflags="-s -w -X github.com/wimmme/shellylanman/internal/version.Version=${VERSION} -X github.com/wimmme/shellylanman/internal/version.Commit=${COMMIT}" \
       -o /out/shellylanman ./cmd/shellylanman
+
+# ── the binary alone, for the release tarballs (tools/dist.sh) ──────────────
+FROM scratch AS binary
+COPY --from=build /out/shellylanman /shellylanman
 
 # ── runtime ──────────────────────────────────────────────────────────────────
 FROM alpine:3.24

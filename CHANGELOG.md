@@ -20,6 +20,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - **A firmware update is followed to its end in the log**: the new version, *unchanged* (the device came back with
   the firmware it had: the update did not take), the device's own error, or not back within 15 minutes.
 - The log is also written to `/data/logs/shellylanman.log` (5 files of 1 MB), so it survives a restart.
+- **Without Docker**: every release now has tarballs for Linux (amd64, arm64) with a systemd unit, and the README
+  explains how to run ShellyLanMan in a Proxmox container or on any Linux machine.
 
 ### Changed
 - Chart.js 4.6.1 (was 4.5.1) on the Charts page.
