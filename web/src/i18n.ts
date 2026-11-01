@@ -8,11 +8,12 @@ import fr from './i18n/fr.json';
 import it from './i18n/it.json';
 import nl from './i18n/nl.json';
 import zh from './i18n/zh.json';
+import cs from './i18n/cs.json';
 
-export type Lang = 'en' | 'nl' | 'de' | 'fr' | 'es' | 'it' | 'bg' | 'zh';
+export type Lang = 'en' | 'nl' | 'de' | 'fr' | 'es' | 'it' | 'bg' | 'zh' | 'cs';
 export type Key = keyof typeof en;
 
-export const CATALOGUES: Record<Lang, Record<string, string>> = { en, nl, de, fr, es, it, bg, zh };
+export const CATALOGUES: Record<Lang, Record<string, string>> = { en, nl, de, fr, es, it, bg, zh, cs };
 // Each language under its own name, as a language picker shows them.
 export const LANGUAGES: { id: Lang; label: string }[] = [
   { id: 'en', label: 'English' },
@@ -23,6 +24,7 @@ export const LANGUAGES: { id: Lang; label: string }[] = [
   { id: 'it', label: 'Italiano' },
   { id: 'bg', label: 'Български' },
   { id: 'zh', label: '中文' },
+  { id: 'cs', label: 'Čeština' },
 ];
 
 const STORE_KEY = 'sl_lang';
