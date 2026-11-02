@@ -58,7 +58,8 @@ function devicePill(d: Device): HTMLElement {
   return statusPill(s.cls, label, statusMarks(d));
 }
 
-function lines(items: string[]): Node {
+function lines(items: string[]): Node | string {
+  if (!items.length) return ''; // an empty cell: left out of a phone's card
   const box = h('div', { class: 'cell-lines' });
   for (const it of items) box.append(h('div', {}, it));
   return box;
@@ -390,14 +391,16 @@ export const devicesPage: Page = {
               onchange: () => { if (selected.has(d.id)) selected.delete(d.id); else selected.add(d.id); anchor = d.id; redraw(); } })),
             ...cols.map((c) => {
               const empty = c.live && !hasLive(d);
-              const td = h('td', { class: 'c-' + c.key }, empty ? '' : (c.cell ? c.cell(d) : c.text(d)));
+              // data-label: on a phone each row is a card, with the column name before each value.
+              const td = h('td', { class: 'c-' + c.key, 'data-label': c.key === 'status' || c.key === 'name' ? undefined : t(c.label) },
+                empty ? '' : (c.cell ? c.cell(d) : c.text(d)));
               const tip = !empty && c.tip ? c.tip(d) : '';
               if (tip) td.title = tip;
               return td;
             }));
           tbody.append(tr);
         }
-        body = h('div', { class: 'table-wrap' }, h('table', { class: 'data devices ' + view }, h('thead', {}, head), tbody));
+        body = h('div', { class: 'table-wrap fit' }, h('table', { class: 'data devices ' + view }, h('thead', {}, head), tbody));
       }
       const banner = scanBanner();
       bannerBox.replaceChildren(...(banner ? [banner] : []));

@@ -71,6 +71,12 @@ function bleDialog(row: ChecklistRow, dev: Device | undefined): void {
   openModal(t(isBLU(row) ? 'chk.ble.bluTitle' : 'chk.ble.wifiTitle'), h('div', {}, filter, box), [identify, { label: t('common.close') }]);
 }
 
+/** "Name (hostname)" on two lines, the host name under the name: the column stays narrow. */
+function hostLines(host: string): Node[] {
+  const m = /^(.*) \(([^()]+)\)$/.exec(host);
+  return m ? [h('div', {}, m[1]!), h('div', { class: 'muted' }, `(${m[2]!})`)] : [document.createTextNode(host)];
+}
+
 // ---- page -----------------------------------------------------------------------------------
 
 export const checklistPage: Page = {
@@ -219,14 +225,14 @@ export const checklistPage: Page = {
           h('td', { class: 'sel' }, h('input', { type: 'checkbox', 'aria-label': r.host, checked: selected.has(r.id),
             onclick: (e: Event) => e.stopPropagation(),
             onchange: () => { if (selected.has(r.id)) selected.delete(r.id); else selected.add(r.id); anchor = r.id; draw(); } })),
-          h('td', { title: (r as { loading?: boolean }).loading ? t('status.reading') : devOf(r.id) ? statusTip(devOf(r.id)!) : t(('status.' + r.status) as Key) },
+          h('td', { class: 'chk-status', title: (r as { loading?: boolean }).loading ? t('status.reading') : devOf(r.id) ? statusTip(devOf(r.id)!) : t(('status.' + r.status) as Key) },
             (r as { loading?: boolean }).loading // blue while read, as on the other pages (DECISIONS P25-5)
               ? statusPill('reading', t('status.reading'))
               : statusPill(r.status, t(('status.' + r.status) as Key), statusMarks(devOf(r.id))),
             (r as { loading?: boolean }).loading ? busySpinner() : null),
-          h('td', {}, r.host),
-          h('td', { class: 'mono' }, r.address.replace(/:80$/, '')),
-          ...COLS.map((c) => { const v = cellView(c.key, r[c.key], c.good); return h('td', { class: 'chk ' + v.cls }, v.text); }));
+          h('td', { class: 'chk-host' }, ...hostLines(r.host)),
+          h('td', { class: 'mono', 'data-label': t('col.ip') }, r.address.replace(/:80$/, '')),
+          ...COLS.map((c) => { const v = cellView(c.key, r[c.key], c.good); return h('td', { class: 'chk ' + v.cls, 'data-label': t(c.label) }, v.text); }));
         tbody.append(tr);
       }
       const table = h('table', { class: 'data checklist' },
@@ -242,7 +248,7 @@ export const checklistPage: Page = {
       // keeps its hover colour (and the scroll position stays).
       const old = body.querySelector('table.checklist');
       if (old) patch(old, table);
-      else body.replaceChildren(h('div', { class: 'table-wrap' }, table));
+      else body.replaceChildren(h('div', { class: 'table-wrap fit' }, table));
     };
 
     // Row mouse handling, delegated: rows are kept across redraws.
