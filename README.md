@@ -18,8 +18,8 @@
 
 **Discover, monitor and manage Shelly devices on your LAN — one go-to app, with an MCP server for AI assistants.**
 
-A single lightweight Docker container that runs standalone, or inside Home Assistant as
-an app with extra features.
+A single lightweight program that runs in a container (Docker, a Proxmox LXC, …), as a
+service on any Linux machine, or inside Home Assistant as an app with extra features.
 
 ShellyLanMan is a network-based tool for monitoring and managing Shelly IoT devices.
 It automatically discovers devices on the local network and shows key information
@@ -47,8 +47,9 @@ nine languages. No desktop, no VNC, no Java, no cloud.
 
 - **One place for every Shelly on the LAN** — Gen1 to Gen4, Pro, BLU through their
   gateways, range-extender clients and protected devices.
-- **Runs where your other services run** — one Docker image for `amd64` and `arm64`
-  (Raspberry Pi 4/5), opened from any browser, also on a phone.
+- **Runs where your other services run** — a Docker image, a Home Assistant app or a
+  plain Linux service, for `amd64` and `arm64` (Raspberry Pi 4/5), opened from any
+  browser, also on a phone.
 - **Local first** — nothing leaves your LAN except what ShellyScanner also does (the
   devices' own firmware checks) and an opt-in release check. No account, no telemetry.
 - **Firmware without the cloud** — Shellys without internet access (in their own VLAN, say)
