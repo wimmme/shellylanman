@@ -24,6 +24,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   explains how to run ShellyLanMan in a Proxmox container or on any Linux machine.
 
 ### Changed
+- **Firmware on a phone**: each device is a card (name and status on top, the versions and the *via device
+  access point* button below, each with its column name) instead of a wide table to scroll sideways. The desktop
+  keeps its table.
 - Chart.js 4.6.1 (was 4.5.1) on the Charts page.
 - Dependencies: `golang.org/x/net` 0.62.0; `@types/node` 26.6.6 (development only).
 

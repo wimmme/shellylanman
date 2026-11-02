@@ -93,16 +93,17 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
       const status = busy ? 'reading' : dev?.status ?? r.status;
       // The first box is not clicked: it shows whether a stable or beta version is ticked.
       const chosen = !!choice.get(r.id);
+      // data-label: on a phone each row is a card, with the column name before each value.
       const tr_ = h('tr', { class: chosen ? 'selected' : undefined },
         h('td', { class: 'sel' }, h('input', { type: 'checkbox', disabled: true, checked: chosen, title: t('fw.selTip'), 'aria-label': `${r.name}: ${t('fw.selTip')}` })),
-        h('td', { title: busy || !dev ? t(('status.' + status) as Key) : statusTip(dev) },
+        h('td', { class: 'fw-status', title: busy || !dev ? t(('status.' + status) as Key) : statusTip(dev) },
           statusPill(status, t(('status.' + status) as Key), busy ? undefined : statusMarks(dev)), busy ? busySpinner() : null),
-        h('td', {}, r.name),
-        h('td', { title: r.currentBuild ?? '' }, r.current ?? ''),
-        h('td', {}, cellNode(r, stableCell(r, tr), 'stable')),
-        h('td', {}, cellNode(r, betaCell(r), 'beta')),
-        withIndex ? h('td', {}, indexCell(index.get(r.id), indexLoading)) : null,
-        withIndex ? h('td', {}, localCell(index.get(r.id), indexLoading)) : null);
+        h('td', { class: 'fw-name' }, r.name),
+        h('td', { title: r.currentBuild ?? '', 'data-label': t('fw.col.current') }, r.current ?? ''),
+        h('td', { 'data-label': t('fw.col.stable') }, cellNode(r, stableCell(r, tr), 'stable')),
+        h('td', { 'data-label': t('fw.col.beta') }, cellNode(r, betaCell(r), 'beta')),
+        withIndex ? h('td', { 'data-label': t('lfw.col') }, indexCell(index.get(r.id), indexLoading)) : null,
+        withIndex ? h('td', { 'data-label': t('lfw.localCol') }, localCell(index.get(r.id), indexLoading)) : null);
       tr_.addEventListener('dblclick', () => { // browseAction
         const d = allDevices().find((x) => x.id === r.id);
         if (d && d.status !== 'ghost' && d.gen !== 'blu' && d.gen !== 'bth') openPages([deviceURL(d.ip, d.port)]);

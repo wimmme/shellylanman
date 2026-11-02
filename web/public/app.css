@@ -308,6 +308,9 @@ td.mono{font-family:var(--font-mono);font-size:.82rem}
 .fw-panel .toolbar{margin-top:8px}.fw-check{gap:6px;white-space:nowrap}.fw-cell{gap:4px;flex-wrap:nowrap}
 .fw-link{background:none;border:0;padding:2px;color:var(--text-muted);cursor:pointer;display:inline-flex;border-radius:4px}.fw-link:hover,.fw-link:focus-visible{color:var(--text)}
 .offscreen{position:fixed;left:-9999px;top:0;opacity:0}table.data.fw td{white-space:nowrap}
+/* Firmware on a phone: each device a card, name and status on top, the versions below with
+   their column name (data-label), so nothing needs scrolling sideways. */
+@media (max-width:640px){table.data.fw,table.data.fw tbody{display:block}table.data.fw thead{display:none}table.data.fw tr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:10px;align-items:center;padding:8px 6px;border-top:1px solid var(--border)}table.data.fw tr.selected{background:color-mix(in srgb,var(--accent-rx) 14%,transparent)}table.data.fw td{display:block;border:0;padding:3px 0;background:none!important}table.data.fw td.sel{grid-column:1;grid-row:1;width:auto}table.data.fw td.fw-name{grid-column:2;grid-row:1;font-weight:600;white-space:normal;overflow-wrap:anywhere}table.data.fw td.fw-status{grid-column:3;grid-row:1}table.data.fw td[data-label]{grid-column:1/-1;display:flex;align-items:center;gap:10px}table.data.fw td[data-label]::before{content:attr(data-label);flex:0 0 38%;color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;white-space:normal}}
 .btn.small{padding:2px 8px;min-height:0}.lfw-cell{gap:6px}.lfw-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
 .lfw-qr{background:#fff;padding:8px;border-radius:8px;max-width:100%;height:auto}.lfw-qr.small{width:213px}
 @media (pointer:coarse){.apw-phone-qr{display:none}}.lfw-info{display:grid;gap:8px;min-width:200px}
