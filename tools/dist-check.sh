@@ -24,7 +24,8 @@ data="$(mktemp -d)"
 port=3199
 SHELLYLANMAN_DATA="$data" SHELLYLANMAN_PORT=$port "./shellylanman_${v}_linux_$arch/shellylanman" >"$data/out.log" 2>&1 &
 pid=$!
-trap 'kill $pid 2>/dev/null || true; rm -rf "$data"' EXIT
+# Wait for the server to stop before removing its data: it still writes there while it shuts down.
+trap 'kill $pid 2>/dev/null || true; wait $pid 2>/dev/null || true; rm -rf "$data"' EXIT
 i=0
 until [ -s "$data/listen.port" ] && SHELLYLANMAN_DATA="$data" "./shellylanman_${v}_linux_$arch/shellylanman" -healthcheck >/dev/null 2>&1; do
 	i=$((i + 1))
