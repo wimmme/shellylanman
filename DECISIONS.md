@@ -759,3 +759,6 @@ can go ahead; a README section on setting up a Proxmox container yourself. Wim b
 A contribution: KissmanCZ (Jan Pichrt) translated the UI to Czech (pull request #8, merged by Wim). Extends F3: the
 UI languages are en, nl, de, fr, es, it, bg, zh and **cs**; new UI strings go into all nine catalogues (the test
 enforces equal keys and placeholders). The Home Assistant integration keeps its own eight for now.
+
+Addendum (2026-11-02, Wim): the Home Assistant integration gets Czech too, for its 1.0.0 (shellylanman-ha
+`translations/cs.json`); the app's option texts stay en and nl.
