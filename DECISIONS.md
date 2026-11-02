@@ -762,3 +762,6 @@ enforces equal keys and placeholders). The Home Assistant integration keeps its 
 
 Addendum (2026-11-02, Wim): the Home Assistant integration gets Czech too, for its 1.0.0 (shellylanman-ha
 `translations/cs.json`); the app's option texts stay en and nl.
+
+Addendum (2026-11-02, Wim): the app's option texts too, in all nine languages: everything ShellyLanMan ships for Home
+Assistant is translated where the UI is.
