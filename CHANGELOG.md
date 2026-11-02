@@ -25,6 +25,7 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Chart.js 4.6.1 (was 4.5.1) on the Charts page.
+- Dependencies: `golang.org/x/net` 0.62.0; `@types/node` 26.6.6 (development only).
 
 ### Fixed
 - mDNS discovery stayed off when ShellyLanMan started before the network had an address (for example in a Proxmox
