@@ -48,6 +48,7 @@ versions follow [Semantic Versioning](https://semver.org/).
   [KissmanCZ](https://github.com/KissmanCZ).
 
 ### Documentation
+- README screenshots and both animations (tour, access-point wizard) taken again with the new tables.
 - README: the introduction no longer says ShellyLanMan is only a Docker container (it also runs in a Proxmox
   container or as a Linux service).
 - Hardware tests: the local firmware update also tested on a Gen1 Shelly.
