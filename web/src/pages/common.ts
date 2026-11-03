@@ -1,6 +1,6 @@
 import type { Device } from '../api';
 import { h, icon, ICONS } from '../dom';
-import { dateTime } from '../format';
+import { dateTime, splitHost } from '../format';
 import { t, type Key } from '../i18n';
 
 export interface Page {
@@ -45,6 +45,18 @@ export function card(title: string, badge: string | null, ...body: (Node | strin
   return h('section', { class: 'card' },
     h('div', { class: 'card-head' }, h('h2', { class: 'card-title' }, title), badge !== null && h('span', { class: 'card-badge' }, badge)),
     ...body);
+}
+
+/** A device as on Devices, Checklist and Firmware: the name, with the host name under it (DECISIONS P28-1). */
+export function hostCell(name: string, hostname: string): Node {
+  if (!name || name === hostname) return document.createTextNode(hostname);
+  return h('div', { class: 'host-cell' }, h('div', {}, name), h('div', { class: 'muted' }, `(${hostname})`));
+}
+
+/** The same from the server's "Name (hostname)" text. */
+export function hostLines(text: string): Node {
+  const parts = splitHost(text);
+  return parts ? hostCell(...parts) : document.createTextNode(text);
 }
 
 export function emptyState(title: string, text: string, iconPath: string = ICONS.empty): HTMLElement {

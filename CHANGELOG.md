@@ -27,9 +27,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 - **Devices, Checklist and Firmware on a phone**: each device is a card (name and status on top, the other columns
   below, each with its column name; Checklist two settings per line, Firmware with the *via device access point*
   button) instead of a wide table to scroll sideways. The desktop keeps its tables.
-- Checklist: the host name under the device's name, so the table fits a 1920 px screen.
+- **Devices, Checklist and Firmware start alike**: tick box, *Status* (now with its heading), then *Device*: the
+  name with the host name under it. On Devices this joins the *Device* and *Name* columns (sorted by name; the
+  filter and the CSV keep them apart). Checklist now fits a 1920 px screen.
 - Devices and Checklist on the desktop: only the table scrolls, not the page around it, so there is one scroll bar
-  each way, the sideways one always in view, and the column headings stay put.
+  each way, the sideways one always in view, and the column headings stay put (no longer see-through).
 - The tabs of Settings, About and the dialogs go on a second line when they do not fit (on a phone they ran off
   the screen).
 - Chart.js 4.6.1 (was 4.5.1) on the Charts page.

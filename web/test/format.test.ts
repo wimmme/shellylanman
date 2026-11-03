@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatDuration, formatMeter, formatUptime, meterSetText, metersText, moduleText } from '../src/format';
+import { formatDuration, formatMeter, formatUptime, meterSetText, metersText, moduleText, splitHost } from '../src/format';
 
 test('meter values follow METER_VAL_* formats', () => {
   assert.equal(formatMeter('W', 12.345, 'C'), '12.35W');
@@ -41,4 +41,11 @@ test('durations show their two largest units', () => {
   assert.equal(formatDuration(59), '0 min');
   assert.equal(formatDuration(3 * 3600 + 5 * 60), '3 h 5 min');
   assert.equal(formatDuration(2 * 86400 + 14 * 3600 + 59), '2 d 14 h');
+});
+
+test('splitHost: the name and the host name of "Name (hostname)"', () => {
+  assert.deepEqual(splitHost('LedKeuken (shellyplusrgbwpm-30c9225789ec)'), ['LedKeuken', 'shellyplusrgbwpm-30c9225789ec']);
+  assert.deepEqual(splitHost('Lamp (keuken) (shelly1-ab12)'), ['Lamp (keuken)', 'shelly1-ab12']);
+  assert.equal(splitHost('shelly1-ab12'), null);
+  assert.equal(splitHost('B-7c:c6:b6:a5:c9:3d'), null);
 });

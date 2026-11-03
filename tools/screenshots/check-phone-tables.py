@@ -37,7 +37,7 @@ def until(cond, seconds=60):
 
 
 PAGES = {  # page: (table, name cell, status cell)
-    "devices": ("table.devices", "td.c-name", "td.c-status"),
+    "devices": ("table.devices", "td.c-device", "td.c-status"),
     "checklist": ("table.checklist", "td.chk-host", "td.chk-status"),
     "firmware": ("table.fw", "td.fw-name", "td.fw-status"),
 }
@@ -106,8 +106,6 @@ with sync_playwright() as p:
     check(desk.locator("table.checklist thead").is_visible(), "desktop checklist: column headings")
     sw, cw = desk.locator(".table-wrap").first.evaluate("e => [e.scrollWidth, e.clientWidth]")
     check(sw <= cw, f"desktop checklist: no sideways scrolling ({sw} <= {cw})")
-    two = desk.locator("table.checklist td.chk-host").evaluate_all("tds => tds.filter(td => td.children.length === 2).length")
-    check(two > 0, f"desktop checklist: the host name under the name ({two} rows)")
     desk.screenshot(path="/shots/desk-checklist.png")
     for page in ("devices", "checklist"):
         for mini in ("open", "mini"):
@@ -116,6 +114,12 @@ with sync_playwright() as p:
             sh, ch = desk.locator(".main").evaluate("m => [m.scrollHeight, m.clientHeight]")
             check(sh <= ch + 1, f"desktop {page}, sidebar {mini}: the page itself does not scroll ({sh} <= {ch})")
     desk.evaluate("() => { try { localStorage.removeItem('sl_nav') } catch (e) {} }")
+    for page, (table, _, _) in PAGES.items():  # the same start on all three (DECISIONS P28-1)
+        open_page(desk, page)
+        heads = [x.strip().lower() for x in desk.locator(table + " thead th").all_inner_texts()[:3]]
+        check(heads[1:] == ["status", "device"], f"desktop {page}: tick box, Status, Device {heads}")
+        two = desk.locator(table + " tbody .host-cell").count()
+        check(two > 0, f"desktop {page}: the host name under the name ({two} rows)")
     open_page(desk, "devices")
     check(desk.locator("table.devices tbody tr").first.evaluate("e => getComputedStyle(e).display") == "table-row", "desktop devices: rows are table rows")
     wrap = desk.locator(".table-wrap").first
@@ -127,6 +131,8 @@ with sync_playwright() as p:
     wrap.evaluate("e => e.scrollTo(0, e.scrollHeight)")
     th1 = desk.locator("table.devices thead th").nth(2).bounding_box()["y"]
     check(abs(th1 - th0) < 2, f"desktop devices: the headings stay put while the table scrolls ({th0:.0f} -> {th1:.0f})")
+    bg = desk.locator("table.devices thead th").nth(2).evaluate("e => getComputedStyle(e).backgroundImage + ' ' + getComputedStyle(e).backgroundColor")
+    check("gradient" in bg and not bg.endswith("rgba(0, 0, 0, 0)"), f"desktop devices: the headings hide the rows scrolled under them ({bg[:60]}…)")
     desk.screenshot(path="/shots/desk-devices.png")
     check(not errors, f"no console errors {errors}")
     br.close()

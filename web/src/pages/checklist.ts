@@ -18,7 +18,7 @@ import { openDeviceSettings } from '../panels/devsettings';
 import { openIdentify } from '../panels/bluidentify';
 import { toast } from '../toast';
 import { openingScope, selected, takeHashIds } from '../selection';
-import { busySpinner, card, emptyState, scopeBanner, statusPill, statusTip, type Page } from './common';
+import { busySpinner, card, emptyState, hostLines, scopeBanner, statusPill, statusTip, type Page } from './common';
 
 const COLS: { key: Col; label: Key; tip: Key; good?: boolean }[] = [
   { key: 'eco', label: 'chk.col.eco', tip: 'chk.tip.eco', good: true },
@@ -69,12 +69,6 @@ function bleDialog(row: ChecklistRow, dev: Device | undefined): void {
   // The wizard that identifies BLU devices (DECISIONS P14-4): for this BLU device, or with this gateway.
   const identify = { label: t('blu.title'), onClick: () => { void openIdentify(isBLU(row) ? dev : undefined, isBLU(row) ? undefined : row.id); } };
   openModal(t(isBLU(row) ? 'chk.ble.bluTitle' : 'chk.ble.wifiTitle'), h('div', {}, filter, box), [identify, { label: t('common.close') }]);
-}
-
-/** "Name (hostname)" on two lines, the host name under the name: the column stays narrow. */
-function hostLines(host: string): Node[] {
-  const m = /^(.*) \(([^()]+)\)$/.exec(host);
-  return m ? [h('div', {}, m[1]!), h('div', { class: 'muted' }, `(${m[2]!})`)] : [document.createTextNode(host)];
 }
 
 // ---- page -----------------------------------------------------------------------------------
@@ -230,7 +224,7 @@ export const checklistPage: Page = {
               ? statusPill('reading', t('status.reading'))
               : statusPill(r.status, t(('status.' + r.status) as Key), statusMarks(devOf(r.id))),
             (r as { loading?: boolean }).loading ? busySpinner() : null),
-          h('td', { class: 'chk-host' }, ...hostLines(r.host)),
+          h('td', { class: 'chk-host' }, hostLines(r.host)),
           h('td', { class: 'mono', 'data-label': t('col.ip') }, r.address.replace(/:80$/, '')),
           ...COLS.map((c) => { const v = cellView(c.key, r[c.key], c.good); return h('td', { class: 'chk ' + v.cls, 'data-label': t(c.label) }, v.text); }));
         tbody.append(tr);
@@ -242,7 +236,7 @@ export const checklistPage: Page = {
               if (shown.every((r) => selected.has(r.id))) shown.forEach((r) => selected.delete(r.id)); else shown.forEach((r) => selected.add(r.id));
               draw();
             } })),
-          h('th', {}, ''), h('th', {}, t('col.device')), h('th', {}, t('col.ip')),
+          h('th', {}, t('col.status')), h('th', {}, t('col.device')), h('th', {}, t('col.ip')),
           ...COLS.map((c) => h('th', { title: t(c.tip) }, t(c.label))))), tbody);
       // Update in place: the row under the mouse stays the same element, so it
       // keeps its hover colour (and the scroll position stays).

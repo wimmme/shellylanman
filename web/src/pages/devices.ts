@@ -21,7 +21,7 @@ import { toast } from '../toast';
 import { selected } from '../selection';
 import { deviceURL, manyAtOnce, openPages } from '../weblinks';
 import { tooltip, whyDisabled } from '../why';
-import { busySpinner, emptyState, statusPill, statusTip, type Page } from './common';
+import { busySpinner, emptyState, hostCell, statusPill, statusTip, type Page } from './common';
 
 type ColKey = 'status' | 'type' | 'device' | 'name' | 'keyword' | 'mac' | 'ip' | 'ssid' | 'rssi' | 'cloud' | 'mqtt'
   | 'uptime' | 'temp' | 'measures' | 'logs' | 'source' | 'command';
@@ -34,6 +34,9 @@ interface Col {
   cmp?: (a: Device, b: Device) => number;   // sort
   live?: boolean;                           // empty for not logged / error / archived devices (DevicesTable.generateRow)
   tip?: (d: Device) => string;
+  inTable?: false;                          // only for the filter: shown inside another column
+  always?: true;                            // not in the column chooser
+  csv?: { label: Key; text: (d: Device) => string }[]; // CSV columns, when not the one shown
 }
 
 const YES = '✓', NO = '✗';
@@ -68,9 +71,13 @@ function lines(items: string[]): Node | string {
 const COLUMNS: Col[] = [
   { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: (d) => (d.status === 'reading' ? h('span', {}, devicePill(d), busySpinner()) : devicePill(d)), tip: statusTip,
     cmp: (a, b) => a.status.localeCompare(b.status) },
+  // Device: the name with the host name under it, as on Checklist and Firmware (DECISIONS P28-1);
+  // the CSV keeps them apart.
+  { key: 'device', label: 'col.device', text: (d) => d.hostname, cell: (d) => hostCell(d.name, d.hostname), always: true,
+    cmp: (a, b) => (a.name || a.hostname).localeCompare(b.name || b.hostname, undefined, { numeric: true, sensitivity: 'base' }) || compareAddress(a, b),
+    csv: [{ label: 'col.name', text: (d) => d.name }, { label: 'col.device', text: (d) => d.hostname }] },
   { key: 'type', label: 'col.type', text: (d) => d.typeName },
-  { key: 'device', label: 'col.device', text: (d) => d.hostname },
-  { key: 'name', label: 'col.name', text: (d) => d.name },
+  { key: 'name', label: 'col.name', text: (d) => d.name, inTable: false },
   { key: 'keyword', label: 'col.keyword', text: (d) => d.keyword ?? '' },
   { key: 'mac', label: 'col.mac', text: (d) => d.mac },
   { key: 'ip', label: 'col.ip', text: addressText, cmp: compareAddress, tip: (d) => (d.parents?.length ? t('status.gateways', { list: d.parents.join(', ') }) : '') },
@@ -252,8 +259,8 @@ function dropdown(label: string, items: { label: string; onClick: () => void; ch
 
 /** ExportCSVAction: the columns and rows shown, as their cells read. */
 function exportCSV(rows: Device[], cols: Col[]): void {
-  const header = cols.map((c) => t(c.label));
-  const body = rows.map((d) => cols.map((c) => (c.live && !hasLive(d) ? '' : c.text(d))));
+  const header = cols.flatMap((c) => (c.csv ? c.csv.map((x) => t(x.label)) : [t(c.label)]));
+  const body = rows.map((d) => cols.flatMap((c) => (c.csv ? c.csv.map((x) => x.text(d)) : [c.live && !hasLive(d) ? '' : c.text(d)])));
   download('shellylanman-devices.csv', toCSV(header, body, prefs.csvSeparator()));
 }
 
@@ -290,7 +297,7 @@ export const devicesPage: Page = {
       const all = allDevices();
       const rows = visibleRows(all);
       const hidden = hiddenCols();
-      const cols = COLUMNS.filter((c) => !hidden.has(c.key));
+      const cols = COLUMNS.filter((c) => c.inTable !== false && (c.always || !hidden.has(c.key)));
       const sel = selectedDevices();
       const one = sel.length === 1 ? sel[0]! : null;
       // For handlers: the selection when clicked (see `shown`).
@@ -339,7 +346,7 @@ export const devicesPage: Page = {
         sel.some((d) => d.relay) ? act('action.identify', !!one && !!one.relay, () => void openIdentify(O()), 'action.identifyTip', (d) => !!d.relay, true) : null,
       ].filter((x): x is HTMLElement => x !== null));
       keepOrReplace(controlsBox, [
-        dropdown(t('columns.menu'), COLUMNS.filter((c) => c.key !== 'status').map((c) => ({
+        dropdown(t('columns.menu'), COLUMNS.filter((c) => c.key !== 'status' && c.inTable !== false && !c.always).map((c) => ({
           label: t(c.label), checked: !hidden.has(c.key),
           onClick: () => { const s = hiddenCols(); if (s.has(c.key)) s.delete(c.key); else s.add(c.key); setHidden(s); redraw(); },
         }))),
@@ -375,7 +382,7 @@ export const devicesPage: Page = {
           ...cols.map((c) => {
             const active = c.key === sortKey;
             const th = h('th', { scope: 'col', class: 'sortable' + (active ? (sortAsc ? ' sort-asc' : ' sort-desc') : ''), tabindex: 0,
-              'aria-sort': active ? (sortAsc ? 'ascending' : 'descending') : 'none' }, c.key === 'status' ? '' : t(c.label));
+              'aria-sort': active ? (sortAsc ? 'ascending' : 'descending') : 'none' }, t(c.label));
             const toggle = (): void => { if (active) sortAsc = !sortAsc; else { sortKey = c.key; sortAsc = true; } redraw(); };
             th.addEventListener('click', toggle);
             th.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
@@ -392,7 +399,7 @@ export const devicesPage: Page = {
             ...cols.map((c) => {
               const empty = c.live && !hasLive(d);
               // data-label: on a phone each row is a card, with the column name before each value.
-              const td = h('td', { class: 'c-' + c.key, 'data-label': c.key === 'status' || c.key === 'name' ? undefined : t(c.label) },
+              const td = h('td', { class: 'c-' + c.key, 'data-label': c.key === 'status' || c.key === 'device' ? undefined : t(c.label) },
                 empty ? '' : (c.cell ? c.cell(d) : c.text(d)));
               const tip = !empty && c.tip ? c.tip(d) : '';
               if (tip) td.title = tip;

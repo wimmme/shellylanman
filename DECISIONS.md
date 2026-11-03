@@ -765,3 +765,16 @@ Addendum (2026-11-02, Wim): the Home Assistant integration gets Czech too, for i
 
 Addendum (2026-11-02, Wim): the app's option texts too, in all nine languages: everything ShellyLanMan ships for Home
 Assistant is translated where the UI is.
+
+## 38. One layout for the device tables, and the tables on a phone (2026-11-03, Wim)
+
+Wim tests on a 1920 px screen, an ultrawide and a phone: the tables were too wide on a phone, Checklist did not fit
+1920 px, and Devices had its sideways scroll bar below every row. A UI change, not a new feature.
+
+| # | Decision | Why |
+|---|---|---|
+| P28-1 | **Devices, Checklist and Firmware start alike**: the tick box, **Status** (now with its heading), then **Device**: the name with the host name under it in brackets (ShellyScanner's extended host name on two lines); the other columns are each page's own. On Devices this joins ShellyScanner's *Device* and *Name* columns (T1): the joined column sorts by name (else host name), is always shown (not in the column chooser), the filter still has *Device* and *Name* apart, and the CSV keeps the two columns | Wim: one UI; the name is what people know a device by |
+| P28-2 | **On a phone (below 640 px) each row is a card**: tick box, name and status on top, the other columns below with their heading before the value (Checklist two per line; Devices leaves empty values out; Firmware keeps its "-"). No sorting on a phone (no headings); CSS only, the desktop tables are unchanged | Wim: no scrolling sideways on a phone |
+| P28-3 | **On the desktop only the Devices and Checklist tables scroll**, inside a card that fills the screen: one scroll bar each way, the sideways one always in view, headings that stay put | Wim's test at 1920 px |
+| P28-4 | **Tab bars wrap** to a second line when they do not fit | Settings and About ran off a phone's screen |
+

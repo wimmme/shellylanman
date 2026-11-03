@@ -43,7 +43,7 @@ Status legend: `—` not started · `🔨` in progress · `✅` done and tested 
 
 | # | Feature | Where in Java | Shelly API | Gen | Web equivalent | Phase | Status |
 |---|---|---|---|---|---|---|---|
-| T1 | Columns: Status, Type, Device (hostname), Name, Keyword, MAC, IP, SSID, RSSI (dBm), Cloud (En/Con), MQTT (En/Con), Uptime, Temp, Measurements, Logs, Source, Command | `view/MainView` (`tabModel`), `view/DevicesTable` (COL_*), `updateRow` | from D15 data | all | Devices table page with the same columns and headings | 3 | ✅ |
+| T1 | Columns: Status, Type, Device (hostname), Name, Keyword, MAC, IP, SSID, RSSI (dBm), Cloud (En/Con), MQTT (En/Con), Uptime, Temp, Measurements, Logs, Source, Command | `view/MainView` (`tabModel`), `view/DevicesTable` (COL_*), `updateRow` | from D15 data | all | Devices table page with the same columns and headings; since DECISIONS P28-1 Device and Name are one column (name, host name under it; CSV keeps both) | 3 | ✅ |
 | T2 | Default hidden columns: Keyword, MAC, SSID, Logs | `DevicesTable.loadColPos` | — | — | Same defaults | 3 | ✅ |
 | T3 | Column chooser & order, separately for "default" and "detailed" view; reset on table-version change | `DevicesTable.saveColPos/loadColPos`, `DialogAppSettings` (Columns), `Main.TAB_VERSION` | — | — | Column menu; stored per browser | 3 | ✅ |
 | T4 | Detailed / default view toggle (window resize modes: full, horizontal, estimate, as-is) | `MainView.detailedView`, setting `DETAIL_SCREEN` | — | — | View-mode toggle; resize modes are not applicable in a browser ⚠️ (§4.1) | 3 | ✅ |

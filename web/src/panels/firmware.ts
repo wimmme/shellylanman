@@ -9,7 +9,7 @@
 import { ApiError, firmwareApi, localFwApi, type FirmwareRow, type IndexRow } from '../api';
 import { copyText } from '../clipboard';
 import { allDevices, onDevicesChanged, statusMarks } from '../devices';
-import { busySpinner, statusPill, statusTip } from '../pages/common';
+import { busySpinner, hostLines, statusPill, statusTip } from '../pages/common';
 import { h, icon, ICONS } from '../dom';
 import { betaCell, count, initialChoice, matches, placeholderRows, requests, selectAll, stableCell, toggle, type Cell, type Choice } from '../firmwarelogic';
 import { t, type Key } from '../i18n';
@@ -98,7 +98,7 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
         h('td', { class: 'sel' }, h('input', { type: 'checkbox', disabled: true, checked: chosen, title: t('fw.selTip'), 'aria-label': `${r.name}: ${t('fw.selTip')}` })),
         h('td', { class: 'fw-status', title: busy || !dev ? t(('status.' + status) as Key) : statusTip(dev) },
           statusPill(status, t(('status.' + status) as Key), busy ? undefined : statusMarks(dev)), busy ? busySpinner() : null),
-        h('td', { class: 'fw-name' }, r.name),
+        h('td', { class: 'fw-name' }, hostLines(r.name)),
         h('td', { title: r.currentBuild ?? '', 'data-label': t('fw.col.current') }, r.current ?? ''),
         h('td', { 'data-label': t('fw.col.stable') }, cellNode(r, stableCell(r, tr), 'stable')),
         h('td', { 'data-label': t('fw.col.beta') }, cellNode(r, betaCell(r), 'beta')),

@@ -152,3 +152,9 @@ export function moduleText(m: Module, unit: TempUnit = prefs.temp()): string {
   }
   return m.label;
 }
+
+/** "Name (hostname)" (the server's extended host name) as [name, hostname]; null for a bare host name. */
+export function splitHost(text: string): [string, string] | null {
+  const m = /^(.*) \(([^()]+)\)$/.exec(text);
+  return m ? [m[1]!, m[2]!] : null;
+}
