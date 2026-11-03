@@ -248,7 +248,7 @@ export interface LocalLink {
 }
 export const localFwApi = {
   index: (ids: string[]) => request<IndexRow[]>('GET', '/firmware/index' + (ids.length ? '?' + idsQuery(ids) : '')),
-  link: (id: string) => request<LocalLink>('POST', `/firmware/${encodeURIComponent(id)}/local`),
+  link: (id: string, stage = 'stable') => request<LocalLink>('POST', `/firmware/${encodeURIComponent(id)}/local` + (stage === 'beta' ? '?stage=beta' : '')),
   /** For a model, when there is no device in the list (DECISIONS §29): gen "1", or "2" for Gen2 and newer. */
   modelLink: (gen: string, key: string) => request<LocalLink>('POST', '/firmware/local', { gen, key }),
 };
@@ -264,7 +264,7 @@ export const apApi = {
   guide: (q: { id?: string; name?: string }) => request<APGuide>('GET', '/ap/guide?' + new URLSearchParams(Object.entries(q).filter((e): e is [string, string] => !!e[1])).toString()),
   models: () => request<ModelChoice[]>('GET', '/ap/models'),
   /** The address (and QR code) that opens the firmware wizard on a phone. */
-  phone: (id?: string) => request<PhoneLink>('GET', '/ap/phone' + (id ? '?id=' + encodeURIComponent(id) : '')),
+  phone: (id?: string, stage = 'stable') => request<PhoneLink>('GET', '/ap/phone' + (id ? '?id=' + encodeURIComponent(id) + (stage === 'beta' ? '&stage=beta' : '') : '')),
 };
 export interface PhoneLink { url: string; qr: string; warning?: string }
 

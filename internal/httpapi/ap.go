@@ -20,7 +20,7 @@ func (s *server) apRoutes(mux router, h func(http.HandlerFunc) http.HandlerFunc)
 // apPhone: the link (and QR code) that opens the firmware wizard on a phone.
 func (s *server) apPhone(w http.ResponseWriter, r *http.Request) {
 	base, guessed := s.phoneBase(r)
-	l, err := service.WizardLink(base, r.URL.Query().Get("id"))
+	l, err := service.WizardLink(base, r.URL.Query().Get("id"), r.URL.Query().Get("stage"))
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, err)
 		return

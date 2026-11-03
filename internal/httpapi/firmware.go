@@ -64,10 +64,12 @@ func localLink(link *service.LocalLink, guessed bool) *service.LocalLink {
 
 func (s *server) localFirmware(w http.ResponseWriter, r *http.Request) {
 	base, guessed := s.phoneBase(r)
-	link, err := s.Devices.LocalDownload(r.Context(), r.PathValue("id"), base)
+	link, err := s.Devices.LocalDownload(r.Context(), r.PathValue("id"), base, r.URL.Query().Get("stage"))
 	switch {
 	case err == nil:
 		writeJSON(w, http.StatusOK, localLink(link, guessed))
+	case errors.Is(err, service.ErrInvalid):
+		writeErr(w, http.StatusBadRequest, err)
 	case errors.Is(err, service.ErrUpToDate), errors.Is(err, service.ErrNoLocalFW):
 		writeErr(w, http.StatusConflict, err)
 	case errors.Is(err, service.ErrNotFound):

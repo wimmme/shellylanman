@@ -168,8 +168,16 @@ func shellyInfoOf(e *entry) shellyInfo {
 	return info
 }
 
+// indexVersion: the newest stable or beta version of a model in Shelly's index (DECISIONS P29-1).
+func (m *Devices) indexVersion(ctx context.Context, gen, key, stage string) (*firmware.Latest, error) {
+	if stage == StageBeta {
+		return m.FirmwareSource().Beta(ctx, gen, key)
+	}
+	return m.FirmwareSource().Latest(ctx, gen, key)
+}
+
 // localFirmwareInfo replaces the device's own check in local mode: the newest stable
-// version in the index, no beta (DECISIONS P25-2).
+// and beta versions in the index, each when it is newer than the device's (DECISIONS P29-1).
 func (m *Devices) localFirmwareInfo(ctx context.Context, e *entry, fw fwInfo) fwInfo {
 	m.mu.Lock()
 	d, info := e.dev, shellyInfoOf(e)
@@ -189,12 +197,19 @@ func (m *Devices) localFirmwareInfo(ctx context.Context, e *entry, fw fwInfo) fw
 			fw.stableBuild = l.Version
 		}
 	}
+	if b, err := m.FirmwareSource().Beta(ctx, gen, key); err == nil && cur != "" && firmware.Compare(b.Version, cur) > 0 {
+		fw.beta, fw.betaBuild = b.Version, b.Build
+		if fw.betaBuild == "" {
+			fw.betaBuild = b.Version
+		}
+	}
 	return fw
 }
 
-// sendLocalUpdate tells a device to update from this server: the file is fetched and
-// verified first, so the device does not wait on Shelly's servers.
-func (m *Devices) sendLocalUpdate(ctx context.Context, e *entry, conn *shelly.Conn) error {
+// sendLocalUpdate tells a device to update from this server to the stable or beta
+// version: the file is fetched and verified first, so the device does not wait on
+// Shelly's servers.
+func (m *Devices) sendLocalUpdate(ctx context.Context, e *entry, conn *shelly.Conn, stage string) error {
 	m.mu.Lock()
 	d, info := e.dev, shellyInfoOf(e)
 	m.mu.Unlock()
@@ -203,7 +218,7 @@ func (m *Devices) sendLocalUpdate(ctx context.Context, e *entry, conn *shelly.Co
 		return ErrNoLocalFW
 	}
 	x := m.FirmwareSource()
-	l, err := x.Latest(ctx, gen, key)
+	l, err := m.indexVersion(ctx, gen, key, stage)
 	if err != nil {
 		return err
 	}
@@ -282,9 +297,8 @@ type FirmwareLink struct {
 	Local   bool   `json:"local"` // on ShellyLanMan (local mode), else on Shelly's server
 }
 
-// FirmwareLink: in local mode the stable version on this server, as for a phone (valid
-// LinkTTL; base is the address phones use); otherwise Shelly's own link from the index,
-// stable or beta.
+// FirmwareLink: in local mode the version on this server, as for a phone (valid
+// LinkTTL; base is the address phones use); otherwise Shelly's own link from the index.
 func (m *Devices) FirmwareLink(ctx context.Context, id, stage, base string) (*FirmwareLink, error) {
 	if stage != StageStable && stage != StageBeta {
 		return nil, invalidField("stage")
@@ -298,20 +312,14 @@ func (m *Devices) FirmwareLink(ctx context.Context, id, stage, base string) (*Fi
 	if !ok {
 		return nil, ErrNoLocalFW
 	}
-	if stage == StageStable && m.localMode() {
-		l, err := m.LocalDownload(ctx, id, base)
+	if m.localMode() {
+		l, err := m.LocalDownload(ctx, id, base, stage)
 		if err != nil {
 			return nil, err
 		}
 		return &FirmwareLink{URL: l.URL, Version: l.Version, Local: true}, nil
 	}
-	x := m.FirmwareSource()
-	var l *firmware.Latest
-	if stage == StageBeta {
-		l, err = x.Beta(ctx, gen, key)
-	} else {
-		l, err = x.Latest(ctx, gen, key)
-	}
+	l, err := m.indexVersion(ctx, gen, key, stage)
 	if err != nil {
 		return nil, err
 	}

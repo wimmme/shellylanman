@@ -7,8 +7,8 @@
 //   - Gen2+: https://updates.shelly.cloud/update/<app> → stable.{version,build_id,url};
 //     alt.* is never used.
 //
-// Beta versions (Gen1 beta_url/beta_ver, Gen2+ beta.*) are only handed out as a link
-// (Beta): they are never downloaded or verified here.
+// Beta versions (Gen1 beta_url/beta_ver, Gen2+ beta.*) come from the same index (Beta)
+// and are verified the same way (DECISIONS P29-1).
 //
 // The Gen2+ hosts use certificates of Shelly's private CA without a subject
 // alternative name, which no standard client accepts; their public keys are
@@ -191,8 +191,8 @@ func (x *Index) Latest(ctx context.Context, gen, key string) (*Latest, error) {
 	return x.latestG2(ctx, key)
 }
 
-// Beta returns the newest beta in Shelly's index, for a download link only (ErrNotFound
-// when there is none, and for the archive, which has no betas).
+// Beta returns the newest beta in Shelly's index (ErrNotFound when there is none, and
+// for the archive, which has no betas).
 func (x *Index) Beta(ctx context.Context, gen, key string) (*Latest, error) {
 	if key == "" {
 		return nil, ErrNotFound
@@ -354,13 +354,15 @@ func (x *Index) latestG2(ctx context.Context, app string) (*Latest, error) {
 		if err := json.Unmarshal(b, &idx); err != nil {
 			return nil, err
 		}
-		if idx.Beta.URL != "" && idx.Beta.Version != "" {
-			beta = &Latest{Gen: "2", Key: app, Version: idx.Beta.Version, Build: idx.Beta.BuildID, URL: idx.Beta.URL, Source: SourceShelly}
+		fileURL := regexp.MustCompile(`^` + regexp.QuoteMeta(x.Gen2Files) + `[\w\-]+/([\w\-]+)/([0-9a-f]{64})$`)
+		// A beta on another host or for another app is left out: its file could not be checked.
+		if m := fileURL.FindStringSubmatch(idx.Beta.URL); m != nil && m[1] == app && idx.Beta.Version != "" {
+			beta = &Latest{Gen: "2", Key: app, Version: idx.Beta.Version, Build: idx.Beta.BuildID, URL: idx.Beta.URL, Source: SourceShelly, sha256: m[2]}
 		}
 		if idx.Stable.URL == "" || idx.Stable.Version == "" {
 			return nil, ErrNotFound
 		}
-		m := regexp.MustCompile(`^` + regexp.QuoteMeta(x.Gen2Files) + `[\w\-]+/([\w\-]+)/([0-9a-f]{64})$`).FindStringSubmatch(idx.Stable.URL)
+		m := fileURL.FindStringSubmatch(idx.Stable.URL)
 		if m == nil || m[1] != app {
 			return nil, fmt.Errorf("unexpected firmware URL for %s", app)
 		}

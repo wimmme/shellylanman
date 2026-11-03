@@ -38,7 +38,7 @@ func TestLocalModeGen1(t *testing.T) {
 		t.Fatalf("mark %+v", d)
 	}
 	rows, err := m.Firmware(ctx, []string{"AABBCC000001"})
-	if err != nil || len(rows) != 1 || rows[0].Stable != "1.15.0" || rows[0].Beta != "" || !rows[0].Preselect || rows[0].Current != "1.14.0" {
+	if err != nil || len(rows) != 1 || rows[0].Stable != "1.15.0" || rows[0].Beta != "1.16.0-beta1" || !rows[0].Preselect || rows[0].Current != "1.14.0" {
 		t.Fatalf("rows %+v %v", rows, err)
 	}
 
@@ -65,12 +65,35 @@ func TestLocalModeGen1(t *testing.T) {
 		t.Fatalf("device link: %s %v", name, err)
 	}
 
-	// The copy buttons: the stable version on ShellyLanMan, beta on Shelly's server.
+	// The copy buttons: stable and beta both on ShellyLanMan (DECISIONS P29-1).
 	if l, err := m.FirmwareLink(ctx, "AABBCC000001", StageStable, "http://phone:3082"); err != nil || !l.Local || !strings.HasPrefix(l.URL, "http://phone:3082/fw/") || l.Version != "1.15.0" {
 		t.Fatalf("local link %+v %v", l, err)
 	}
-	if l, err := m.FirmwareLink(ctx, "AABBCC000001", StageBeta, "http://phone:3082"); err != nil || l.Local || l.URL != srv.URL+"/beta/SHPLG-S.zip" || l.Version != "1.16.0-beta1" {
+	if l, err := m.FirmwareLink(ctx, "AABBCC000001", StageBeta, "http://phone:3082"); err != nil || !l.Local || !strings.HasPrefix(l.URL, "http://phone:3082/fw/") || l.Version != "1.16.0-beta1" {
 		t.Fatalf("beta link %+v %v", l, err)
+	}
+
+	// A beta update comes from ShellyLanMan too, and its link gives the beta file.
+	if res, err := m.FirmwareUpdate(ctx, []FirmwareRequest{{ID: "AABBCC000001", Stage: StageBeta}}); err != nil || res[0].Result != ResultOK {
+		t.Fatalf("beta update %+v %v", res, err)
+	}
+	var tok string
+	for _, c := range g1.Calls() {
+		if u, _ := url.QueryUnescape(strings.TrimPrefix(c, "GET /ota?url=")); strings.HasPrefix(c, "GET /ota?url=") && re.MatchString(u) && !strings.Contains(c, mt[1]) {
+			tok = re.FindStringSubmatch(u)[1]
+		}
+	}
+	if tok == "" || hasCall(g1, "GET /ota?beta=true") {
+		t.Fatalf("beta update calls %v", g1.Calls())
+	}
+	if p, _, err := m.FirmwareFile(ctx, tok); err != nil || !strings.Contains(p, "1.16.0-beta1") {
+		t.Fatalf("beta file %q %v", p, err)
+	}
+	if l, err := m.LocalDownload(ctx, "AABBCC000001", "http://phone:3082", StageBeta); err != nil || l.Version != "1.16.0-beta1" {
+		t.Fatalf("wizard beta %+v %v", l, err)
+	}
+	if _, err := m.LocalDownload(ctx, "AABBCC000001", "http://phone:3082", "nightly"); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("wizard stage: %v", err)
 	}
 
 	// Back to device mode: the device's own word at the next refresh.
@@ -120,7 +143,8 @@ func TestLocalModeGen2(t *testing.T) {
 	x.Gen2URL, x.Gen2Files, x.Pinned = srv.URL+"/update/", srv.URL+"/", srv.Client()
 	m.SetFirmwareSource(x)
 
-	// The device's own check offers a beta: local mode shows the index's stable only.
+	// The device's own check offers a beta: local mode shows the index's versions only
+	// (here a stable and no beta).
 	rows, err := m.Firmware(ctx, []string{"AABBCC000002"})
 	if err != nil || rows[0].Stable != "1.8.0" || rows[0].Beta != "" || !rows[0].Preselect {
 		t.Fatalf("rows %+v %v", rows, err)
@@ -151,11 +175,14 @@ func TestDeviceBaseAuto(t *testing.T) {
 }
 
 func TestWizardLink(t *testing.T) {
-	l, err := WizardLink("http://10.0.0.5:3082/", "AABBCC000001")
+	l, err := WizardLink("http://10.0.0.5:3082/", "AABBCC000001", "")
 	if err != nil || l.URL != "http://10.0.0.5:3082/#/firmware?apw=AABBCC000001" || !strings.HasPrefix(l.QR, "data:image/png;base64,") || l.Warning != "" {
 		t.Fatalf("%+v %v", l, err)
 	}
-	if l, _ := WizardLink("http://localhost:3082", ""); l.URL != "http://localhost:3082/#/firmware?apw=" || l.Warning != "localhost" {
+	if l, _ := WizardLink("http://10.0.0.5:3082", "AABBCC000001", StageBeta); l.URL != "http://10.0.0.5:3082/#/firmware?apw=AABBCC000001&stage=beta" {
+		t.Fatalf("beta wizard link %+v", l)
+	}
+	if l, _ := WizardLink("http://localhost:3082", "", ""); l.URL != "http://localhost:3082/#/firmware?apw=" || l.Warning != "localhost" {
 		t.Fatalf("%+v", l)
 	}
 }

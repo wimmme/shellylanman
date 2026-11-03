@@ -50,9 +50,10 @@ export const firmwarePage: Page = {
     // #/firmware?apw=<id>: the code in the wizard on a PC, scanned with a phone, opens it here.
     const apw = /[?&]apw=([^&]*)/.exec(location.hash);
     if (apw) {
+      const stage = /[?&]stage=beta/.test(location.hash) ? 'beta' : 'stable';
       history.replaceState(null, '', '#/firmware');
       const id = decodeURIComponent(apw[1]!);
-      openFirmwareWizard(known(id) ? { id } : {});
+      openFirmwareWizard(known(id) ? { id, stage } : {});
     }
   },
   dispose() { panel?.dispose(); panel = null; },

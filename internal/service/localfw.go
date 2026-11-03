@@ -148,7 +148,13 @@ const linkContext = "fw-link"
 
 // LocalDownload makes the download link and QR code for a device. base is
 // the address phones use to reach this server ("http://host:port").
-func (m *Devices) LocalDownload(ctx context.Context, id, base string) (*LocalLink, error) {
+func (m *Devices) LocalDownload(ctx context.Context, id, base, stage string) (*LocalLink, error) {
+	if stage == "" {
+		stage = StageStable
+	}
+	if stage != StageStable && stage != StageBeta {
+		return nil, invalidField("stage")
+	}
 	e, err := m.entryFor(id)
 	if err != nil {
 		return nil, err
@@ -158,7 +164,7 @@ func (m *Devices) LocalDownload(ctx context.Context, id, base string) (*LocalLin
 	if !ok {
 		return nil, ErrNoLocalFW
 	}
-	return m.localLink(ctx, gen, key, cur, descName(d), d.TypeName, base)
+	return m.localLink(ctx, gen, key, cur, descName(d), d.TypeName, base, stage)
 }
 
 // LocalDownloadModel makes the link for a model, without a device in the list (a new
@@ -174,13 +180,13 @@ func (m *Devices) LocalDownloadModel(ctx context.Context, gen, key, base string)
 			name = c.Name
 		}
 	}
-	return m.localLink(ctx, gen, key, "", name, name, base)
+	return m.localLink(ctx, gen, key, "", name, name, base, StageStable)
 }
 
-// localLink: the newest stable firmware of one model as a link and QR code. current is
-// the version the device runs ("" when there is no device): then there is no "up to date".
-func (m *Devices) localLink(ctx context.Context, gen, key, cur, name, modelName, base string) (*LocalLink, error) {
-	l, err := m.FirmwareSource().Latest(ctx, gen, key)
+// localLink: the newest stable or beta firmware of one model as a link and QR code. current
+// is the version the device runs ("" when there is no device): then there is no "up to date".
+func (m *Devices) localLink(ctx context.Context, gen, key, cur, name, modelName, base, stage string) (*LocalLink, error) {
+	l, err := m.indexVersion(ctx, gen, key, stage)
 	if err != nil {
 		return nil, err
 	}
@@ -244,8 +250,12 @@ func (m *Devices) FirmwareFile(ctx context.Context, token string) (path, name st
 	if err != nil {
 		return "", "", err
 	}
-	if l.Version != c.Version { // the index moved on: make a new link
-		return "", "", ErrLinkExpired
+	if l.Version != c.Version { // a beta, or the index moved on: then make a new link
+		if b, err := x.Beta(ctx, c.Gen, c.Key); err == nil && b.Version == c.Version {
+			l = b
+		} else {
+			return "", "", ErrLinkExpired
+		}
 	}
 	p, err := x.File(ctx, l)
 	return p, l.FileName(), err

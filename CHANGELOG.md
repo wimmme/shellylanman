@@ -22,6 +22,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 - The log is also written to `/data/logs/shellylanman.log` (5 files of 1 MB), so it survives a restart.
 - **Without Docker**: every release now has tarballs for Linux (amd64, arm64) with a systemd unit, and the README
   explains how to run ShellyLanMan in a Proxmox container or on any Linux machine.
+- **Betas through ShellyLanMan**: with *Settings → Firmware → ShellyLanMan* the Firmware page now also offers the
+  newest beta from Shelly's index, and updates to it from ShellyLanMan, checked like a stable version.
+- The *Local update* column always has its ⚡ button: it gives the beta when beta is ticked, else the stable version,
+  and is greyed (saying why) when that version is not newer than the device's.
 
 ### Changed
 - **Devices, Checklist and Firmware on a phone**: each device is a card (name and status on top, the other columns

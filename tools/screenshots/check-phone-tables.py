@@ -8,7 +8,8 @@ the "Via access point" button (when Shelly's index has a newer version) on the s
 1920 px desktop the tables stay tables; Checklist fits without scrolling sideways with the host
 name under the name, and on Devices and Checklist only the table scrolls (the page does not,
 with the sidebar open or collapsed), so its sideways scroll bar is in view. The tabs of Settings
-and About fit a phone. Exit 1 when one of these fails.
+and About fit a phone. On Firmware every row Shelly's index knows has ⚡, and it gives the beta
+when beta is ticked. Exit 1 when one of these fails.
 Screenshots: /shots/phone-devices.png, /shots/phone-checklist.png, /shots/phone-firmware.png,
 /shots/desk-devices.png, /shots/desk-checklist.png.
 """
@@ -120,6 +121,23 @@ with sync_playwright() as p:
         check(heads[1:] == ["status", "device"], f"desktop {page}: tick box, Status, Device {heads}")
         two = desk.locator(table + " tbody .host-cell").count()
         check(two > 0, f"desktop {page}: the host name under the name ({two} rows)")
+    # Firmware: ⚡ on every row the index knows, following the tick (DECISIONS P29-2).
+    open_page(desk, "firmware")
+    rows = desk.locator("table.fw tbody tr")
+    known = [i for i in range(rows.count()) if rows.nth(i).locator("td[data-label]").nth(3).inner_text().strip() not in ("-", "")]
+    check(known and all(rows.nth(i).locator("button", has_text="⚡").count() == 1 for i in known), f"firmware: ⚡ on every row the index knows ({len(known)})")
+    off = desk.locator("table.fw .tip-wrap button[disabled]", has_text="⚡")
+    if off.count():
+        check(bool(off.first.locator("xpath=..").get_attribute("title")), "firmware: a greyed ⚡ says why")
+    beta_row = [i for i in range(rows.count()) if rows.nth(i).locator("td[data-label]").nth(2).locator("input[type=checkbox]").count()]
+    if beta_row:
+        r = rows.nth(beta_row[0])
+        r.locator("td[data-label]").nth(2).locator("input[type=checkbox]").check()
+        btn = r.locator("button", has_text="⚡")
+        ver = r.locator("td[data-label]").nth(2).inner_text().strip()
+        check(btn.is_enabled() and ver in (btn.get_attribute("title") or ""), f"firmware: beta ticked, ⚡ gives the beta ({btn.get_attribute('title')})")
+    else:
+        print("note no device with a beta: the beta tick is not checked")
     open_page(desk, "devices")
     check(desk.locator("table.devices tbody tr").first.evaluate("e => getComputedStyle(e).display") == "table-row", "desktop devices: rows are table rows")
     wrap = desk.locator(".table-wrap").first

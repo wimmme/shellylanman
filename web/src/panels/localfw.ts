@@ -17,9 +17,18 @@ export function indexCell(r: IndexRow | undefined, loading: boolean): Node {
   return h('span', { title: t(r.source === 'shelly-tools' ? 'lfw.srcArchive' : 'lfw.srcShelly') }, r.latest ?? '');
 }
 
-/** The local-update cell: ⚡ through the device's access point when the index has a newer version. */
-export function localCell(r: IndexRow | undefined, loading: boolean): Node {
+/**
+ * The local-update cell: ⚡ through the device's access point, always there for a model in the
+ * index. It follows the tick: the beta when beta is ticked, else the stable version; greyed
+ * (with the reason) when that is not newer than the device's (DECISIONS P29-2).
+ */
+export function localCell(r: IndexRow | undefined, loading: boolean, stage: 'stable' | 'beta', beta?: string): Node {
   if (!r) return loading ? document.createTextNode('…') : na();
-  if (r.error || !r.newer) return na(r.error);
-  return h('button', { class: 'btn small', title: t('lfw.buttonTip'), onclick: (e: Event) => { e.stopPropagation(); openFirmwareWizard({ id: r.id }); } }, '⚡ ' + t('lfw.viaAP'));
+  if (r.error) return na(r.error);
+  const version = stage === 'beta' ? beta : r.newer ? r.latest : undefined;
+  const why = version ? '' : t(stage === 'beta' ? 'lfw.noBeta' : 'lfw.noStable');
+  const b = h('button', { class: 'btn small', disabled: !version, title: version ? t('lfw.toVersion', { version }) : undefined,
+    onclick: (e: Event) => { e.stopPropagation(); openFirmwareWizard({ id: r.id, stage }); } }, '⚡ ' + t('lfw.viaAP'));
+  // Browsers show no tooltip on a disabled button: the reason sits on a wrapper (P12-3).
+  return why ? h('span', { class: 'tip-wrap', title: why }, b) : b;
 }

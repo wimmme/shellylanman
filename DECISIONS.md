@@ -778,3 +778,13 @@ Wim tests on a 1920 px screen, an ultrawide and a phone: the tables were too wid
 | P28-3 | **On the desktop only the Devices and Checklist tables scroll**, inside a card that fills the screen: one scroll bar each way, the sideways one always in view, headings that stay put | Wim's test at 1920 px |
 | P28-4 | **Tab bars wrap** to a second line when they do not fit | Settings and About ran off a phone's screen |
 
+## 39. Betas through ShellyLanMan too (2026-11-03, Wim)
+
+Wim: with *Settings → Firmware → ShellyLanMan* the Firmware page showed no betas, with the devices checking themselves
+it did; and the ⚡ button should always be there and follow the tick. Changes P25-2 (stable only) and §4.4 / F7.
+
+| # | Decision | Why |
+|---|---|---|
+| P29-1 | **Local mode offers the beta too**: the newest beta in Shelly's index, when it is newer than the device's version, in the *New beta* column; an update to it comes from ShellyLanMan like a stable one (`/ota?url=`, `Shelly.Update {url}`), as do the copy button's link and the wizard's file. The beta file is checked like the stable one: Gen2+ by the SHA-256 in its URL (a beta whose URL is not on Shelly's file host for that model is left out), Gen1 by its build id and the SHA-256 of every part | Wim: the same choice as when the devices check themselves |
+| P29-2 | **The *Local update* column always has ⚡** for a model in the index. It follows the tick: the beta when beta is ticked, else the stable version; greyed, with the reason, when that version is not newer than the device's. The wizard (and its phone link, `&stage=beta`) then gives that version | Wim |
+

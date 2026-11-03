@@ -18,26 +18,35 @@ import (
 	"github.com/wimmme/shellylanman/internal/store"
 )
 
+// fakeGen1Index: Shelly's Gen1 index with one stable and one beta for the Plug S, both
+// files served and valid.
 func fakeGen1Index(t *testing.T, build string) *httptest.Server {
 	t.Helper()
-	bin := []byte("firmware")
-	sum := sha256.Sum256(bin)
-	m, _ := json.Marshal(map[string]any{"build_id": build, "parts": map[string]any{"fw": map[string]string{"src": "p.bin", "cs_sha256": hex.EncodeToString(sum[:])}}})
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	w, _ := zw.Create("plug/manifest.json")
-	w.Write(m)
-	w, _ = zw.Create("plug/p.bin")
-	w.Write(bin)
-	zw.Close()
+	const betaBuild = "20260201-000000/v1.16.0-beta1-gabcdef0"
+	zipOf := func(build string) []byte {
+		bin := []byte("firmware " + build)
+		sum := sha256.Sum256(bin)
+		m, _ := json.Marshal(map[string]any{"build_id": build, "parts": map[string]any{"fw": map[string]string{"src": "p.bin", "cs_sha256": hex.EncodeToString(sum[:])}}})
+		var buf bytes.Buffer
+		zw := zip.NewWriter(&buf)
+		w, _ := zw.Create("plug/manifest.json")
+		w.Write(m)
+		w, _ = zw.Create("plug/p.bin")
+		w.Write(bin)
+		zw.Close()
+		return buf.Bytes()
+	}
+	stable, beta := zipOf(build), zipOf(betaBuild)
 	var srv *httptest.Server
 	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/index":
 			json.NewEncoder(w).Encode(map[string]any{"isok": true, "data": map[string]any{"SHPLG-S": map[string]string{"url": srv.URL + "/SHPLG-S.zip", "version": build,
-				"beta_url": srv.URL + "/beta/SHPLG-S.zip", "beta_ver": "20260201-000000/v1.16.0-beta1-gabcdef0"}}})
+				"beta_url": srv.URL + "/beta/SHPLG-S.zip", "beta_ver": betaBuild}}})
 		case "/SHPLG-S.zip":
-			w.Write(buf.Bytes())
+			w.Write(stable)
+		case "/beta/SHPLG-S.zip":
+			w.Write(beta)
 		default:
 			http.NotFound(w, r)
 		}
@@ -59,7 +68,7 @@ func TestLocalFirmwareDownload(t *testing.T) {
 	if err != nil || len(rows) != 1 || rows[0].Latest != "1.15.0" || rows[0].Current != "1.14.0" || !rows[0].Newer || rows[0].Source != "shelly" {
 		t.Fatalf("index rows %+v %v", rows, err)
 	}
-	link, err := m.LocalDownload(ctx, "AABBCC000001", "http://192.168.1.2:3082/")
+	link, err := m.LocalDownload(ctx, "AABBCC000001", "http://192.168.1.2:3082/", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +87,7 @@ func TestLocalFirmwareDownload(t *testing.T) {
 	if _, _, err := m.FirmwareFile(ctx, token[:len(token)-3]+"xyz"); !errors.Is(err, ErrLinkExpired) {
 		t.Fatalf("tampered token: %v", err)
 	}
-	if l, _ := m.LocalDownload(ctx, "AABBCC000001", "http://localhost:3082"); l == nil || l.Warning != "localhost" {
+	if l, _ := m.LocalDownload(ctx, "AABBCC000001", "http://localhost:3082", ""); l == nil || l.Warning != "localhost" {
 		t.Fatalf("localhost warning %+v", l)
 	}
 }
@@ -93,7 +102,7 @@ func TestLocalFirmwareUpToDate(t *testing.T) {
 	if rows, _ := m.FirmwareIndex(ctx, nil); len(rows) != 1 || rows[0].Newer {
 		t.Fatalf("rows %+v", rows)
 	}
-	if _, err := m.LocalDownload(ctx, "AABBCC000001", "http://h"); !errors.Is(err, ErrUpToDate) {
+	if _, err := m.LocalDownload(ctx, "AABBCC000001", "http://h", ""); !errors.Is(err, ErrUpToDate) {
 		t.Fatalf("up to date: %v", err)
 	}
 }

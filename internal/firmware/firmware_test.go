@@ -58,6 +58,7 @@ func TestCompare(t *testing.T) {
 func TestGen1IndexArchiveAndFiles(t *testing.T) {
 	good := gen1Zip(t, "20230913-113421/v1.14.0-gcb84623", false)
 	archived := gen1Zip(t, "20220101-000000/v1.12.2-gabc", false)
+	beta := gen1Zip(t, "20240101-000000/v1.15.0-beta2-gabc1234", false)
 	var srv *httptest.Server
 	hits := map[string]int{}
 	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +70,8 @@ func TestGen1IndexArchiveAndFiles(t *testing.T) {
 					"beta_url": srv.URL + "/gen1/SHPLG-S-beta.zip", "beta_ver": "20240101-000000/v1.15.0-beta2-gabc1234"}}})
 		case r.URL.Path == "/gen1/SHPLG-S.zip":
 			w.Write(good)
+		case r.URL.Path == "/gen1/SHPLG-S-beta.zip":
+			w.Write(beta)
 		case r.URL.Path == "/archive.php":
 			w.Write([]byte(`[{"version":"v1.9.4","file":"SHOLD.zip"},{"version":"v1.12.2","file":"SHOLD.zip"},{"version":"v1.13.0-rc1","file":"SHOLD.zip"},{"version":"v1.11.0-1PMfix","file":"SHOLD.zip"},{"version":"v1.10.0","file":"SHOLD.zip"}]`))
 		case r.URL.Path == "/version/v1.12.2/SHOLD.zip":
@@ -99,8 +102,13 @@ func TestGen1IndexArchiveAndFiles(t *testing.T) {
 		t.Fatalf("index and file are cached: %v", hits)
 	}
 
-	if b, err := x.Beta(ctx, "1", "SHPLG-S"); err != nil || b.Version != "1.15.0-beta2" || b.URL != srv.URL+"/gen1/SHPLG-S-beta.zip" {
+	b, err := x.Beta(ctx, "1", "SHPLG-S")
+	if err != nil || b.Version != "1.15.0-beta2" || b.URL != srv.URL+"/gen1/SHPLG-S-beta.zip" {
 		t.Fatalf("gen1 beta %+v %v", b, err)
+	}
+	// The beta file is checked against its build and kept next to the stable one.
+	if bp, err := x.File(ctx, b); err != nil || bp == p {
+		t.Fatalf("gen1 beta file %q %v", bp, err)
 	}
 
 	a, err := x.Latest(ctx, "1", "SHOLD") // not in the official index
@@ -145,18 +153,24 @@ func TestVerify(t *testing.T) {
 
 func TestGen2IndexOverPinnedTLS(t *testing.T) {
 	fw := mkzip(t, map[string]string{"manifest.json": `{"name":"MiniPMG3","version":"2.0.1","build_id":"20260923-075534/2.0.1-ge1a198b"}`})
+	fwb := mkzip(t, map[string]string{"manifest.json": `{"name":"MiniPMG3","version":"2.1.0-beta1","build_id":"20261001-000000/2.1.0-beta1-gabc"}`})
 	var srv *httptest.Server
 	srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/update/MiniPMG3":
 			json.NewEncoder(w).Encode(map[string]any{"stable": map[string]string{"version": "2.0.1", "build_id": "20260923-075534/2.0.1-ge1a198b",
 				"url": srv.URL + "/gen2-ntest/MiniPMG3/" + hash(fw)},
-				"beta": map[string]string{"version": "2.1.0-beta1", "build_id": "20261001-000000/2.1.0-beta1-gabc", "url": srv.URL + "/gen2-ntest/MiniPMG3/" + strings.Repeat("b", 64)},
+				"beta": map[string]string{"version": "2.1.0-beta1", "build_id": "20261001-000000/2.1.0-beta1-gabc", "url": srv.URL + "/gen2-ntest/MiniPMG3/" + hash(fwb)},
 				"alt":  map[string]any{"S1PMG4ZB": map[string]any{"stable": map[string]string{"version": "9.9.9"}}}})
+		case "/update/PlusPlugS": // a beta on another host is left out
+			json.NewEncoder(w).Encode(map[string]any{"stable": map[string]string{"version": "1.0", "url": srv.URL + "/gen2-ntest/PlusPlugS/" + strings.Repeat("c", 64)},
+				"beta": map[string]string{"version": "1.1-beta1", "url": "https://example.com/x/PlusPlugS/" + strings.Repeat("d", 64)}})
 		case "/update/Evil":
 			json.NewEncoder(w).Encode(map[string]any{"stable": map[string]string{"version": "1.0", "url": "https://example.com/x/Evil/" + strings.Repeat("a", 64)}})
 		case "/gen2-ntest/MiniPMG3/" + hash(fw):
 			w.Write(fw)
+		case "/gen2-ntest/MiniPMG3/" + hash(fwb):
+			w.Write(fwb)
 		default:
 			http.NotFound(w, r)
 		}
@@ -185,8 +199,21 @@ func TestGen2IndexOverPinnedTLS(t *testing.T) {
 	if c := x.Cached("3", "MiniPMG3"); c == nil || c.Version != "2.0.1" {
 		t.Fatalf("cached %+v", c)
 	}
-	if b, err := x.Beta(context.Background(), "3", "MiniPMG3"); err != nil || b.Version != "2.1.0-beta1" || !strings.HasSuffix(b.URL, strings.Repeat("b", 64)) {
+	b, err := x.Beta(context.Background(), "3", "MiniPMG3")
+	if err != nil || b.Version != "2.1.0-beta1" || !strings.HasSuffix(b.URL, hash(fwb)) {
 		t.Fatalf("gen2 beta %+v %v", b, err)
+	}
+	// The beta is downloaded and checked like the stable version (DECISIONS P29-1).
+	if p, err := x.File(context.Background(), b); err != nil || !strings.Contains(p, "2.1.0-beta1") {
+		t.Fatalf("gen2 beta file %q %v", p, err)
+	}
+	bad := *b
+	bad.sha256 = strings.Repeat("0", 64)
+	if err := Verify(&bad, fwb); err == nil {
+		t.Fatal("beta with another SHA-256 accepted")
+	}
+	if _, err := x.Beta(context.Background(), "2", "PlusPlugS"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("a beta on another host: %v", err)
 	}
 	if _, err := x.Beta(context.Background(), "2", "Evil"); err == nil {
 		t.Fatal("beta of a refused answer")

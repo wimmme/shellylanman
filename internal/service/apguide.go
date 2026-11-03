@@ -161,9 +161,12 @@ type PhoneLink struct {
 }
 
 // WizardLink: the Firmware page at base, opening the wizard for device id (empty: the
-// wizard that asks for an access point's name).
-func WizardLink(base, id string) (*PhoneLink, error) {
+// wizard that asks for an access point's name), with the beta when stage is beta.
+func WizardLink(base, id, stage string) (*PhoneLink, error) {
 	u := strings.TrimRight(base, "/") + "/#/firmware?apw=" + url.QueryEscape(id)
+	if stage == StageBeta {
+		u += "&stage=" + StageBeta
+	}
 	png, err := qrcode.Encode(u, qrcode.Medium, 240)
 	if err != nil {
 		return nil, err

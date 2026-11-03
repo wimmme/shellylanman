@@ -38,7 +38,8 @@ export const pageBadge = (url: string): HTMLElement => h('div', { class: 'lfw-ba
   h('strong', {}, h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url)));
 
 /** Open the firmware wizard, for a device in the list (id) or from the name of an access point. */
-export function openFirmwareWizard(opts: { id?: string } = {}): void {
+/** stage: the beta instead of the stable version, for a device in the list (DECISIONS P29-2). */
+export function openFirmwareWizard(opts: { id?: string; stage?: 'stable' | 'beta' } = {}): void {
   const st: WizardState = {};
   let step: WizardStep = 'which';
   let link: LocalLink | null = null;
@@ -149,7 +150,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
     };
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') void find(); });
     // The wizard is easiest on the phone itself: a code that opens it there (hidden on a phone).
-    phoneLink ??= await apApi.phone(opts.id).catch(() => null);
+    phoneLink ??= await apApi.phone(opts.id, opts.stage).catch(() => null);
     const phone = h('div', { class: 'apw-phone' }, h('p', { class: 'muted' }, t('apw.which.phone')),
       phoneLink ? h('div', { class: 'apw-phone-qr' }, linkWarning(phoneLink.warning), qr(phoneLink.qr, 'apw.which.qrAlt', true), h('p', { class: 'muted' }, t('apw.which.pc'))) : null);
     if (opts.id) {
@@ -169,7 +170,7 @@ export function openFirmwareWizard(opts: { id?: string } = {}): void {
       const m = targetModel(st);
       if (!m) return fail(t('apw.which.unknown'));
       // A device in the list is compared with its own version ("already up to date"); a model is not.
-      link = st.guide?.id ? await localFwApi.link(st.guide.id) : await localFwApi.modelLink(m.gen, m.key);
+      link = st.guide?.id ? await localFwApi.link(st.guide.id, opts.stage) : await localFwApi.modelLink(m.gen, m.key);
     }
     const l = link;
     const url = h('input', { readonly: true, value: l.url, 'aria-label': t('lfw.link') });

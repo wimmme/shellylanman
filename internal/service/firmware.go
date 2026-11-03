@@ -399,7 +399,7 @@ func (m *Devices) updateOne(ctx context.Context, e *entry, stable, mayQueue bool
 
 // sendUpdate: /ota?update=true|beta=true (Gen1), Shelly.Update {stage} (Gen2+),
 // BluTrv.UpdateFirmware (blocking: sent in the background, like the original).
-// In local mode a stable update comes from this server (fwlocal.go).
+// In local mode the update comes from this server, stable or beta (fwlocal.go).
 func (m *Devices) sendUpdate(ctx context.Context, e *entry, stable bool) error {
 	m.mu.Lock()
 	d, conn, blu := e.dev, e.conn, e.blu
@@ -416,8 +416,12 @@ func (m *Devices) sendUpdate(ctx context.Context, e *entry, stable bool) error {
 		return nil
 	case conn == nil:
 		return ErrNoConnection
-	case stable && m.localMode():
-		return m.sendLocalUpdate(ctx, e, conn)
+	case m.localMode():
+		stage := StageStable
+		if !stable {
+			stage = StageBeta
+		}
+		return m.sendLocalUpdate(ctx, e, conn, stage)
 	case d.Gen == "1":
 		if stable {
 			return g1cmd(ctx, conn, "/ota?update=true")
