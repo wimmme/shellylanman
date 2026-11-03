@@ -242,9 +242,11 @@ export const firmwareApi = {
   link: (id: string, stage: 'stable' | 'beta') => request<FirmwareLink>('GET', `/firmware/${encodeURIComponent(id)}/link?stage=${stage}`),
 };
 export interface FirmwareLink { url: string; version: string; local: boolean }
-export interface IndexRow { id: string; key?: string; current?: string; latest?: string; source?: string; newer: boolean; error?: string }
+export interface IndexRow { id: string; key?: string; current?: string; latest?: string; source?: string; newer: boolean; beta?: string; betaNewer?: boolean; error?: string }
 export interface LocalLink {
   url: string; qr: string; name: string; model: string; current: string; version: string; source: string; fileName: string; expires: number; warning?: string;
+  /** Not newer than the device's version: a re-flash (DECISIONS P29-3). */
+  reflash?: boolean;
 }
 export const localFwApi = {
   index: (ids: string[]) => request<IndexRow[]>('GET', '/firmware/index' + (ids.length ? '?' + idsQuery(ids) : '')),

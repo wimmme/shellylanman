@@ -788,3 +788,8 @@ it did; and the ⚡ button should always be there and follow the tick. Changes P
 | P29-1 | **Local mode offers the beta too**: the newest beta in Shelly's index, when it is newer than the device's version, in the *New beta* column; an update to it comes from ShellyLanMan like a stable one (`/ota?url=`, `Shelly.Update {url}`), as do the copy button's link and the wizard's file. The beta file is checked like the stable one: Gen2+ by the SHA-256 in its URL (a beta whose URL is not on Shelly's file host for that model is left out), Gen1 by its build id and the SHA-256 of every part | Wim: the same choice as when the devices check themselves |
 | P29-2 | **The *Local update* column always has ⚡** for a model in the index. It follows the tick: the beta when beta is ticked, else the stable version; greyed, with the reason, when that version is not newer than the device's. The wizard (and its phone link, `&stage=beta`) then gives that version | Wim |
 
+Addendum (2026-11-03, Wim): **P29-3 — the wizard may flash the same (or an older) version again.** ⚡ is not greyed
+when the device already runs the ticked version: the tooltip and the wizard say it is a re-flash, needed only in
+exceptional cases. Greyed only when the index has no beta for a beta tick. An update through the API (*Update*,
+MCP) still only goes to a newer version.
+

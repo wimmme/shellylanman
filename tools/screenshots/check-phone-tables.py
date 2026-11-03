@@ -8,8 +8,8 @@ the "Via access point" button (when Shelly's index has a newer version) on the s
 1920 px desktop the tables stay tables; Checklist fits without scrolling sideways with the host
 name under the name, and on Devices and Checklist only the table scrolls (the page does not,
 with the sidebar open or collapsed), so its sideways scroll bar is in view. The tabs of Settings
-and About fit a phone. On Firmware every row Shelly's index knows has ⚡, and it gives the beta
-when beta is ticked. Exit 1 when one of these fails.
+and About fit a phone. On Firmware every row Shelly's index knows has a usable ⚡ (the stable
+version, also as a re-flash), and it follows a beta tick. Exit 1 when one of these fails.
 Screenshots: /shots/phone-devices.png, /shots/phone-checklist.png, /shots/phone-firmware.png,
 /shots/desk-devices.png, /shots/desk-checklist.png.
 """
@@ -126,16 +126,33 @@ with sync_playwright() as p:
     rows = desk.locator("table.fw tbody tr")
     known = [i for i in range(rows.count()) if rows.nth(i).locator("td[data-label]").nth(3).inner_text().strip() not in ("-", "")]
     check(known and all(rows.nth(i).locator("button", has_text="⚡").count() == 1 for i in known), f"firmware: ⚡ on every row the index knows ({len(known)})")
-    off = desk.locator("table.fw .tip-wrap button[disabled]", has_text="⚡")
-    if off.count():
-        check(bool(off.first.locator("xpath=..").get_attribute("title")), "firmware: a greyed ⚡ says why")
+    # Nothing ticked: the stable version, also as a re-flash when the device already runs it (P29-3).
+    on = [rows.nth(i).locator("button", has_text="⚡") for i in known]
+    check(all(b.is_enabled() for b in on), "firmware: ⚡ usable on every row with nothing ticked (stable, or a re-flash)")
+    titles = [b.get_attribute("title") or "" for b in on]
+    print(f"note ⚡ titles: {sorted(set(t.split(':')[0] for t in titles))}")
     beta_row = [i for i in range(rows.count()) if rows.nth(i).locator("td[data-label]").nth(2).locator("input[type=checkbox]").count()]
     if beta_row:
         r = rows.nth(beta_row[0])
+        before = r.locator("button", has_text="⚡").get_attribute("title")
         r.locator("td[data-label]").nth(2).locator("input[type=checkbox]").check()
         btn = r.locator("button", has_text="⚡")
-        ver = r.locator("td[data-label]").nth(2).inner_text().strip()
-        check(btn.is_enabled() and ver in (btn.get_attribute("title") or ""), f"firmware: beta ticked, ⚡ gives the beta ({btn.get_attribute('title')})")
+        after = btn.get_attribute("title") if btn.is_enabled() else btn.locator("xpath=..").get_attribute("title")
+        check(bool(after) and after != before, f"firmware: beta ticked, ⚡ follows ({before!r} -> {after!r})")
+        if "re-flash" in (before or ""):  # the wizard says so before giving the same version again
+            r.locator("td[data-label]").nth(2).locator("input[type=checkbox]").uncheck()
+            r.locator("button", has_text="⚡").click()
+            nxt = desk.get_by_role("button", name="Next")
+            nxt.wait_for(timeout=15000)
+            until(lambda: nxt.is_enabled(), 15)
+            nxt.click()
+            note = desk.locator(".banner.warn", has_text="re-flash")
+            try:
+                note.wait_for(timeout=30000)
+                check(True, "firmware: the wizard says it is a re-flash")
+            except Exception:
+                check(False, "firmware: the wizard says it is a re-flash")
+            desk.keyboard.press("Escape")
     else:
         print("note no device with a beta: the beta tick is not checked")
     open_page(desk, "devices")

@@ -27,8 +27,8 @@ import (
 var LinkTTL = 24 * time.Hour
 
 var (
-	// ErrUpToDate: the index has no newer stable firmware for the device.
-	ErrUpToDate = errors.New("the device already runs the latest stable firmware")
+	// ErrUpToDate: the index has no newer version for the device (an update, not the wizard).
+	ErrUpToDate = errors.New("the device already runs the latest firmware")
 	// ErrLinkExpired: the link is too old or the index moved on.
 	ErrLinkExpired = errors.New("download link expired")
 	// ErrNoLocalFW: the device type has no firmware in the indexes (BLU devices, unmanaged).
@@ -43,6 +43,8 @@ type IndexRow struct {
 	Latest  string `json:"latest,omitempty"`
 	Source  string `json:"source,omitempty"` // shelly | shelly-tools
 	Newer   bool   `json:"newer"`
+	Beta    string `json:"beta,omitempty"` // the newest beta in the index (DECISIONS P29-2)
+	BetaNew bool   `json:"betaNewer,omitempty"`
 	Error   string `json:"error,omitempty"`
 }
 
@@ -58,6 +60,7 @@ type LocalLink struct {
 	FileName string `json:"fileName"`
 	Expires  int64  `json:"expires"`           // unix ms
 	Warning  string `json:"warning,omitempty"` // localhost, badBase; ingress (set by the API: the address is a guess)
+	Reflash  bool   `json:"reflash,omitempty"` // not newer than the device's version
 }
 
 // FirmwareSource returns the index (created on first use under /data/firmware).
@@ -132,6 +135,9 @@ func (m *Devices) FirmwareIndex(ctx context.Context, ids []string) ([]IndexRow, 
 			row.Latest, row.Source = l.Version, l.Source
 			row.Newer = cur != "" && firmware.Compare(l.Version, cur) > 0
 		}
+		if b, err := x.Beta(ctx, gen, key); err == nil {
+			row.Beta, row.BetaNew = b.Version, cur != "" && firmware.Compare(b.Version, cur) > 0
+		}
 		out = append(out, row)
 	}
 	return out, nil
@@ -184,14 +190,12 @@ func (m *Devices) LocalDownloadModel(ctx context.Context, gen, key, base string)
 }
 
 // localLink: the newest stable or beta firmware of one model as a link and QR code. current
-// is the version the device runs ("" when there is no device): then there is no "up to date".
+// is the version the device runs ("" when there is no device). The same or an older version
+// is given too, marked Reflash: through the access point a device may need it (DECISIONS P29-3).
 func (m *Devices) localLink(ctx context.Context, gen, key, cur, name, modelName, base, stage string) (*LocalLink, error) {
 	l, err := m.indexVersion(ctx, gen, key, stage)
 	if err != nil {
 		return nil, err
-	}
-	if cur != "" && firmware.Compare(l.Version, cur) <= 0 {
-		return nil, ErrUpToDate
 	}
 	exp := time.Now().Add(LinkTTL)
 	claims, _ := json.Marshal(linkClaims{gen, key, l.Version, exp.Unix()})
@@ -209,6 +213,7 @@ func (m *Devices) localLink(ctx context.Context, gen, key, cur, name, modelName,
 		URL: u, QR: "data:image/png;base64," + base64.StdEncoding.EncodeToString(png),
 		Name: name, Model: modelName, Current: cur, Version: l.Version, Source: l.Source,
 		FileName: l.FileName(), Expires: exp.UnixMilli(), Warning: baseWarning(base),
+		Reflash: cur != "" && firmware.Compare(l.Version, cur) <= 0,
 	}, nil
 }
 

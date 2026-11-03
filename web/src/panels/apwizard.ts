@@ -200,6 +200,7 @@ export function openFirmwareWizard(opts: { id?: string; stage?: 'stable' | 'beta
       }
     };
     return h('div', { class: 'lfw' }, intro, linkWarning(l.warning),
+      l.reflash ? h('div', { class: 'banner warn', role: 'note' }, t('apw.file.reflash', { current: l.current, version: l.version })) : null,
       h('div', { class: 'lfw-grid' }, qr(l.qr, 'lfw.qrAlt', true),
         h('div', { class: 'lfw-info' },
           badge('lfw.model', l.model), badge('lfw.version', l.current ? `${l.current} → ${l.version}` : l.version),

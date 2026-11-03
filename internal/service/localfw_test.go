@@ -99,11 +99,21 @@ func TestLocalFirmwareUpToDate(t *testing.T) {
 	x := firmware.New(st.Dir() + "/firmware")
 	x.Gen1URL, x.HTTP = srv.URL+"/index", srv.Client()
 	m.SetFirmwareSource(x)
-	if rows, _ := m.FirmwareIndex(ctx, nil); len(rows) != 1 || rows[0].Newer {
+	rows, _ := m.FirmwareIndex(ctx, nil)
+	if len(rows) != 1 || rows[0].Newer || rows[0].Beta != "1.16.0-beta1" || !rows[0].BetaNew {
 		t.Fatalf("rows %+v", rows)
 	}
-	if _, err := m.LocalDownload(ctx, "AABBCC000001", "http://h", ""); !errors.Is(err, ErrUpToDate) {
-		t.Fatalf("up to date: %v", err)
+	// The wizard may flash the same version again (DECISIONS P29-3): marked, not refused.
+	if l, err := m.LocalDownload(ctx, "AABBCC000001", "http://h", ""); err != nil || !l.Reflash || l.Version != "1.14.0" {
+		t.Fatalf("re-flash %+v %v", l, err)
+	}
+	if l, err := m.LocalDownload(ctx, "AABBCC000001", "http://h", StageBeta); err != nil || l.Reflash || l.Version != "1.16.0-beta1" {
+		t.Fatalf("beta %+v %v", l, err)
+	}
+	// An update through the API still only goes to a newer version.
+	st.Update(localMode)
+	if res, _ := m.FirmwareUpdate(ctx, []FirmwareRequest{{ID: "AABBCC000001", Stage: StageStable}}); res[0].Result == ResultOK {
+		t.Fatalf("update to the same version %+v", res)
 	}
 }
 

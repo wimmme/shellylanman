@@ -24,8 +24,9 @@ versions follow [Semantic Versioning](https://semver.org/).
   explains how to run ShellyLanMan in a Proxmox container or on any Linux machine.
 - **Betas through ShellyLanMan**: with *Settings → Firmware → ShellyLanMan* the Firmware page now also offers the
   newest beta from Shelly's index, and updates to it from ShellyLanMan, checked like a stable version.
-- The *Local update* column always has its ⚡ button: it gives the beta when beta is ticked, else the stable version,
-  and is greyed (saying why) when that version is not newer than the device's.
+- The *Local update* column always has its ⚡ button: it gives the beta when beta is ticked, else the stable version.
+  The access-point wizard can also put the version the device already runs on it again (a re-flash, for exceptional
+  cases); it says so first.
 
 ### Changed
 - **Devices, Checklist and Firmware on a phone**: each device is a card (name and status on top, the other columns

@@ -103,7 +103,7 @@ export function firmwarePanel(ids: string[], withIndex = false): FirmwarePanel {
         h('td', { 'data-label': t('fw.col.stable') }, cellNode(r, stableCell(r, tr), 'stable')),
         h('td', { 'data-label': t('fw.col.beta') }, cellNode(r, betaCell(r), 'beta')),
         withIndex ? h('td', { 'data-label': t('lfw.col') }, indexCell(index.get(r.id), indexLoading)) : null,
-        withIndex ? h('td', { 'data-label': t('lfw.localCol') }, localCell(index.get(r.id), indexLoading, choice.get(r.id) === 'beta' ? 'beta' : 'stable', r.beta || r.betaBuild)) : null);
+        withIndex ? h('td', { 'data-label': t('lfw.localCol') }, localCell(index.get(r.id), indexLoading, choice.get(r.id) === 'beta' ? 'beta' : 'stable')) : null);
       tr_.addEventListener('dblclick', () => { // browseAction
         const d = allDevices().find((x) => x.id === r.id);
         if (d && d.status !== 'ghost' && d.gen !== 'blu' && d.gen !== 'bth') openPages([deviceURL(d.ip, d.port)]);
