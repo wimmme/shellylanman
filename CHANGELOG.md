@@ -28,8 +28,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   below, each with its column name; Checklist two settings per line, Firmware with the *via device access point*
   button) instead of a wide table to scroll sideways. The desktop keeps its tables.
 - Checklist: the host name under the device's name, so the table fits a 1920 px screen.
-- Devices: the table is never taller than the screen, so its sideways scroll bar is always in view and the column
-  headings stay put while it scrolls.
+- Devices and Checklist on the desktop: only the table scrolls, not the page around it, so there is one scroll bar
+  each way, the sideways one always in view, and the column headings stay put.
+- The tabs of Settings, About and the dialogs go on a second line when they do not fit (on a phone they ran off
+  the screen).
 - Chart.js 4.6.1 (was 4.5.1) on the Charts page.
 - Dependencies: `golang.org/x/net` 0.62.0; `@types/node` 26.6.6 (development only).
 

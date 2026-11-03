@@ -167,7 +167,7 @@ input[type=range]{padding:0;accent-color:var(--accent-rx)}
 .check-line{flex-wrap:nowrap;align-items:flex-start;margin-bottom:12px;max-width:640px}.check-line input{margin-top:3px;flex:none}
 
 /* Tabs */
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px}
 .tabs button{font:inherit;font-size:.85rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);padding:8px 12px;cursor:pointer}
 .tabs button[aria-selected=true]{color:var(--text-main);border-bottom-color:var(--accent-rx)}
 
@@ -301,9 +301,9 @@ ul.results{list-style:none;margin:0;padding:0;display:flex;flex-direction:column
 .nav-badge{margin-left:auto;min-width:18px;padding:0 5px;border-radius:9px;background:var(--accent-warn);color:#000;font-size:.7rem;text-align:center}
 .ctx-menu{position:fixed;z-index:1100}
 table.checklist td.chk{text-align:center;font-family:var(--font-mono);font-size:.82rem}
-/* Devices and Checklist: the table never taller than the screen, so its sideways scroll bar is always
-   in view and the column headings stay put. */
-@media (min-width:641px){.table-wrap.fit{max-height:calc(100vh - var(--topbar-h) - 36px)}}
+/* Devices and Checklist: the card fills the screen below the tiles and only the table scrolls, so
+   there is one scroll bar each way, the sideways one always in view, and the headings stay put. */
+@media (min-width:641px) and (min-height:600px){.main:has(.card.fill){overflow:hidden}.main:has(.card.fill) :is(.banner,.summary){flex-shrink:0}.card.fill{flex:0 1 auto;min-height:0;display:flex;flex-direction:column}.card.fill>*{flex-shrink:0}.card.fill>:last-child{flex:0 1 auto;min-height:0;display:flex;flex-direction:column}.card.fill .table-wrap{min-height:0}}
 table.checklist td.chk-host .muted{font-size:.8rem}
 /* On a phone each device is a card: the name and the status on top, the other columns below with
    their name (data-label); empty ones are left out on Devices, Checklist shows two per line. */

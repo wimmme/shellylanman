@@ -6,8 +6,9 @@ On a phone (390 px) each device must be a card: nothing to scroll sideways, no c
 the name and the status on the card's first line, a column name before each value, and on Firmware
 the "Via access point" button (when Shelly's index has a newer version) on the screen. On a
 1920 px desktop the tables stay tables; Checklist fits without scrolling sideways with the host
-name under the name, and the Devices table is never taller than the screen, so its sideways
-scroll bar is in view. Exit 1 when one of these fails.
+name under the name, and on Devices and Checklist only the table scrolls (the page does not,
+with the sidebar open or collapsed), so its sideways scroll bar is in view. The tabs of Settings
+and About fit a phone. Exit 1 when one of these fails.
 Screenshots: /shots/phone-devices.png, /shots/phone-checklist.png, /shots/phone-firmware.png,
 /shots/desk-devices.png, /shots/desk-checklist.png.
 """
@@ -91,6 +92,14 @@ with sync_playwright() as p:
         first.evaluate("e => e.scrollIntoView()")
         phone.screenshot(path=f"/shots/phone-{page}.png")
 
+    for page in ("settings", "about"):
+        phone.goto(B + "#/" + page)
+        phone.wait_for_selector(".tabs button", timeout=30000)
+        right = max(b["x"] + b["width"] for b in phone.locator(".tabs button").evaluate_all("bs => bs.map(b => b.getBoundingClientRect().toJSON())"))
+        check(right <= 390, f"{page}: every tab on the phone's screen (right edge {right:.0f})")
+        check(phone.evaluate("() => document.documentElement.scrollWidth") <= 390, f"{page}: the page is not wider than the phone")
+        phone.screenshot(path=f"/shots/phone-{page}.png")
+
     desk = context(br, viewport={"width": 1920, "height": 1080}).new_page()
     desk.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
     open_page(desk, "checklist")
@@ -100,11 +109,16 @@ with sync_playwright() as p:
     two = desk.locator("table.checklist td.chk-host").evaluate_all("tds => tds.filter(td => td.children.length === 2).length")
     check(two > 0, f"desktop checklist: the host name under the name ({two} rows)")
     desk.screenshot(path="/shots/desk-checklist.png")
+    for page in ("devices", "checklist"):
+        for mini in ("open", "mini"):
+            desk.evaluate("m => { try { localStorage.setItem('sl_nav', m) } catch (e) {} }", mini)
+            open_page(desk, page)
+            sh, ch = desk.locator(".main").evaluate("m => [m.scrollHeight, m.clientHeight]")
+            check(sh <= ch + 1, f"desktop {page}, sidebar {mini}: the page itself does not scroll ({sh} <= {ch})")
+    desk.evaluate("() => { try { localStorage.removeItem('sl_nav') } catch (e) {} }")
     open_page(desk, "devices")
     check(desk.locator("table.devices tbody tr").first.evaluate("e => getComputedStyle(e).display") == "table-row", "desktop devices: rows are table rows")
-    wrap = desk.locator(".table-wrap.fit").first
-    wrap.scroll_into_view_if_needed()
-    desk.locator(".main").evaluate("m => m.scrollTo(0, m.scrollHeight)")
+    wrap = desk.locator(".table-wrap").first
     wb = wrap.bounding_box()
     check(wb["y"] + wb["height"] <= 1080 + 1, f"desktop devices: the table ends on the screen (bottom {wb['y'] + wb['height']:.0f})")
     sw, cw = wrap.evaluate("e => [e.scrollWidth, e.clientWidth]")

@@ -248,7 +248,7 @@ export const checklistPage: Page = {
       // keeps its hover colour (and the scroll position stays).
       const old = body.querySelector('table.checklist');
       if (old) patch(old, table);
-      else body.replaceChildren(h('div', { class: 'table-wrap fit' }, table));
+      else body.replaceChildren(h('div', { class: 'table-wrap' }, table));
     };
 
     // Row mouse handling, delegated: rows are kept across redraws.
@@ -308,7 +308,9 @@ export const checklistPage: Page = {
       else if (changed) draw();
     });
     disposeFn = off;
-    main.append(card(t('chk.title'), null, scopeBox, h('div', { class: 'toolbar' }, toolbar, h('div', { class: 'spacer' }), filterInput), hint, status, body));
+    const box = card(t('chk.title'), null, scopeBox, h('div', { class: 'toolbar' }, toolbar, h('div', { class: 'spacer' }), filterInput), hint, status, body);
+    box.classList.add('fill'); // only the table scrolls (app.css)
+    main.append(box);
     void reload();
   },
   dispose() { disposeFn(); document.querySelectorAll('.ctx-menu').forEach((m) => m.remove()); },

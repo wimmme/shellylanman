@@ -280,7 +280,7 @@ export const devicesPage: Page = {
     const badge = h('span', { class: 'card-badge' });
     const statusLine = h('div', { class: 'muted status-line', role: 'status' });
     const bodyBox = h('div');
-    host.append(bannerBox, summaryBox, h('section', { class: 'card' },
+    host.append(bannerBox, summaryBox, h('section', { class: 'card fill' },
       h('div', { class: 'card-head' }, h('h2', { class: 'card-title' }, t('devices.table.title')), badge, statusLine),
       h('div', { class: 'toolbar' }, actionsBox, h('div', { class: 'spacer' }), filterSel, filterInput, controlsBox),
       bodyBox));
@@ -400,7 +400,7 @@ export const devicesPage: Page = {
             }));
           tbody.append(tr);
         }
-        body = h('div', { class: 'table-wrap fit' }, h('table', { class: 'data devices ' + view }, h('thead', {}, head), tbody));
+        body = h('div', { class: 'table-wrap' }, h('table', { class: 'data devices ' + view }, h('thead', {}, head), tbody));
       }
       const banner = scanBanner();
       bannerBox.replaceChildren(...(banner ? [banner] : []));
