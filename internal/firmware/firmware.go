@@ -82,11 +82,13 @@ type Latest struct {
 }
 
 // FileName is the name the file is served under.
-func (l *Latest) FileName() string {
-	if l.Gen == "1" {
-		return l.Key + ".zip"
+func (l *Latest) FileName() string { return fileName(l.Gen, l.Key, l.Version) }
+
+func fileName(gen, key, version string) string {
+	if gen == "1" {
+		return key + ".zip"
 	}
-	return l.Key + "-" + l.Version + ".zip"
+	return key + "-" + version + ".zip"
 }
 
 // Index resolves and caches firmware.
@@ -383,13 +385,21 @@ func (x *Index) latestG2(ctx context.Context, app string) (*Latest, error) {
 // when it is not cached.
 func (x *Index) File(ctx context.Context, l *Latest) (string, error) {
 	// The names come from Shelly's index; a "../" there must not reach the disk.
-	if !plainName.MatchString(l.Gen) || !plainName.MatchString(l.Key) || !plainName.MatchString(l.Version) {
-		return "", fmt.Errorf("%w: %q %q", errName, l.Key, l.Version)
+	// Each is checked on its own and only the checked copies build the path.
+	gen, key, version := l.Gen, l.Key, l.Version
+	if !plainName.MatchString(gen) {
+		return "", fmt.Errorf("%w: generation %q", errName, gen)
+	}
+	if !plainName.MatchString(key) {
+		return "", fmt.Errorf("%w: model %q", errName, key)
+	}
+	if !plainName.MatchString(version) {
+		return "", fmt.Errorf("%w: version %q", errName, version)
 	}
 	x.fileLock.Lock()
 	defer x.fileLock.Unlock()
-	dir := filepath.Join(x.Dir, "gen"+l.Gen, l.Key, l.Version)
-	path := filepath.Join(dir, l.FileName())
+	dir := filepath.Join(x.Dir, "gen"+gen, key, version)
+	path := filepath.Join(dir, fileName(gen, key, version))
 	if _, err := os.Stat(path); err == nil {
 		now := time.Now()
 		_ = os.Chtimes(path, now, now) // recently used
