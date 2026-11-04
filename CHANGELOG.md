@@ -46,6 +46,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 - mDNS discovery stayed off when ShellyLanMan started before the network had an address (for example in a Proxmox
   container whose DHCP answers late) until the next rescan; it is now tried again every 10 seconds. Reported by
   [KissmanCZ](https://github.com/KissmanCZ).
+- A firmware file is only stored under a plain model and version name from Shelly's index (letters, digits, `-`,
+  `_` and single dots); anything else is refused instead of rewritten (CodeQL path-injection findings).
 
 ### Documentation
 - README screenshots and both animations (tour, access-point wizard) taken again with the new tables.

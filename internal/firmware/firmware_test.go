@@ -123,6 +123,21 @@ func TestGen1IndexArchiveAndFiles(t *testing.T) {
 	}
 }
 
+// A model or version from the index that is not a plain name never reaches the disk.
+func TestFileRefusesPathNames(t *testing.T) {
+	x := New(t.TempDir())
+	for _, l := range []*Latest{
+		{Gen: "2", Key: "PlugSG3", Version: "1.0/../../x"},
+		{Gen: "1", Key: "../SHPLG-S", Version: "1.14.0"},
+		{Gen: "1", Key: "SHPLG-S", Version: ".."},
+		{Gen: "1", Key: "SHPLG-S", Version: "1..2"},
+	} {
+		if _, err := x.File(context.Background(), l); !errors.Is(err, errName) {
+			t.Errorf("%+v: %v", l, err)
+		}
+	}
+}
+
 func TestVerify(t *testing.T) {
 	l := &Latest{Gen: "1", Key: "SHPLG-S", Version: "1.14.0", Build: "20230913-113421/v1.14.0-gcb84623"}
 	if err := Verify(l, gen1Zip(t, l.Build, true)); err == nil || !strings.Contains(err.Error(), "corrupt") {

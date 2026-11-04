@@ -382,9 +382,13 @@ func (x *Index) latestG2(ctx context.Context, app string) (*Latest, error) {
 // File returns the path of the verified firmware file, downloading it first
 // when it is not cached.
 func (x *Index) File(ctx context.Context, l *Latest) (string, error) {
+	// The names come from Shelly's index; a "../" there must not reach the disk.
+	if !plainName.MatchString(l.Gen) || !plainName.MatchString(l.Key) || !plainName.MatchString(l.Version) {
+		return "", fmt.Errorf("%w: %q %q", errName, l.Key, l.Version)
+	}
 	x.fileLock.Lock()
 	defer x.fileLock.Unlock()
-	dir := filepath.Join(x.Dir, "gen"+l.Gen, safe(l.Key), safe(l.Version))
+	dir := filepath.Join(x.Dir, "gen"+l.Gen, l.Key, l.Version)
 	path := filepath.Join(dir, l.FileName())
 	if _, err := os.Stat(path); err == nil {
 		now := time.Now()
@@ -416,9 +420,10 @@ func (x *Index) File(ctx context.Context, l *Latest) (string, error) {
 	return path, nil
 }
 
-var unsafeChars = regexp.MustCompile(`[^\w.\-]`)
+// plainName: letters, digits, "_" and "-", in parts joined by single dots (no "..").
+var plainName = regexp.MustCompile(`^[\w\-]+(\.[\w\-]+)*$`)
 
-func safe(s string) string { return unsafeChars.ReplaceAllString(s, "_") }
+var errName = errors.New("firmware: not a plain file name")
 
 // evict keeps the Keep most recently used files.
 func (x *Index) evict() {

@@ -80,7 +80,7 @@ func LogAction(ctx context.Context, log *slog.Logger, name string, dev DeviceRef
 	if result != ResultOK && result != ResultQueued {
 		level = slog.LevelWarn
 	}
-	args := make([]any, 0, 12+len(attrs))
+	args := make([]any, 0, 12)
 	if dev.ID != "" {
 		args = append(args, "device", dev.ID)
 		if dev.Name != "" {
