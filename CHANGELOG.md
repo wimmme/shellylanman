@@ -5,6 +5,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-05
+
+Every action and device event in the log (also on disk), betas and re-flashes through ShellyLanMan, tarballs to run
+it without Docker, and Devices, Checklist and Firmware reworked for phones and wide screens.
+
 ### Added
 - Czech (`cs`) translation of the user interface, by [KissmanCZ](https://github.com/KissmanCZ).
 - **Every action in the log.** Firmware updates, backups, restores, reboots, checklist switches (eco, access point,
