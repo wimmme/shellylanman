@@ -309,3 +309,11 @@ rotated afterwards.
 | Release 0.10.0 on Wim's production Home Assistant | app 0.9.13 → 0.10.0; Wim: "everything works" — basis for 1.0.0 (P24-4) |
 | Not tested on hardware | Gen1 local update (`/ota?url=`) |
 | Gen1 local update (`/ota?url=`), 1.0.0 (Wim, 2026-10-28) | works: a Gen1 Shelly updated through the local mode came back on the new version |
+
+## Release 1.1.0 (2026-11-05, `ha-test`)
+
+| Check | Result |
+|---|---|
+| App 1.0.0 → 1.1.0 on `ha-test` (Home Assistant 2026.9.4), through the store | updated; the log shows `starting ShellyLanMan version=v1.1.0`, ingress, mDNS browsing and both announcements to Home Assistant |
+| Integration 1.0.0 | tests on Home Assistant 2026.9.4 and 2026.10.4, hassfest of 2026.11 (categories and connectivity accepted, no warnings); not installed on `ha-test` |
+| Not tested | betas and re-flash on a real device; the Marketplace button on a Home Assistant 2026.11 |
