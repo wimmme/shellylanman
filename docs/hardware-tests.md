@@ -315,5 +315,6 @@ rotated afterwards.
 | Check | Result |
 |---|---|
 | App 1.0.0 → 1.1.0 on `ha-test` (Home Assistant 2026.9.4), through the store | updated; the log shows `starting ShellyLanMan version=v1.1.0`, ingress, mDNS browsing and both announcements to Home Assistant |
-| Integration 1.0.0 | tests on Home Assistant 2026.9.4 and 2026.10.4, hassfest of 2026.11 (categories and connectivity accepted, no warnings); not installed on `ha-test` |
+| Integration 1.0.0 | tests on Home Assistant 2026.9.4 and 2026.10.4, hassfest of 2026.11 (categories and connectivity accepted, no warnings) |
+| `ha-test` to Home Assistant 2026.11.0, then integration 1.0.0 (copied, HA restarted) | ShellyLanMan offered under *Discovered*; confirmed: entry `loaded`, 26 devices (25 online, 0 offline, version v1.1.0), Dutch entity names; no ShellyLanMan lines in the system log |
 | Not tested | betas and re-flash on a real device; the Marketplace button on a Home Assistant 2026.11 |
