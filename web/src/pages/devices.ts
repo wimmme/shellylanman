@@ -447,7 +447,8 @@ export const devicesPage: Page = {
       const d = rowOf(e);
       if (!d) return;
       e.preventDefault();
-      if (!selected.has(d.id)) { selected.clear(); selected.add(d.id); anchor = d.id; redraw(); }
+      // The menu is for this row only: the selection becomes this row (DECISIONS P31-1).
+      if (selected.size !== 1 || !selected.has(d.id)) { selected.clear(); selected.add(d.id); anchor = d.id; redraw(); }
       const sel = selectedDevices();
       const one = sel.length === 1 ? sel[0]! : null;
       const items: { label: Key; run: () => void; on: boolean }[] = d.status === 'ghost'

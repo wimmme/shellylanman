@@ -9,6 +9,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Firmware page: links to Shelly's release notes (Gen2 and newer, Gen1) under the introduction; they open in a new
   tab.
 
+### Changed
+- Devices and Checklist: a right-click selects the row you click, also inside a selection of several devices, and its
+  menu is for that device only (*Web UI* opens one page). For several devices: select them and use the buttons.
+
 ### Fixed
 - Firmware through ShellyLanMan: when Shelly's update server failed for a model (it answered "Request Timeout"),
   that model's devices lost their update mark until the next good answer, up to six hours later. The last good

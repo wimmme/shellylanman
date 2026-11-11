@@ -58,7 +58,7 @@ Status legend: `—` not started · `🔨` in progress · `✅` done and tested 
 | T13 | Source column (last input event source) | `DevicesTable` COL_SOURCE, `col_last_source_tooltip` | status payloads | G2+/BLU | Same | 3 | ✅ |
 | T14 | Copy cell / hostname / MAC (Ctrl+C on a cell) | `ExTooltipTable.activateSingleCellStringCopy` (usnalib2) | — | — | Copy buttons / selection copy | 3 | ✅ |
 | T15 | Double-click action: device info or open Web UI (setting) | `MainView` mouse listener, setting `DCLICK_ACTION` | — | — | Row click opens detail panel; setting kept | 3 | ✅ |
-| T16 | Context menus (device / ghost) | `MainView` `tablePopup`, `ghostDevPopup` | — | — | Row action menu — P9: row menu added (it was missing in Phase 3) | 3 | ✅ |
+| T16 | Context menus (device / ghost) | `MainView` `tablePopup`, `ghostDevPopup` | — | — | Row action menu — P9: row menu added (it was missing in Phase 3); since P31-1 for the clicked row only, on Devices and Checklist (ShellyScanner keeps a selection the row is in) | 3 | ✅ |
 | T17 | Toolbar captions on/off | setting `T_CAPTIONS` | — | — | Not needed (icons + labels responsive) ⚠️ | 3 | ⚠️ |
 | T18 | Print table | `MainView.printAction` | — | — | Browser print with print stylesheet | 8 | ✅ |
 | T19 | Export table as CSV (visible columns, configurable separator) | `controller/ExportCSVAction`, setting `CSV_SEPARATOR` | — | — | "Export CSV" (download) | 8 | ✅ |

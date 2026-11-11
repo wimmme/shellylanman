@@ -802,3 +802,13 @@ and under the introduction of the Firmware page; not on every row.
 |---|---|---|
 | P30-1 | **One line under the introduction**: "Shelly's release notes: Gen2 and newer · Gen1", each a link to Shelly's API documentation (`gen2/changelog/`, `gen1/#changelog`), in a new tab, with the ↗ every external link has and a tooltip that says so. Not per row: Shelly's changelog has one page per API generation, no anchor per model or version | Wim; Gen1 added because the page also updates Gen1 devices |
 | P30-2 | Nothing is fetched: a plain link the user follows. No change to "no cloud" | The release notes stay Shelly's |
+
+## 41. The right-click menu is for one row (2026-11-11, Wim)
+
+Wim: with several devices selected, a right-click on one of them showed the menu for the whole selection, and
+*Web UI* opened the pages of all of them; not what a right-click does. ShellyScanner (and ShellyLanMan until now)
+keeps the selection when the clicked row is in it. Changes T16.
+
+| # | Decision | Why |
+|---|---|---|
+| P31-1 | **A right-click on Devices or Checklist makes the clicked row the selection** (inside or outside the old selection) and shows the menu for that device only: one Web UI page, one device's settings or backup. Several devices: select them and use the buttons above or below the table | Wim: the usual behaviour of a right-click |

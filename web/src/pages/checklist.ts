@@ -268,7 +268,8 @@ export const checklistPage: Page = {
       const r = rowOf(e);
       if (!r) return;
       e.preventDefault();
-      if (!selected.has(r.id)) { selected.replace([r.id]); draw(); }
+      // The menu is for this row only: the selection becomes this row (DECISIONS P31-1).
+      if (selected.size !== 1 || !selected.has(r.id)) { selected.replace([r.id]); anchor = r.id; draw(); }
       const td = (e.target as HTMLElement).closest('td');
       const idx = td ? [...td.parentElement!.children].indexOf(td) - 4 : -1;
       const col = COLS[idx]?.key;
