@@ -9,6 +9,13 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Firmware page: links to Shelly's release notes (Gen2 and newer, Gen1) under the introduction; they open in a new
   tab.
 
+### Fixed
+- Firmware through ShellyLanMan: when Shelly's update server failed for a model (it answered "Request Timeout"),
+  that model's devices lost their update mark until the next good answer, up to six hours later. The last good
+  answer now stays, and a failed lookup is tried again after 10 minutes.
+- Firmware page in that mode: the devices are no longer asked to check with Shelly themselves (only their version is
+  read), so a slow or unreachable Shelly server no longer leaves *Current FW* empty.
+
 ## [1.1.0] - 2026-11-05
 
 Every action and device event in the log (also on disk), betas and re-flashes through ShellyLanMan, tarballs to run

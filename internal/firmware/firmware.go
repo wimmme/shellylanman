@@ -97,6 +97,11 @@ type Index struct {
 	TTL  time.Duration // index cache time
 	Keep int           // cached files kept (oldest evicted)
 
+	// RetryAfter: a failed lookup is asked again after this, not after TTL; meanwhile
+	// the last good answer stays (Shelly's server answering "Request Timeout" must not
+	// take the update marks away).
+	RetryAfter time.Duration
+
 	Gen1URL, Gen2URL, ArchiveURL, ArchiveFileURL string
 	Gen2Files                                    string       // accepted prefix of Gen2+ file URLs
 	HTTP                                         *http.Client // Gen1 / archive
@@ -127,7 +132,7 @@ type cached struct {
 // New returns an index with the default sources.
 func New(dir string) *Index {
 	return &Index{
-		Dir: dir, TTL: 6 * time.Hour, Keep: 20,
+		Dir: dir, TTL: 6 * time.Hour, RetryAfter: 10 * time.Minute, Keep: 20,
 		Gen1URL: Gen1Index, Gen2URL: Gen2Index, ArchiveURL: ArchiveIndex, ArchiveFileURL: ArchiveFile, Gen2Files: Gen2Files,
 		HTTP:   &http.Client{Timeout: 30 * time.Second},
 		Pinned: PinnedClient(Pins),
@@ -324,9 +329,25 @@ func (x *Index) latestArchive(ctx context.Context, typ string) (*Latest, error) 
 	if x.archive == nil {
 		x.archive = map[string]cached{}
 	}
-	x.archive[typ] = cached{l: l, err: err, at: time.Now()}
+	old, had := x.archive[typ]
+	c := x.keep(old, had, cached{l: l, err: err, at: time.Now()})
+	x.archive[typ] = c
 	x.mu.Unlock()
-	return l, err
+	return c.l, c.err
+}
+
+// keep decides what a lookup leaves in the cache. Callers hold x.mu.
+func (x *Index) keep(old cached, had bool, c cached) cached {
+	if c.err == nil {
+		return c
+	}
+	retry := time.Now().Add(x.RetryAfter - x.TTL) // stale after RetryAfter
+	if had && old.err == nil {
+		old.at = retry
+		return old
+	}
+	c.at = retry
+	return c
 }
 
 var stableRe = regexp.MustCompile(`^\d+(\.\d+)*$`)
@@ -374,9 +395,11 @@ func (x *Index) latestG2(ctx context.Context, app string) (*Latest, error) {
 	if x.gen2 == nil {
 		x.gen2 = map[string]cached{}
 	}
-	x.gen2[app] = cached{l, err, time.Now(), beta}
+	old, had := x.gen2[app]
+	c := x.keep(old, had, cached{l, err, time.Now(), beta})
+	x.gen2[app] = c
 	x.mu.Unlock()
-	return l, err
+	return c.l, c.err
 }
 
 // ---- files -----------------------------------------------------------------------

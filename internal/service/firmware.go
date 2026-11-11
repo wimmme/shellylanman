@@ -112,6 +112,9 @@ func (m *Devices) checkFirmware(ctx context.Context, e *entry) fwInfo {
 	rawStatus, rawShelly, rawConfig := e.rawStatus, e.rawShelly, e.rawConfig
 	storedCheck := e.stored["/rpc/Shelly.CheckForUpdate"]
 	m.mu.Unlock()
+	// In local mode the index gives the versions: the device's own check asks Shelly's
+	// servers, which it may not reach, and only the running version is needed.
+	local := m.localMode()
 	var fw fwInfo
 	switch {
 	case blu != nil: // BLU TRV
@@ -137,7 +140,9 @@ func (m *Devices) checkFirmware(ctx context.Context, e *entry) fwInfo {
 			if conn == nil {
 				return ErrNoConnection
 			}
-			_ = g1cmd(ctx, conn, "/ota/check")
+			if !local {
+				_ = g1cmd(ctx, conn, "/ota/check")
+			}
 			b, err := conn.Get(ctx, "/ota")
 			if err != nil {
 				return err
@@ -163,12 +168,14 @@ func (m *Devices) checkFirmware(ctx context.Context, e *entry) fwInfo {
 			if conn == nil {
 				return ErrNoConnection
 			}
-			b, err := conn.Get(ctx, "/rpc/Shelly.CheckForUpdate")
-			if err != nil {
-				return err
+			if !local {
+				b, err := conn.Get(ctx, "/rpc/Shelly.CheckForUpdate")
+				if err != nil {
+					return err
+				}
+				fw = g2Check(parseJSON(b))
 			}
-			fw = g2Check(parseJSON(b))
-			b, err = conn.Get(ctx, "/rpc/Shelly.GetDeviceInfo")
+			b, err := conn.Get(ctx, "/rpc/Shelly.GetDeviceInfo")
 			if err != nil {
 				return err
 			}

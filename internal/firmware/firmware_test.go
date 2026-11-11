@@ -238,6 +238,53 @@ func TestGen2IndexOverPinnedTLS(t *testing.T) {
 	}
 }
 
+// Shelly's server failing ("Request Timeout") keeps the last good answer, and the
+// failure is asked again after RetryAfter, not after TTL.
+func TestFailedLookupKeepsLastAnswer(t *testing.T) {
+	fail := false
+	asked := 0
+	var srv *httptest.Server
+	srv = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		asked++
+		if fail {
+			w.Write([]byte(`{"error":"Request Timeout"}`))
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]any{"stable": map[string]string{"version": "2.2.0", "url": srv.URL + "/gen2-ntest/PlugSG3/" + strings.Repeat("a", 64)}})
+	}))
+	defer srv.Close()
+	x := New(t.TempDir())
+	x.Gen2URL, x.Gen2Files, x.Pinned = srv.URL+"/update/", srv.URL+"/", srv.Client()
+	ctx := context.Background()
+	if l, err := x.Latest(ctx, "3", "PlugSG3"); err != nil || l.Version != "2.2.0" {
+		t.Fatalf("first %+v %v", l, err)
+	}
+	fail, x.TTL = true, 0 // stale: asked again, and the server fails
+	if l, err := x.Latest(ctx, "3", "PlugSG3"); err != nil || l.Version != "2.2.0" {
+		t.Fatalf("after a failure %+v %v", l, err)
+	}
+	if c := x.Cached("3", "PlugSG3"); c == nil || c.Version != "2.2.0" {
+		t.Fatalf("cached after a failure %+v", c)
+	}
+	// Not asked again before RetryAfter (TTL back to normal).
+	x.TTL, x.RetryAfter = time.Hour, time.Minute
+	n := asked
+	x.Latest(ctx, "3", "PlugSG3")
+	if asked != n {
+		t.Fatal("asked again before RetryAfter")
+	}
+	// A model never answered well: the failure is kept only until RetryAfter.
+	x.RetryAfter = 0
+	if _, err := x.Latest(ctx, "3", "Other"); err == nil {
+		t.Fatal("failure without an earlier answer")
+	}
+	n = asked
+	x.Latest(ctx, "3", "Other")
+	if asked != n+1 {
+		t.Fatal("a failure is not asked again after RetryAfter")
+	}
+}
+
 func TestEvictKeepsNewest(t *testing.T) {
 	dir := t.TempDir()
 	x := New(dir)

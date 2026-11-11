@@ -149,6 +149,15 @@ func TestLocalModeGen2(t *testing.T) {
 	if err != nil || rows[0].Stable != "1.8.0" || rows[0].Beta != "" || !rows[0].Preselect {
 		t.Fatalf("rows %+v %v", rows, err)
 	}
+	// The device is not asked to check with Shelly's servers itself, but its version is read.
+	for _, c := range g2.Calls() {
+		if strings.Contains(c, "CheckForUpdate") {
+			t.Fatalf("device's own check in local mode: %v", g2.Calls())
+		}
+	}
+	if rows[0].Current == "" {
+		t.Fatalf("no current version %+v", rows[0])
+	}
 	res, err := m.FirmwareUpdate(ctx, []FirmwareRequest{{ID: "AABBCC000002", Stage: StageStable}})
 	if err != nil || res[0].Result != ResultOK {
 		t.Fatalf("update %+v %v", res, err)
