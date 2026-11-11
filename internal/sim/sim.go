@@ -397,6 +397,18 @@ func (d *Device) serveRPC(w http.ResponseWriter, body []byte) {
 		reply(d.setRelay(p.ID, turn))
 		return
 	}
+	// A fixture with an _ota file reports the download of an update on its RPC
+	// WebSocket, as a device does: ota_progress 0..100 % over 20 s, no restart.
+	if req.Method == "Shelly.Update" {
+		if _, err := os.Stat(filepath.Join(d.dir, "_ota")); err == nil {
+			go func() {
+				for p := 0; p <= 100; p += 5 {
+					time.Sleep(time.Second)
+					d.Notify(map[string]any{"component": "sys", "event": "ota_progress", "progress_percent": p})
+				}
+			}()
+		}
+	}
 	b, err := os.ReadFile(filepath.Join(d.dir, fixture.RPCFileName(req.Method)))
 	if err != nil {
 		if isCommandMethod(req.Method) {

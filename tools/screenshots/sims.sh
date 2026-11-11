@@ -18,6 +18,9 @@ while read -r dir name; do
     cp tools/screenshots/script/*.json "/tmp/fx/$i/"
     # Its access point is on and open, as from the factory (the AP wizard, tour-apw.py).
     echo '{"ap":{"ssid":"ShellyMiniPMG3-AABBCC000001","is_open":true,"enable":true},"sta":{"ssid":"Home","enable":true,"is_open":false,"ipv4mode":"dhcp","ip":null,"netmask":null,"gw":null,"nameserver":null},"sta1":{"ssid":null,"enable":false,"is_open":true,"ipv4mode":"dhcp","ip":null,"netmask":null,"gw":null,"nameserver":null},"roam":{"rssi_thr":-80,"interval":60}}' > "/tmp/fx/$i/rpc_WiFi.GetConfig.json"
+    # Its update reports a download in progress (check-fwprogress.py).
+    touch "/tmp/fx/$i/_ota"
+    echo '{"stable":{"version":"2.0.3","build_id":"20261001-000000/2.0.3-gabcdef0"}}' > "/tmp/fx/$i/rpc_Shelly.CheckForUpdate.json"
     sed -i 's/"available_updates": {}/"available_updates": {"stable": {"version": "2.0.3"}}/'       "/tmp/fx/$i/rpc_Shelly.GetStatus.json" "/tmp/fx/$i/rpc_Sys.GetStatus.json"
   fi
   # And one its Wi-Fi settings (the device Settings dialog in tour.py).

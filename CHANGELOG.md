@@ -17,6 +17,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Firmware through ShellyLanMan: when Shelly's update server failed for a model (it answered "Request Timeout"),
   that model's devices lost their update mark until the next good answer, up to six hours later. The last good
   answer now stays, and a failed lookup is tried again after 10 minutes.
+- A firmware update was followed for at most 15 minutes, and its progress stood still once the connection to the
+  device had dropped five times: a slow download over weak Wi-Fi (over an hour on a Plug S Gen3) then looked
+  stopped, and *Check* showed nothing while the device was still busy. It is now followed as long as the device
+  reports progress (given up after 15 minutes without a sign), and the connection is opened again each time.
 - Firmware page in that mode: the devices are no longer asked to check with Shelly themselves (only their version is
   read), so a slow or unreachable Shelly server no longer leaves *Current FW* empty.
 

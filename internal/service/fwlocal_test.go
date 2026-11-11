@@ -244,3 +244,43 @@ func TestBackFromUpdateRereadsConfig(t *testing.T) {
 		}
 	}
 }
+
+// An update is followed while the device reports progress, also past fwQuiet;
+// without a sign for fwQuiet it is given up.
+func TestUpdateFollowedWhileProgressing(t *testing.T) {
+	m, _, ctx := newService(t, nil)
+	g2 := plus1(t, m, ctx, nil, nil)
+	defer func(q time.Duration) { fwQuiet = q }(fwQuiet)
+	fwQuiet = 400 * time.Millisecond
+	e, _ := m.entryFor("AABBCC000002")
+	m.mu.Lock()
+	d := e.dev
+	m.mu.Unlock()
+	m.startTrack(e, d)
+	tracked := func() bool {
+		t := m.fwTracks()
+		t.mu.Lock()
+		defer t.mu.Unlock()
+		return t.tracks[d.ID] != nil
+	}
+	connected := func() {
+		t.Helper()
+		for end := time.Now().Add(5 * time.Second); g2.RPCClients() == 0; time.Sleep(20 * time.Millisecond) {
+			if time.Now().After(end) {
+				t.Fatal("not listening to the device")
+			}
+		}
+	}
+	connected()
+	for i := 0; i < 8; i++ { // 1.2 s of progress, three times fwQuiet
+		time.Sleep(150 * time.Millisecond)
+		g2.Notify(map[string]any{"component": "sys", "event": "ota_progress", "progress_percent": i * 10})
+	}
+	if !tracked() {
+		t.Fatal("given up while the device reported progress")
+	}
+	time.Sleep(time.Second)
+	if tracked() {
+		t.Fatal("still followed without a sign for fwQuiet")
+	}
+}

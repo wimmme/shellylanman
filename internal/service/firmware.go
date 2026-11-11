@@ -76,8 +76,14 @@ type fwTrack struct {
 	rebootTime time.Time // ota_success / scheduled_restart seen
 	progress   int
 	rebooting  bool
-	cancel     context.CancelFunc
+	cancel     context.CancelFunc // stops following it (and its quiet timer)
+	quiet      *time.Timer        // runs out after fwQuiet without a sign of the update
 }
+
+// fwQuiet: an update is followed until the device is back, or until it has given no
+// sign (sent, progress, restart) for this long. A slow download over weak Wi-Fi takes
+// well over 15 minutes and keeps reporting progress (ShellyTestPlug, firmware 2.2.0).
+var fwQuiet = 15 * time.Minute
 
 type fwState struct {
 	mu     sync.Mutex
@@ -456,22 +462,29 @@ func (m *Devices) baseContext() context.Context {
 
 func (m *Devices) startTrack(e *entry, d model.Device) {
 	t := m.fwTracks()
-	ctx, cancel := context.WithTimeout(m.baseContext(), 15*time.Minute)
+	ctx, cancelCtx := context.WithCancel(m.baseContext())
+	tr := &fwTrack{from: m.runningBuild(e), uptime: d.Uptime, status: d.Status, progress: -1}
+	// No sign for fwQuiet: stop following it.
+	tr.quiet = time.AfterFunc(fwQuiet, func() {
+		t.mu.Lock()
+		cur := t.tracks[d.ID]
+		t.mu.Unlock()
+		if cur != tr {
+			return
+		}
+		m.stopTrack(d.ID)
+		m.actionResult(m.baseContext(), "firmware.result", DeviceRef{ID: d.ID, Name: descName(d)}, resultTimeout,
+			"no sign of the update for "+fwQuiet.String()+" and not back with a new firmware")
+		m.emit(EventFirmware, m.firmwareRowOf(m.baseContext(), e, true))
+	})
+	tr.cancel = func() { cancelCtx(); tr.quiet.Stop() }
 	t.mu.Lock()
 	if old, ok := t.tracks[d.ID]; ok {
 		old.cancel()
 	}
 	m.expectRestart(d.ID)
-	t.tracks[d.ID] = &fwTrack{from: m.runningBuild(e), uptime: d.Uptime, status: d.Status, progress: -1, cancel: cancel}
+	t.tracks[d.ID] = tr
 	t.mu.Unlock()
-	go func() {
-		<-ctx.Done()
-		if ctx.Err() == context.DeadlineExceeded { // never came back: stop following it
-			m.stopTrack(d.ID)
-			m.actionResult(ctx, "firmware.result", DeviceRef{ID: d.ID, Name: descName(d)}, resultTimeout, "not back with a new firmware within 15 minutes")
-			m.emit(EventFirmware, m.firmwareRowOf(m.baseContext(), e, true))
-		}
-	}()
 	if d.Gen != "1" {
 		go m.followOTA(ctx, e)
 	}
@@ -517,7 +530,9 @@ func (m *Devices) followOTA(ctx context.Context, e *entry) {
 		}
 		component = parseJSON(b).Get("trv").Text()
 	}
-	for attempt := 0; attempt < 5 && ctx.Err() == nil; attempt++ {
+	// The connection drops with weak Wi-Fi: open it again for as long as the update is
+	// followed (the original gave up after 5 tries, and the progress then stood still).
+	for ctx.Err() == nil {
 		if done := m.readOTA(ctx, conn.Addr(), id, component, e); done {
 			return
 		}
@@ -567,7 +582,7 @@ func (m *Devices) readOTA(ctx context.Context, addr, id, component string, e *en
 			}
 			switch ev.Event {
 			case "ota_progress":
-				m.trackSet(id, func(t *fwTrack) { t.progress = ev.Progress })
+				m.trackSet(id, func(t *fwTrack) { t.progress = ev.Progress; t.quiet.Reset(fwQuiet) })
 				m.emitFirmware(e)
 			case "ota_success", "scheduled_restart":
 				m.trackSet(id, func(t *fwTrack) { t.rebooting, t.rebootTime = true, time.Now() })
