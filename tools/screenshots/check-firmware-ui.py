@@ -135,6 +135,12 @@ with sync_playwright() as p:
     pg.goto(B + "#/firmware")
     pg.wait_for_selector("text=ShellyLanMan checks for new firmware", timeout=10000)
     check(True, "Firmware page intro in local mode")
+    # Shelly's release notes under the intro, in a new tab (DECISIONS §40).
+    notes = pg.locator(".fw-notes a")
+    check(notes.count() == 2, "two release-notes links")
+    check(all(notes.nth(i).get_attribute("target") == "_blank" for i in range(notes.count())), "release notes open in a new tab")
+    check(notes.first.get_attribute("href") == "https://shelly-api-docs.shelly.cloud/gen2/changelog/", "Gen2 release notes link")
+    pg.locator(".fw-notes").screenshot(path="/shots/fw-notes.png")
 
     # Back to the default (the page reopens on the last tab).
     pg.goto(B + "#/settings"); pg.wait_for_selector("[data-tab=firmware]", timeout=10000)

@@ -5,6 +5,10 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Firmware page: links to Shelly's release notes (Gen2 and newer, Gen1) under the introduction; they open in a new
+  tab.
+
 ## [1.1.0] - 2026-11-05
 
 Every action and device event in the log (also on disk), betas and re-flashes through ShellyLanMan, tarballs to run

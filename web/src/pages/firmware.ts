@@ -12,6 +12,16 @@ import { card, scopeBanner, type Page } from './common';
 
 let panel: FirmwarePanel | null = null;
 
+// Shelly's own release notes, per API generation (DECISIONS §40).
+const NOTES = { gen2: 'https://shelly-api-docs.shelly.cloud/gen2/changelog/', gen1: 'https://shelly-api-docs.shelly.cloud/gen1/#changelog' };
+
+function releaseNotes(): HTMLElement {
+  const link = (href: string, text: string): HTMLAnchorElement =>
+    h('a', { href, target: '_blank', rel: 'noopener noreferrer', title: t('fw.notesTip') }, text);
+  return h('p', { class: 'muted fw-notes' }, t('fw.notes'), ' ',
+    link(NOTES.gen2, t('fw.notesGen2')), ' · ', link(NOTES.gen1, t('fw.notesGen1')));
+}
+
 export const firmwarePage: Page = {
   id: 'firmware',
   title: 'nav.firmware',
@@ -42,7 +52,7 @@ export const firmwarePage: Page = {
     };
     const intro = h('p', { class: 'muted' }, t('fw.intro'));
     devicesApi.settings().then((s) => { if (s.firmware?.mode === 'local') intro.textContent = t('fw.introLocal'); }).catch(() => {});
-    const c = card(t('fw.title'), null, scopeBox, intro, panelBox, h('div', { class: 'row' }, update,
+    const c = card(t('fw.title'), null, scopeBox, intro, releaseNotes(), panelBox, h('div', { class: 'row' }, update,
       h('button', { class: 'btn', title: t('apw.openTip'), onclick: () => openFirmwareWizard() }, t('apw.open'))));
     c.querySelector('.card-head')!.append(badge);
     main.append(c);

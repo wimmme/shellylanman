@@ -793,3 +793,12 @@ when the device already runs the ticked version: the tooltip and the wizard say 
 exceptional cases. Greyed only when the index has no beta for a beta tick. An update through the API (*Update*,
 MCP) still only goes to a newer version.
 
+## 40. Shelly's release notes on the Firmware page (2026-11-11, Wim)
+
+Wim: a clear reference to Shelly's release notes, with a link and a sign that it opens a new tab, above the table
+and under the introduction of the Firmware page; not on every row.
+
+| # | Decision | Why |
+|---|---|---|
+| P30-1 | **One line under the introduction**: "Shelly's release notes: Gen2 and newer · Gen1", each a link to Shelly's API documentation (`gen2/changelog/`, `gen1/#changelog`), in a new tab, with the ↗ every external link has and a tooltip that says so. Not per row: Shelly's changelog has one page per API generation, no anchor per model or version | Wim; Gen1 added because the page also updates Gen1 devices |
+| P30-2 | Nothing is fetched: a plain link the user follows. No change to "no cloud" | The release notes stay Shelly's |
