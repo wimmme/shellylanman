@@ -124,6 +124,8 @@ export interface InfoResult { data: unknown; stored: boolean }
 
 export interface ScanState {
   mode: string; scanning: boolean; mdnsActive: boolean; mdnsError?: string; mdnsInstances: number; startedAt: number;
+  /** Archived devices are still being looked for until then (unix ms). */
+  lookingUntil?: number;
 }
 
 export interface IPRange { base: string; first: number; last: number }

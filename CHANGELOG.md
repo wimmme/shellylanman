@@ -21,6 +21,8 @@ versions follow [Semantic Versioning](https://semver.org/).
   device had dropped five times: a slow download over weak Wi-Fi (over an hour on a Plug S Gen3) then looked
   stopped, and *Check* showed nothing while the device was still busy. It is now followed as long as the device
   reports progress (given up after 15 minutes without a sign), and the connection is opened again each time.
+- Devices: after a start of ShellyLanMan the archived devices it is still looking for (discovery, then their last
+  address) show the blue spinner, as on Checklist and Firmware, instead of looking settled as archived.
 - Firmware page in that mode: the devices are no longer asked to check with Shelly themselves (only their version is
   read), so a slow or unreachable Shelly server no longer leaves *Current FW* empty.
 

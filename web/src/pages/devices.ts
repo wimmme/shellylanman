@@ -1,7 +1,7 @@
 // The device table (ShellyScanner: MainView + DevicesTable).
 import { devicesApi, type Device, type DeviceStatus } from '../api';
 import { commandCell, interacting, whenIdle } from '../command';
-import { addressText, allDevices, archiveInUse, compareAddress, onDevicesChanged, scanState, statusMarks } from '../devices';
+import { addressText, allDevices, archiveInUse, compareAddress, lookingFor, onDevicesChanged, scanState, statusMarks } from '../devices';
 import { keepOrReplace, h, icon, ICONS, patch } from '../dom';
 import { formatTemp, formatUptime, meterSetText, metersText, moduleText, prefs, uptimeTooltip } from '../format';
 import { t, type Key } from '../i18n';
@@ -69,7 +69,7 @@ function lines(items: string[]): Node | string {
 }
 
 const COLUMNS: Col[] = [
-  { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: (d) => (d.status === 'reading' ? h('span', {}, devicePill(d), busySpinner()) : devicePill(d)), tip: statusTip,
+  { key: 'status', label: 'col.status', text: (d) => t(STATUS[d.status]?.key ?? 'status.error'), cell: (d) => (d.status === 'reading' || lookingFor(d) ? h('span', {}, devicePill(d), busySpinner()) : devicePill(d)), tip: statusTip,
     cmp: (a, b) => a.status.localeCompare(b.status) },
   // Device: the name with the host name under it, as on Checklist and Firmware (DECISIONS P28-1);
   // the CSV keeps them apart.
@@ -498,7 +498,10 @@ export const devicesPage: Page = {
     draw();
     const off = onDevicesChanged(draw);
     const timer = setInterval(draw, 10_000); // time-based banners and "since" uptime
-    dispose = (): void => { off(); clearInterval(timer); document.removeEventListener('keydown', onKey); document.removeEventListener('click', closeMenus); };
+    // The spinner on archived devices goes when the search is over (lookingUntil).
+    const wait = (scanState()?.lookingUntil ?? 0) - Date.now();
+    const lookTimer = wait > 0 ? setTimeout(draw, wait + 200) : undefined;
+    dispose = (): void => { off(); clearInterval(timer); clearTimeout(lookTimer); document.removeEventListener('keydown', onKey); document.removeEventListener('click', closeMenus); };
     main.append(host);
   },
   dispose() { dispose(); },

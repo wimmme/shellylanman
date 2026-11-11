@@ -49,6 +49,11 @@ export function scanState(): ScanState | null {
   return scan;
 }
 
+/** An archived device ShellyLanMan is still looking for (after a start or a rescan; IP scan running). */
+export function lookingFor(d: Device): boolean {
+  return d.status === 'ghost' && !!scan && (scan.scanning || Date.now() < (scan.lookingUntil ?? 0));
+}
+
 /** Read the list again; a signal ends a read that hangs (a phone still on a Shelly's access point). */
 export async function loadDevices(signal?: AbortSignal): Promise<void> {
   const [list, st] = await Promise.all([devicesApi.list(signal), devicesApi.scan(signal)]);

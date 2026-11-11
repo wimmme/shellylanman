@@ -65,6 +65,10 @@ type ScanState struct {
 	MDNSError  string `json:"mdnsError,omitempty"` // browser could not start
 	Instances  int    `json:"mdnsInstances"`       // resolved _http._tcp instances
 	StartedAt  int64  `json:"startedAt"`           // unix ms of the last (re)scan
+	// LookingUntil: archived devices are still being looked for until then (unix ms):
+	// discovery, then their last address when Auto reload is on. The UI shows them as
+	// being read meanwhile, not as settled ghosts.
+	LookingUntil int64 `json:"lookingUntil,omitempty"`
 }
 
 // Devices owns the device list.
@@ -212,6 +216,13 @@ func (m *Devices) Rescan() {
 	run, cancel := context.WithCancel(m.base)
 	m.run, m.runCancel = run, cancel
 	m.scan = ScanState{Mode: st.Scan.Mode, StartedAt: time.Now().UnixMilli()}
+	if st.Scan.Mode == store.ScanFull || st.Scan.Mode == store.ScanLocal {
+		looking := searchWindow
+		if st.Archive.Use && st.Archive.AutoReload {
+			looking = ghostsRetryAfter + ProbeTimeout
+		}
+		m.scan.LookingUntil = time.Now().Add(looking).UnixMilli()
+	}
 	if st.Archive.Use {
 		for id, a := range m.archive {
 			m.devs[id] = &entry{dev: ghostDevice(a)}

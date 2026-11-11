@@ -409,3 +409,20 @@ func TestUnidentifiedRowLeavesWhenIdentified(t *testing.T) {
 		t.Fatalf("the unidentified row stayed: %+v", x)
 	}
 }
+
+// After a start in an mDNS mode the UI is told how long archived devices are still
+// looked for: discovery, then their last address with Auto reload; offline not at all.
+func TestScanLookingUntil(t *testing.T) {
+	m, _, _ := newService(t, nil)
+	if u := m.ScanState().LookingUntil; u != 0 {
+		t.Fatalf("offline mode looks for devices until %d", u)
+	}
+	before := time.Now()
+	m, _, _ = newService(t, func(s *store.Settings) {
+		s.Scan.Mode, s.Archive.Use, s.Archive.AutoReload = store.ScanLocal, true, true
+	})
+	u := time.UnixMilli(m.ScanState().LookingUntil)
+	if want := before.Add(ghostsRetryAfter + ProbeTimeout); u.Before(want.Add(-time.Second)) || u.After(want.Add(5*time.Second)) { // unix ms: rounded down
+		t.Fatalf("looking until %v, want about %v", u, want)
+	}
+}
