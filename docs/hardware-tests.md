@@ -318,3 +318,11 @@ rotated afterwards.
 | Integration 1.0.0 | tests on Home Assistant 2026.9.4 and 2026.10.4, hassfest of 2026.11 (categories and connectivity accepted, no warnings) |
 | `ha-test` to Home Assistant 2026.11.0, then integration 1.0.0 (copied, HA restarted) | ShellyLanMan offered under *Discovered*; confirmed: entry `loaded`, 26 devices (25 online, 0 offline, version v1.1.0), Dutch entity names; no ShellyLanMan lines in the system log |
 | Not tested | betas and re-flash on a real device; the Marketplace button on a Home Assistant 2026.11 |
+
+## Firmware 2.2.0 with ShellyLanMan 1.1.0, and release 1.2.0 (2026-11-11/12)
+
+| Check | Result |
+|---|---|
+| Local updates to Shelly 2.2.0 (Wim, 1.1.0) | DimmerG3 ×4 2.0.3 → 2.2.0 ok; Dimmer0110VPMG3 and ProRGBWWPM back on 2.0.3 first (*unchanged*), ok after a second update (2.2.0 repartitions space-constrained devices); PlusUni, Pro3EM, PlusRGBWPM refused: Shelly's index answered HTTP 408, kept for 6 h (fixed in 1.2.0) |
+| ShellyTestPlug (Plug S Gen3) | download over weak Wi-Fi took over an hour (`ota_progress` 83 % seen read-only on its WebSocket); 1.1.0 stopped following it after 15 min and 5 dropped connections (fixed in 1.2.0); the first update then went through |
+| App 1.1.0 → 1.2.0 on `ha-test` (Home Assistant 2026.11.0) | updated; log `starting ShellyLanMan version=v1.2.0` |
