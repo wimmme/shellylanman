@@ -112,6 +112,12 @@ var fieldDocs = map[string]string{
 	"PhoneLink.qr":       "The address as a QR code, a PNG data URL.",
 	"PhoneLink.warning":  "`localhost` or `badBase`: phones cannot open it; `ingress`: the address is a guess.",
 
+	"AddressChecks.phone":  "The address for phones, when it is set.",
+	"AddressChecks.device": "The address for devices, when it is set.",
+	"AddressCheck.result":  "`ok`: this ShellyLanMan answers; `other`: something else answers (e.g. Home Assistant on its own port); `unreachable`: no answer from ShellyLanMan itself (phones or devices may still reach it).",
+	"AddressCheck.error":   "Why there was no answer (with `unreachable`).",
+	"AddressCheck.port":    "ShellyLanMan's own web port (with `other` and `unreachable`).",
+
 	"RestoreSource.deviceId": "A backup kept on the server: the device it belongs to…",
 	"RestoreSource.file":     "…and its file name (see `GET /api/v1/backups`).",
 	"RestoreSource.upload":   "Or an uploaded `.sbk`, base64.",

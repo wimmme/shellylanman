@@ -5,6 +5,15 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- Settings → Firmware checks the addresses for phones and devices: when something else answers there than
+  ShellyLanMan (Home Assistant on port 8123, for example), a warning shows ShellyLanMan's own port. With Home
+  Assistant's port the QR code of the firmware wizard opened Home Assistant's start page.
+
+### Changed
+- Settings → Firmware: the help says that the QR codes of the firmware wizard and the download both use the address
+  for phones, with ShellyLanMan's own port, not Home Assistant's.
+
 ## [1.2.0] - 2026-11-12
 
 Firmware updates that keep going when Shelly's server or the Wi-Fi is slow (as with firmware 2.2.0), links to

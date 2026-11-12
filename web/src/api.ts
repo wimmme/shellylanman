@@ -133,6 +133,9 @@ export interface ScanSettings { mode: string; interface?: string; ranges?: IPRan
 export interface ArchiveSettings { use: boolean; autoReload: boolean }
 /** Settings → Firmware: the devices check Shelly themselves, or ShellyLanMan does it for them (DECISIONS §34). */
 export interface FirmwareSettings { mode?: 'device' | 'local'; deviceBaseURL?: string }
+/** One address in Settings → Firmware: ok, other (e.g. Home Assistant's port), unreachable. */
+export interface AddressCheck { result: 'ok' | 'other' | 'unreachable'; error?: string; port?: number }
+export interface AddressChecks { phone?: AddressCheck; device?: AddressCheck }
 export interface FullSettings extends Settings { scan: ScanSettings; archive: ArchiveSettings; mqttSlow?: number; backupKeep?: number; phoneBaseURL?: string; firmware?: FirmwareSettings }
 export interface CredentialsInfo { globalSet: boolean; globalUser: string }
 export interface NetInterface { name: string; addrs: string[] }
@@ -151,6 +154,8 @@ export const devicesApi = {
   interfaces: () => request<NetInterface[]>('GET', '/network/interfaces'),
   settings: () => request<FullSettings>('GET', '/settings'),
   updateSettings: (patch: Partial<FullSettings>) => request<FullSettings>('PUT', '/settings', patch),
+  /** Is it this ShellyLanMan that answers on the saved addresses for phones and devices? */
+  checkAddresses: () => request<AddressChecks>('GET', '/settings/check-addresses'),
   clearArchive: () => request<unknown>('DELETE', '/archive'),
   infoRequests: (id: string) => request<InfoRequest[]>('GET', `/devices/${encodeURIComponent(id)}/info`),
   info: (id: string, index: number) => request<InfoResult>('GET', `/devices/${encodeURIComponent(id)}/info/${index}`),

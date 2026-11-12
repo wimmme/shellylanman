@@ -812,3 +812,14 @@ keeps the selection when the clicked row is in it. Changes T16.
 | # | Decision | Why |
 |---|---|---|
 | P31-1 | **A right-click on Devices or Checklist makes the clicked row the selection** (inside or outside the old selection) and shows the menu for that device only: one Web UI page, one device's settings or backup. Several devices: select them and use the buttons above or below the table | Wim: the usual behaviour of a right-click |
+
+## 42. Checking the addresses for phones and devices (2026-11-12, Wim)
+
+Wim: the address for phones (Settings → Firmware) was set to Home Assistant's own port (8123) instead of
+ShellyLanMan's. The QR code of the firmware wizard then opened Home Assistant's start page, and the local
+firmware download on that address cannot work either. An easy mistake: make it hard to miss.
+
+| # | Decision | Why |
+|---|---|---|
+| P32-1 | **Settings → Firmware checks the saved addresses** for phones and for devices, when the page opens and after each save: ShellyLanMan asks `/healthz` there (redirects followed, as a phone does) and compares the random id of its own process in the `X-ShellyLanMan-Instance` header. *ok*: a short note; *other* (something else answers, or another ShellyLanMan): a warning with ShellyLanMan's own port; *unreachable*: a note that ShellyLanMan itself could not reach it, which phones or devices still may (another VLAN, NAT). Saving is never refused. Only the saved addresses are asked, never one from the request | Wim: prevent the mistake; a check that refused to save would block setups where ShellyLanMan cannot reach its own public address |
+| P32-2 | **The help texts say it**: both QR codes (wizard and download) use the address for phones, and it is ShellyLanMan's own address and port, not Home Assistant's (8123). The section is now called *Address for phones* | Wim |

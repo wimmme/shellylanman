@@ -55,8 +55,9 @@ type Config struct {
 
 type server struct {
 	Config
-	guard  *guard
-	routes []string // every pattern registered on the mux (the OpenAPI test compares them with the description)
+	guard    *guard
+	instance string   // random id of this process on /healthz (addrcheck.go)
+	routes   []string // every pattern registered on the mux (the OpenAPI test compares them with the description)
 }
 
 // router is what the route registrations need from the mux.
@@ -91,7 +92,7 @@ func build(cfg Config) (http.Handler, *server) {
 	if cfg.Log == nil {
 		cfg.Log = slog.Default()
 	}
-	s := &server{Config: cfg, guard: newGuard(cfg.Store, cfg.Log)}
+	s := &server{Config: cfg, guard: newGuard(cfg.Store, cfg.Log), instance: newInstanceID()}
 	mux := &recorder{ServeMux: http.NewServeMux()}
 	mux.HandleFunc("GET /healthz", s.health)
 	s.loginRoutes(mux)
@@ -99,6 +100,7 @@ func build(cfg Config) (http.Handler, *server) {
 	mux.HandleFunc("GET /api/v1/status", s.status)
 	mux.HandleFunc("GET /api/v1/settings", s.getSettings)
 	mux.HandleFunc("PUT /api/v1/settings", s.putSettings)
+	mux.HandleFunc("GET /api/v1/settings/check-addresses", s.checkAddresses)
 	mux.HandleFunc("GET /api/v1/update", s.getUpdate)
 	mux.HandleFunc("POST /api/v1/update/check", s.checkUpdate)
 	s.deviceRoutes(mux)
@@ -114,6 +116,7 @@ func build(cfg Config) (http.Handler, *server) {
 
 // health is unauthenticated by design and says nothing about the version.
 func (s *server) health(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set(instanceHeader, s.instance)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
 

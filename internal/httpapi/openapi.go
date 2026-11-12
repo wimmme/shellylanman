@@ -122,7 +122,7 @@ type profileResult struct {
 var operations = []operation{
 	// ---- Status and settings ----
 	{method: "GET", path: "/healthz", id: "health", tag: "Status", summary: "Health check",
-		desc: "Answers `{\"status\":\"ok\"}` while the server runs. Open, says nothing about the version; for container health checks.",
+		desc: "Answers `{\"status\":\"ok\"}` while the server runs. Open, says nothing about the version; for container health checks. The `X-ShellyLanMan-Instance` header is a random id of the running process: the address check (`GET /api/v1/settings/check-addresses`) knows from it that it reached itself.",
 		ok:   okJSON(200, "The server runs.", healthBody{}), auth: authNone},
 	{method: "GET", path: "/api/v1/status", id: "getStatus", tag: "Status", summary: "What the UI needs first",
 		desc: "Whether a UI password is set, whether the caller is logged in, and (when it is) whether the first-run dialog is done and how many browsers are connected. Open: this is how a client finds out that it has to log in.",
@@ -134,6 +134,9 @@ var operations = []operation{
 		body: settingsPatch{},
 		ok:   okJSON(200, "The settings after the change.", store.Settings{}),
 		errs: e(400)},
+	{method: "GET", path: "/api/v1/settings/check-addresses", id: "checkAddresses", tag: "Status", summary: "Check the saved addresses for phones and devices",
+		desc: "Asks `/healthz` on the saved address for phones (`phoneBaseURL`) and for devices (`firmware.deviceBaseURL`), each when it is set, and says whether this ShellyLanMan answers there. A wrong port (Home Assistant's instead of ShellyLanMan's own) answers `other`.",
+		ok:   okJSON(200, "What was found on each address.", AddressChecks{})},
 	{method: "GET", path: "/api/v1/update", id: "getUpdate", tag: "Status", summary: "Last release check",
 		desc: "The result of the check for a newer ShellyLanMan release. `mode` is `never` while the check is off (the default).",
 		ok:   okJSON(200, "The last check.", update.Status{})},

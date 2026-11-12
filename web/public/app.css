@@ -160,6 +160,7 @@ table.data tbody tr:hover td{background:rgba(99,130,190,.05)}
 .btn.icon{padding:6px;border:none}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;max-width:420px}
+.addr-note{max-width:620px}.addr-note:not(:empty){margin:-4px 0 14px}
 .field label{font-size:.78rem;color:var(--text-muted)}
 input,select,textarea{font:inherit;color:var(--text-main);background:var(--bg-deep);border:1px solid var(--border);border-radius:7px;padding:6px 9px}
 input[type=range]{padding:0;accent-color:var(--accent-rx)}
