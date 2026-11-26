@@ -11,6 +11,10 @@ versions follow [Semantic Versioning](https://semver.org/).
   Assistant's port the QR code of the firmware wizard opened Home Assistant's start page.
 
 ### Changed
+- A device that refuses the login (or asks for a password that is not set) is asked again after 30 s, 1, 2 and then
+  every 5 minutes instead of at every refresh, so a wrong password no longer keeps a device with firmware 2.x locked.
+  Refresh and Login still ask at once. The status tip says whether the password was refused or none is set, and when
+  the device is asked again.
 - Settings → Firmware: the help says that the QR codes of the firmware wizard and the download both use the address
   for phones, with ShellyLanMan's own port, not Home Assistant's.
 

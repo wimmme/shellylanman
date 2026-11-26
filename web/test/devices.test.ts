@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Device } from '../src/api';
-import { addressText, compareAddress, statusMarks } from '../src/devices';
+import { addressText, compareAddress, loginHint, statusMarks } from '../src/devices';
 
 const dev = (ip: string, port = 80, id = ip): Device => ({
   id, mac: id, gen: '1', typeId: '', typeName: '', hostname: '', name: '', ip, port,
@@ -23,4 +23,12 @@ test('status marks: a restart, a newer stable firmware, only when online', () =>
   assert.deepEqual(statusMarks({ ...dev('10.0.0.1'), updateAvailable: true, updateVersion: '1.4.4' }), { reboot: false, update: true });
   assert.deepEqual(statusMarks({ ...dev('10.0.0.1'), rebootRequired: true, updateAvailable: true }), { reboot: true, update: true });
   assert.deepEqual(statusMarks({ ...dev('10.0.0.1'), status: 'offline', rebootRequired: true, updateAvailable: true }), none);
+});
+
+test('login hint: refused or none set, the next try only while ahead (P33-1)', () => {
+  const now = 1_000_000;
+  assert.equal(loginHint(dev('10.0.0.1'), now), null);
+  assert.deepEqual(loginHint({ ...dev('10.0.0.1'), status: 'login' }, now), { refused: false });
+  assert.deepEqual(loginHint({ ...dev('10.0.0.1'), status: 'login', loginRefused: true, loginRetry: now + 30_000 }, now), { refused: true, retry: now + 30_000 });
+  assert.deepEqual(loginHint({ ...dev('10.0.0.1'), status: 'login', loginRefused: true, loginRetry: now - 1 }, now), { refused: true });
 });

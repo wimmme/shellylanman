@@ -1,5 +1,6 @@
 import type { Device } from '../api';
 import { h, icon, ICONS } from '../dom';
+import { loginHint } from '../devices';
 import { dateTime, splitHost } from '../format';
 import { t, type Key } from '../i18n';
 
@@ -25,6 +26,11 @@ export function statusPill(cls: string, label: string, marks: { reboot: boolean;
 export function statusTip(d: Device): string {
   const isBLU = d.gen === 'blu' || d.gen === 'bth';
   const tip = [t(('status.' + d.status) as Key)];
+  const login = loginHint(d); // P33-1: why, and when the device is asked again
+  if (login) {
+    tip.push(t(login.refused ? 'status.loginRefused' : 'status.loginNone'));
+    if (login.retry) tip.push(t('status.loginRetry', { when: dateTime(new Date(login.retry), true) }));
+  }
   if (d.rebootRequired) tip.push(t('status.rebootRequired'));
   if (d.updateAvailable) tip.push(d.updateVersion ? t('status.updateAvailable', { version: d.updateVersion }) : t('status.updateAvailableShort'));
   if (d.status === 'online' && isBLU && d.lastSeen > 0) tip.push(t('status.bluSeen', { when: dateTime(new Date(d.lastSeen), true) }));

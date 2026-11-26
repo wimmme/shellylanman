@@ -73,7 +73,7 @@ There is a precedent in the code for item 1: `internal/firmware/firmware.go` pin
 | # | Item | New beyond ShellyScanner? |
 |---|---|---|
 | 1 | **Find out first, no code**: read and test a device shipped with 2.0+ (or one with `enhanced_security` on): what the redirect does, Bluetooth/BTHome, the lockout, firmware from this server. Real devices only with the maintainer's say-so | no |
-| 2 | **Do not hammer on 401**: back off after an unauthorised answer, show that the device asks for a password. Check every place that retries | no (robustness) |
+| 2 | ~~**Do not hammer on 401**~~ (done 2026-11-26, DECISIONS §43): back off after an unauthorised answer, show that the device asks for a password. Check every place that retries | no (robustness) |
 | 3 | **HTTPS/WSS support**: `https://` and `wss://` to devices, trust the device certificate on first use and remember it (as the firmware download does), try port 443 in discovery; maybe import Shelly's CA chain once published | yes — ask |
 | 4 | ~~**The firmware update's "reboot needed"**~~ (done 2026-11-26, see 1.2): compare what the UI shows with `Sys.GetStatus` (`restart_required`, `available_updates`) and how `internal/service/firmware.go` decides *done*; see the 2026-10-06 observation | no |
 | 5 | **Show `provision`** in the Checklist, and a hint "no password yet, the setup window ends" | yes — ask |

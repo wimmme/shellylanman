@@ -69,6 +69,11 @@ type Device struct {
 
 	RebootRequired bool `json:"rebootRequired"`
 
+	// Status login (DECISIONS P33-1): the password sent was refused (false: none is set),
+	// and when the device is asked again (unix ms; it is asked less and less often).
+	LoginRefused bool  `json:"loginRefused,omitempty"`
+	LoginRetry   int64 `json:"loginRetry,omitempty"`
+
 	// The device says a newer stable firmware exists (DECISIONS P19-1).
 	UpdateAvailable bool   `json:"updateAvailable"`
 	UpdateVersion   string `json:"updateVersion,omitempty"`

@@ -823,3 +823,14 @@ firmware download on that address cannot work either. An easy mistake: make it h
 |---|---|---|
 | P32-1 | **Settings → Firmware checks the saved addresses** for phones and for devices, when the page opens and after each save: ShellyLanMan asks `/healthz` there (redirects followed, as a phone does) and compares the random id of its own process in the `X-ShellyLanMan-Instance` header. *ok*: a short note; *other* (something else answers, or another ShellyLanMan): a warning with ShellyLanMan's own port; *unreachable*: a note that ShellyLanMan itself could not reach it, which phones or devices still may (another VLAN, NAT). Saving is never refused. Only the saved addresses are asked, never one from the request | Wim: prevent the mistake; a check that refused to save would block setups where ShellyLanMan cannot reach its own public address |
 | P32-2 | **The help texts say it**: both QR codes (wizard and download) use the address for phones, and it is ShellyLanMan's own address and port, not Home Assistant's (8123). The section is now called *Address for phones* | Wim |
+
+## 43. A device that refuses the login is asked less often (2026-11-26, Wim)
+
+Until now a device that answers 401 was asked at every refresh, every 2 s while a page is
+open, as in ShellyScanner. With a wrong password each ask is a failed login, and firmware
+2.x locks the device for longer after each one (10 s up to 5 min; roadmap §1.1): the device
+stayed locked, also for its owner on its own web page. Roadmap §1.4 item 2.
+
+| # | Decision | Why |
+|---|---|---|
+| P33-1 | **After a 401 the device is asked again after 30 s, 1 min, 2 min and then every 5 min**; one round of reads counts once. Refresh, Login and new credentials ask at once; any other answer starts the waits from the beginning. The status tip says why and when: *asks for a password and none is set* or *refused the password*, and *asked again at …*. The same for BLU devices whose gateway asks for the login. The REST device has `loginRefused` and `loginRetry` | Wim: a good proposal; the longest wait equals the longest lockout |

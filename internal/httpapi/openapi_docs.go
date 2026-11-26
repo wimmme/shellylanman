@@ -47,6 +47,8 @@ var fieldDocs = map[string]string{
 	"Device.layout":          "How the Command column draws the modules (a hint for user interfaces).",
 	"Device.paused":          "Refreshing this device is paused (its log dialog is open).",
 	"Device.rebootRequired":  "The device says it needs a restart (a setting changed, or a firmware update was loaded).",
+	"Device.loginRefused":    "Status `login`: the password sent was refused (false: none is set).",
+	"Device.loginRetry":      "Status `login`: when the device is asked again, Unix milliseconds. A device that answers 401 is asked after 30 s, 1, 2 and then every 5 minutes, so a wrong password does not keep it locked.",
 	"Device.updateAvailable": "The device says a newer stable firmware exists. Beta alone does not count. What the device last found; the Firmware page's check refreshes it.",
 	"Device.updateVersion":   "That version, when the device says which.",
 	"Device.parent":          "BLU devices: the id of the gateway that hears it.",

@@ -180,6 +180,13 @@ func (d *Conn) SetCredentials(c *Credentials) {
 	d.mu.Unlock()
 }
 
+// HasCredentials: credentials are set (a 401 then means they were refused).
+func (d *Conn) HasCredentials() bool {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return d.cred != nil
+}
+
 // Get requests path (e.g. "/status" or "/rpc/Shelly.GetStatus") and returns the body.
 func (d *Conn) Get(ctx context.Context, path string) ([]byte, error) {
 	d.mu.Lock()

@@ -236,8 +236,10 @@ func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 		m.apply(e, func(d *model.Device) {
 			if err != nil {
 				d.Status, d.Error = statusOf(err)
+				m.loginBackoff(e, d)
 				return
 			}
+			loginOK(e, d)
 			d.Error = ""
 			if config {
 				d.Name = cfg.Name
@@ -262,8 +264,10 @@ func (m *Devices) refreshBLU(ctx context.Context, e *entry, config bool) {
 	m.apply(e, func(d *model.Device) {
 		if err != nil {
 			d.Status, d.Error = statusOf(err)
+			m.loginBackoff(e, d)
 			return
 		}
+		loginOK(e, d)
 		d.Error = ""
 		found := false
 		for _, c := range comps {

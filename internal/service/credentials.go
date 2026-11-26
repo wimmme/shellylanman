@@ -71,7 +71,7 @@ func (m *Devices) SetGlobalCredentials(ctx context.Context, c shelly.Credentials
 		return err
 	}
 	for _, d := range m.List() {
-		if d.Status == model.StatusLogin {
+		if d.Status == model.StatusLogin || d.LoginRetry != 0 { // also one being re-read after a refused login
 			m.Reload(d.ID)
 		}
 	}

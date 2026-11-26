@@ -130,6 +130,9 @@ type entry struct {
 	g1Reboot  bool          // Gen1: a setting that needs a reboot was changed (eco mode)
 	busy      bool          // refresh paused while a backup or restore runs
 
+	loginFails int       // answers 401 in a row (DECISIONS P33-1)
+	loginNext  time.Time // not asked again before this while it answers 401
+
 	rawConfig, rawStatus, rawPeriph json.RawMessage            // last answers: table fields and "stored data" of sleeping devices
 	rawActions, rawHooks, rawComps  json.RawMessage            // Gen1 /settings/actions, Gen2+ Webhook.List, XT1 components
 	rawShelly                       json.RawMessage            // the /shelly answer
@@ -661,8 +664,12 @@ func (m *Devices) poll(ctx context.Context, e *entry) {
 		}
 		m.mu.Lock()
 		paused := e.paused || e.rebooting || e.busy
+		// A device that refused the login is asked less and less often: firmware 2.x locks
+		// itself for longer after each failed login (DECISIONS P33-1). Refresh, Login and
+		// new credentials ask at once (Refresh sets the status to reading, a reload is new).
+		waiting := e.dev.Status == model.StatusLogin && time.Now().Before(e.loginNext)
 		m.mu.Unlock()
-		if paused {
+		if paused || waiting {
 			continue
 		}
 		if tics++; tics >= m.store.Settings().Scan.ConfigTics {
@@ -803,6 +810,36 @@ func (m *Devices) apply(e *entry, fn func(d *model.Device)) {
 	}
 }
 
+// loginWaits: how long a device that answers 401 is left alone, after the 1st, 2nd, 3rd and
+// every later refused answer in a row (DECISIONS P33-1). The 2.x lockout lasts up to 5 min.
+var loginWaits = []time.Duration{30 * time.Second, time.Minute, 2 * time.Minute, 5 * time.Minute}
+
+// loginBackoff counts a 401 (once per wait: the configuration and status reads of one round
+// count once) and sets when the device is asked again; any other answer resets it. Callers
+// hold m.mu (inside apply).
+func (m *Devices) loginBackoff(e *entry, d *model.Device) {
+	if d.Status != model.StatusLogin {
+		loginOK(e, d)
+		return
+	}
+	if now := time.Now(); !now.Before(e.loginNext) {
+		e.loginFails++
+		e.loginNext = now.Add(loginWaits[min(e.loginFails, len(loginWaits))-1])
+	}
+	conn := e.conn
+	if conn == nil && e.blu != nil { // a BLU device: its gateway asked for the login
+		conn = e.blu.gw
+	}
+	d.LoginRefused = conn != nil && conn.HasCredentials()
+	d.LoginRetry = e.loginNext.UnixMilli()
+}
+
+// loginOK: the device answered; the next 401 starts the waits from the beginning.
+func loginOK(e *entry, d *model.Device) {
+	e.loginFails, e.loginNext = 0, time.Time{}
+	d.LoginRefused, d.LoginRetry = false, 0
+}
+
 func statusOf(err error) (model.Status, string) {
 	switch {
 	case err == nil:
@@ -848,6 +885,7 @@ func (m *Devices) refreshConfig(ctx context.Context, e *entry) {
 	}
 	m.apply(e, func(d *model.Device) {
 		d.Status, d.Error = statusOf(err)
+		m.loginBackoff(e, d)
 		if err != nil {
 			return
 		}
@@ -874,6 +912,7 @@ func (m *Devices) refreshStatus(ctx context.Context, e *entry) {
 	}
 	m.apply(e, func(d *model.Device) {
 		d.Status, d.Error = statusOf(err)
+		m.loginBackoff(e, d)
 		if err != nil {
 			return
 		}

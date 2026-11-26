@@ -100,3 +100,12 @@ export function compareAddress(a: Device, b: Device): number {
 export function addressText(d: Device): string {
   return d.port === 80 ? d.ip : `${d.ip}:${d.port}`;
 }
+
+/**
+ * Why a device has the status login, and when it is asked again (DECISIONS P33-1): the
+ * password was refused or none is set; retry only while it is still ahead.
+ */
+export function loginHint(d: Device, now = Date.now()): { refused: boolean; retry?: number } | null {
+  if (d.status !== 'login') return null;
+  return { refused: !!d.loginRefused, ...(d.loginRetry && d.loginRetry > now ? { retry: d.loginRetry } : {}) };
+}
