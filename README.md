@@ -449,7 +449,7 @@ through the Shelly integration's own steps, passwords included when ShellyLanMan
 hand them out.
 
 [![Add the ShellyLanMan app repository to your Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fwimmme%2Fshellylanman-ha)
-[![Open the ShellyLanMan integration in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=wimmme&repository=shellylanman-ha&category=integration)
+[![Open the ShellyLanMan integration in the Marketplace](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=wimmme&repository=shellylanman-ha&category=integration)
 
 Step by step: [`shellylanman-ha`](https://github.com/wimmme/shellylanman-ha#readme).
 Questions, ideas, feedback: the [thread on the Home Assistant Community](https://community.home-assistant.io/t/shellylanman-see-and-manage-every-shelly-on-your-lan-add-them-to-home-assistant-in-one-go/1027535).

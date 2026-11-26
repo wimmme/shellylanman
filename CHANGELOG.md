@@ -24,6 +24,9 @@ versions follow [Semantic Versioning](https://semver.org/).
 - Settings → Firmware: the help says that the QR codes of the firmware wizard and the download both use the address
   for phones, with ShellyLanMan's own port, not Home Assistant's.
 
+### Documentation
+- README: the button for the integration opens it in Home Assistant's Marketplace (the HACS link went to the same page).
+
 ## [1.2.0] - 2026-11-12
 
 Firmware updates that keep going when Shelly's server or the Wi-Fi is slow (as with firmware 2.2.0), links to
