@@ -41,6 +41,11 @@ not covered. For devices on firmware 2.0 and newer:
   update through ShellyLanMan (2026-10-06): after loading, the device seemed to need a
   reboot; a manual reboot fixed it, RPC already reported the new version. Look at it
   again at the next update (item 4).
+- **2026-11-26, after the updates to 2.2.x:** every Gen2+ device reports
+  `restart_required: false` and an empty `available_updates` (read only, `Sys.GetStatus`
+  on all of them). ShellyLanMan shows the device's own flag as it is (Gen2+
+  `sys.restart_required`; Gen1 only after ShellyLanMan's own changes). The flag of
+  2026-10 was firmware 2.0.1's; item 4 is closed.
 
 ### 1.3 Where ShellyLanMan is exposed
 
@@ -70,7 +75,7 @@ There is a precedent in the code for item 1: `internal/firmware/firmware.go` pin
 | 1 | **Find out first, no code**: read and test a device shipped with 2.0+ (or one with `enhanced_security` on): what the redirect does, Bluetooth/BTHome, the lockout, firmware from this server. Real devices only with the maintainer's say-so | no |
 | 2 | **Do not hammer on 401**: back off after an unauthorised answer, show that the device asks for a password. Check every place that retries | no (robustness) |
 | 3 | **HTTPS/WSS support**: `https://` and `wss://` to devices, trust the device certificate on first use and remember it (as the firmware download does), try port 443 in discovery; maybe import Shelly's CA chain once published | yes — ask |
-| 4 | **The firmware update's "reboot needed"**: compare what the UI shows with `Sys.GetStatus` (`restart_required`, `available_updates`) and how `internal/service/firmware.go` decides *done*; see the 2026-10-06 observation | no |
+| 4 | ~~**The firmware update's "reboot needed"**~~ (done 2026-11-26, see 1.2): compare what the UI shows with `Sys.GetStatus` (`restart_required`, `available_updates`) and how `internal/service/firmware.go` decides *done*; see the 2026-10-06 observation | no |
 | 5 | **Show `provision`** in the Checklist, and a hint "no password yet, the setup window ends" | yes — ask |
 
 Out of scope unless asked: managing certificates or a private CA on the devices
