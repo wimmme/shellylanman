@@ -13,7 +13,7 @@ header. Update this table in the same commit as the code.
 | `cmd/record` | 4 | request list mirrors ShellyScanner's info requests (`AbstractG1Device`/`AbstractG2Device.getInfoRequests`) — a list of public API calls, not code |
 | `cmd/shellysim`, `internal/sim` | 4 | — |
 | `internal/fixture` | 4 | — |
-| `internal/model/registry.go` | 2 | `model/DevicesFactory.java`, type IDs and names of `model/device/g1..g4`, `blu/BTHomeDevice` |
+| `internal/model/registry.go` | 2 | `model/DevicesFactory.java`, type IDs and names of `model/device/g1..g4`, `blu/BTHomeDevice` (1.3.4; i4 G4, LOQED Gateway and the BLU ids of 1.3.5 alpha `993b4ccb`) |
 | `internal/model/device.go` | 2 | status set (`ShellyAbstractDevice.Status`), MAC from host name (`ShellyGenericUnmanagedImpl`) |
 | `internal/service/devices.go`, `archive.go` | 2 | `model/Devices.java` (discovery flow, replacement rules, refresh scheduling, retries), `model/DevicesStore.java` |
 | `internal/service/blu.go` | 2 | `Devices.create/newBluDevice`, `blu/BTHomeDevice`, `blu/BluTRV`, `blu/modules/SensorsCollection` |

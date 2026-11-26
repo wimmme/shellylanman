@@ -948,7 +948,7 @@ func (m *Devices) reparse(e *entry, d *model.Device) {
 
 // Models whose inputs show their configured actions in the Command column:
 // Gen1 i3 and Button 1 (Actions), Gen2+ i4 (Webhooks).
-var inputActionModels = map[string]bool{"SHIX3-1": true, "SHBTN-2": true, "PlusI4": true, "I4G3": true}
+var inputActionModels = map[string]bool{"SHIX3-1": true, "SHBTN-2": true, "PlusI4": true, "I4G3": true, "S4SN-0A24X": true}
 
 // ---- helpers ----------------------------------------------------------------
 

@@ -160,7 +160,7 @@ func (a Advert) Estimate() string {
 	case a.count(objButton) == 4:
 		return "Blu Wall Switch 4 / RC Button 4"
 	case has(objWindow) && has(0x3F):
-		return "Blu Door Window"
+		return "Blu Door/Window"
 	case has(objMotion):
 		return "Blu Motion"
 	case (has(0x45) || has(0x02)) && (has(0x2E) || has(0x03)):

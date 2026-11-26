@@ -53,13 +53,20 @@ func TestRegistrySize(t *testing.T) {
 	}
 	n2 = len(names)
 	n3 := len(gen3) + len(xt1BySvc0)
-	if len(gen1) != 27 || n2 != 33 || n3 != 28 || len(gen4) != 15 {
-		t.Fatalf("registry sizes G1=%d G2=%d G3=%d G4=%d, want 27/33/28/15", len(gen1), n2, n3, len(gen4))
+	if len(gen1) != 27 || n2 != 33 || n3 != 28 || len(gen4) != 17 {
+		t.Fatalf("registry sizes G1=%d G2=%d G3=%d G4=%d, want 27/33/28/17", len(gen1), n2, n3, len(gen4))
 	}
 }
 
 func TestBLUTypeName(t *testing.T) {
-	if BLUTypeName(3) != "Blu H&T" || BLUTypeName(0x203A) != "Blu 3" || BLUTypeName(999) != "Generic BTHome" {
+	if BLUTypeName(3) != "Blu H&T" || BLUTypeName(0x203A) != "Blu X" || BLUTypeName(999) != "Generic BTHome" {
 		t.Fatal("BLU type names wrong")
+	}
+	// ShellyScanner 1.3.5: new ids, and an unknown one takes the gateway's model_idname.
+	if BLUTypeName(0x18) != "KB" || BLUTypeName(0x28) != "B2" || BLUTypeName(0x20) != "BLU Door/Window Mini ZB" {
+		t.Fatal("1.3.5 BLU ids wrong")
+	}
+	if BLUTypeNameOr(999, "SBXX-NEW") != "SBXX-NEW" || BLUTypeNameOr(999, "") != "Generic BTHome" || BLUTypeNameOr(3, "other") != "Blu H&T" {
+		t.Fatal("model_idname fallback wrong")
 	}
 }

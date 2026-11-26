@@ -31,7 +31,8 @@ type component struct {
 	Status json.RawMessage `json:"status"`
 	Config json.RawMessage `json:"config"`
 	Attrs  struct {
-		ModelID int `json:"model_id"`
+		ModelID   int    `json:"model_id"`
+		ModelName string `json:"model_idname"` // a name for models ShellyLanMan does not know
 	} `json:"attrs"`
 }
 
@@ -122,7 +123,7 @@ func (m *Devices) newBTHome(ctx context.Context, gw *entry, c component) *entry 
 	e := bluBase(gw, cfg.Addr, index)
 	e.dev.Gen = model.GenBTHome
 	e.dev.TypeID = fmt.Sprintf("BLU%d", c.Attrs.ModelID)
-	e.dev.TypeName = model.BLUTypeName(c.Attrs.ModelID)
+	e.dev.TypeName = model.BLUTypeNameOr(c.Attrs.ModelID, c.Attrs.ModelName)
 	e.dev.Name = cfg.Name
 
 	// Known objects give the sensor components and the "s<obj_id>…" part of

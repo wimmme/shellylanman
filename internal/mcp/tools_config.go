@@ -48,15 +48,20 @@ func needConfirm(confirm bool, what string) error {
 	return nil
 }
 
-// validTimespec: Shelly schedules take 6 cron fields (sec min hour dom month dow)
-// or a sunrise/sunset form ("@sunrise+30m 0 * * *" style has fewer fields).
+// validTimespec: Shelly schedules take a cron expression of 5 fields (min hour dom month
+// dow), 6 (with seconds first) or 7 (with the year last), or an @ form: @daily-style
+// shorthands, @sunrise/@sunset with an offset and optional day fields, @random:{…}
+// (Shelly API docs, Schedule → Cron Timespec). The device checks the details.
 func validTimespec(ts string) error {
 	f := strings.Fields(ts)
-	if len(f) == 6 || (len(f) >= 1 && strings.HasPrefix(f[0], "@")) {
+	if (len(f) >= 5 && len(f) <= 7) || (len(f) >= 1 && strings.HasPrefix(f[0], "@")) {
 		return nil
 	}
-	return fmt.Errorf("%w: timespec needs 6 cron fields (sec min hour day month weekday), e.g. \"0 30 7 * * MON-FRI\", or @sunrise/@sunset", errUser)
+	return fmt.Errorf("%w: timespec needs 5, 6 or 7 cron fields ([sec] min hour day month weekday [year]), e.g. \"0 30 7 * * MON-FRI\", or @daily / @sunrise+30m / @sunset-1h * * MON-FRI", errUser)
 }
+
+// maxScheduleCalls: a schedule job runs at most 5 calls (Shelly API docs, Schedule).
+const maxScheduleCalls = 5
 
 var (
 	idArg     = integer("Id", 0, 100000)
@@ -111,7 +116,7 @@ var configTools = []tool{
 		description: "Create a schedule on a Gen2+ device (without id: timespec and calls required) or change one (with id: only the fields given). At most 20 per device.",
 		schema: obj([]string{"device"}, map[string]any{
 			"device": deviceArg, "id": idArg,
-			"timespec": str("Cron with seconds: \"sec min hour day month weekday\", e.g. \"0 0 22 * * *\"; or @sunrise / @sunset with offset"),
+			"timespec": str("Cron: \"sec min hour day month weekday\" (also 5 fields without seconds, or 7 with the year), e.g. \"0 0 22 * * *\"; or @daily, @sunrise+30m, @sunset-1h * * MON-FRI (needs the device's location), @random:{…}"),
 			"calls":    callsArg,
 			"enable":   boolean("Enabled (default true for a new schedule)"),
 		}),
@@ -132,6 +137,9 @@ var configTools = []tool{
 					return nil, err
 				}
 				p["timespec"] = *a.Timespec
+			}
+			if len(a.Calls) > maxScheduleCalls {
+				return nil, fmt.Errorf("%w: a schedule runs at most %d calls, not %d", errUser, maxScheduleCalls, len(a.Calls))
 			}
 			for i, c := range a.Calls {
 				m, _ := c["method"].(string)

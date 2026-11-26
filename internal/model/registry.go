@@ -111,8 +111,9 @@ var gen4 = map[string]entry{
 	"S4DM-0A101WWL": {"Shelly Dimmer G4", false, false}, "S4DM-0010WW": {"Shelly Dimmer 0/1-10V G4", false, false},
 	"S4PL-00416EU": {"Shelly Power Strip G4", false, false}, "S4EM-002CXCEU": {"Shelly EM G4", false, false},
 	"S4SW-0A1X1EUL": {"Shelly 1L G4", false, false}, "S4SW-0A2X4EUL": {"Shelly 2L G4", false, false},
-	"S4SN-0U61X": {"Presence G4", false, false},
-	"S4SN-0071Z": {"Shelly Flood S G4", true, false}, "S4SN-0071A": {"Shelly Flood G4", true, false},
+	"S4SN-0U61X": {"Presence G4", false, false}, "S4SN-0A24X": {"Shelly i4 G4", false, false},
+	"S0GW-0ABT001": {"LOQED Gateway", false, false}, // ShellyScanner 1.3.5: "Loqued Gateway", no modules
+	"S4SN-0071Z":   {"Shelly Flood S G4", true, false}, "S4SN-0071A": {"Shelly Flood G4", true, false},
 }
 
 // Lookup identifies a device from its /shelly answer.
@@ -171,7 +172,7 @@ func BLUTypeName(modelID int) string {
 	case 0x01:
 		return "Blu Button"
 	case 0x02:
-		return "Blu Door Window"
+		return "Blu Door/Window"
 	case 0x03:
 		return "Blu H&T"
 	case 0x05:
@@ -195,19 +196,32 @@ func BLUTypeName(modelID int) string {
 	case 0x13:
 		return "Blu Motion ZB"
 	case 0x14:
-		return "Blu Door Window ZB"
+		return "Blu Door/Window ZB"
 	case 0x15:
 		return "Blu Wall Switch 4 ZB"
 	case 0x16:
 		return "Blu RC Button 4 ZB"
 	case 0x17:
 		return "Blu Button Tough 1 ZB"
+	case 0x18:
+		return "KB"
 	case 0x20:
-		return "Blu 1"
+		return "BLU Door/Window Mini ZB"
 	case 0x21:
-		return "Blu 2"
+		return "BLU Door/Window Outdoor ZB"
+	case 0x28:
+		return "B2"
 	case 0x203A:
-		return "Blu 3"
+		return "Blu X"
 	}
 	return "Generic BTHome"
+}
+
+// BLUTypeNameOr: as BLUTypeName, but an unknown model takes the name the gateway gives
+// (`attrs.model_idname` of its BTHomeDevice component) when it gives one (ShellyScanner 1.3.5).
+func BLUTypeNameOr(modelID int, idName string) string {
+	if n := BLUTypeName(modelID); n != "Generic BTHome" || idName == "" {
+		return n
+	}
+	return idName
 }

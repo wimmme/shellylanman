@@ -834,3 +834,16 @@ stayed locked, also for its owner on its own web page. Roadmap §1.4 item 2.
 | # | Decision | Why |
 |---|---|---|
 | P33-1 | **After a 401 the device is asked again after 30 s, 1 min, 2 min and then every 5 min**; one round of reads counts once. Refresh, Login and new credentials ask at once; any other answer starts the waits from the beginning. The status tip says why and when: *asks for a password and none is set* or *refused the password*, and *asked again at …*. The same for BLU devices whose gateway asks for the login. The REST device has `loginRefused` and `loginRetry` | Wim: a good proposal; the longest wait equals the longest lockout |
+
+## 44. From ShellyScanner 1.3.5 and shelly-mcp 0.1.3 (2026-11-26, Wim)
+
+A first look at what changed upstream since ShellyLanMan started (ShellyScanner 1.3.4,
+`a8e9b93`). ShellyScanner's branch `1.3.5_status` (up to `993b4ccb`, 2026-11-25) is still
+"1.3.5 alpha"; Wim chose to take the small device changes now and leave the bigger
+features until 1.3.5 is released.
+
+| # | Decision | Why |
+|---|---|---|
+| P34-1 | **Taken from ShellyScanner 1.3.5**: Shelly i4 Gen4 `S4SN-0A24X` (as the i4 G3: four inputs with their webhooks, Sensor Add-on, backup and restore; `ShellyI4G4`); LOQED Gateway `S0GW-0ABT001` listed without modules (`LoquedGateway`, named "Loqued Gateway" there); BLU model ids 0x18 KB, 0x20/0x21 Door/Window Mini/Outdoor ZB, 0x28 B2, 0x203A "Blu X", "Door/Window" spelling, and an unknown id takes the component's `attrs.model_idname` (`BTHomeDevice`); restore sets `Modbus.SetConfig {enable}` when the backup has it (`AbstractG2Device`). The 2PM on 24 V DC fix (missing `pf`/`voltage` as 0) was already so here; a test now says it | Wim: the small device things |
+| P34-2 | **Not taken (yet)**: an XT1 with an unknown service type becomes an unmanaged device in 1.3.5 (here still "XT1", with backup) — asked; the alternative-firmware panel, bulk Input mode / Power-on default, the "ask credentials" option, Select ghosts, the table filter — wait for the 1.3.5 release | A behaviour change, and alpha features |
+| P34-3 | **From shelly-mcp 0.1.3** (reference only, no code): `shelly_schedule_set` accepts the device's whole timespec grammar (5/6/7 fields, @ shorthands, @sunrise/@sunset with offset and days, @random — Shelly API docs) and refuses more than 5 calls | Wim |

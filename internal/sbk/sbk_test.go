@@ -318,3 +318,24 @@ func TestCheckStored(t *testing.T) {
 		t.Fatalf("empty: %s", got)
 	}
 }
+
+// ShellyScanner 1.3.5: a restore sets Modbus on or off when the backup has it, else not at all.
+func TestRestoreModbus(t *testing.T) {
+	ctx := context.Background()
+	for _, c := range []struct{ cfg, want string }{
+		{`{"ble":{},"cloud":{"enable":false},"modbus":{"enable":true},"sys":{"device":{}}}`, `RPC Modbus.SetConfig {"config":{"enable":true}}`},
+		{`{"ble":{},"cloud":{"enable":false},"sys":{"device":{}}}`, ""},
+	} {
+		s, d := plus1(t, nil)
+		cfg, err := ojson.Parse([]byte(c.cfg))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var e errs
+		restoreCommonConfig(ctx, d, cfg, Answers{}, &e)
+		got := calls(s, "RPC Modbus.")
+		if (c.want == "" && len(got) != 0) || (c.want != "" && (len(got) != 1 || got[0] != c.want)) {
+			t.Fatalf("modbus calls %v, want %q", got, c.want)
+		}
+	}
+}

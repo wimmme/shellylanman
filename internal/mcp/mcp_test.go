@@ -461,7 +461,17 @@ func TestConfigTools(t *testing.T) {
 	refused("shelly_kvs_delete", map[string]any{"device": "A1", "key": "mode", "confirm": false}, "confirm")
 	ok("shelly_kvs_delete", map[string]any{"device": "A1", "key": "mode", "confirm": true}, "A1 KVS.Delete")
 
-	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 22 * * *", "calls": []any{map[string]any{"method": "Switch.Set"}}}, "6 cron fields")
+	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "22 * *", "calls": []any{map[string]any{"method": "Switch.Set"}}}, "5, 6 or 7 cron fields")
+	sw := map[string]any{"method": "Switch.Set", "params": map[string]any{"id": 0, "on": true}}
+	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 0 22 * * *", "calls": []any{sw, sw, sw, sw, sw, sw}}, "at most 5 calls")
+	// The device's whole grammar (Shelly API docs, Schedule → Cron Timespec).
+	for _, ts := range []string{"0 22 * * *", "0 0 22 * * * 2027", "@daily", "@sunset-1h30m * * MON-FRI", `@random:{"from":"0 0 8 * * *","to":"0 0 22 * * *","number":3}`} {
+		n := len(f.rpc)
+		ok("shelly_schedule_set", map[string]any{"device": "A1", "timespec": ts, "calls": []any{sw}}, "A1 Schedule.Create")
+		if len(f.rpc) == n {
+			t.Fatalf("timespec %q not sent", ts)
+		}
+	}
 	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 0 22 * * *"}, "needs timespec and calls")
 	refused("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 0 22 * * *", "calls": []any{map[string]any{"method": "Shelly.FactoryReset"}}}, "not allowed")
 	ok("shelly_schedule_set", map[string]any{"device": "A1", "timespec": "0 0 22 * * *", "calls": []any{map[string]any{"method": "Switch.Set", "params": map[string]any{"id": 0, "on": false}}}}, "A1 Schedule.Create")

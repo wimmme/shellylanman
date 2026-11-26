@@ -48,7 +48,7 @@ func TestDecodeBTHomeObjects(t *testing.T) {
 	}
 	// Door/Window: illuminance 120.5 lx (3 bytes, 0.01), window open, rotation 12.3°.
 	a, _ = DecodeBTHome([]byte{0x44, 0x05, 0x12, 0x2F, 0x00, 0x2D, 1, 0x3F, 123, 0})
-	if a.Estimate() != "Blu Door Window" {
+	if a.Estimate() != "Blu Door/Window" {
 		t.Fatalf("estimate %q %+v", a.Estimate(), a)
 	}
 	if r := BTHomeRelayed(a); len(r.Modules) != 1 || r.Modules[0].Label != "Open" || !*r.Modules[0].On {

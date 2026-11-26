@@ -520,11 +520,15 @@ func restoreG2(ctx context.Context, d *Device, f Files, a Answers, e *errs) {
 	}
 }
 
-// restoreCommonConfig: BLE, Cloud, Sys (device, sntp, debug), Matter,
+// restoreCommonConfig: BLE, Cloud, Modbus, Sys (device, sntp, debug), Matter,
 // Zigbee, MQTT — and Ethernet on Pro devices.
 func restoreCommonConfig(ctx context.Context, d *Device, config *ojson.Value, a Answers, e *errs) {
 	e.add(d.post(ctx, "BLE.SetConfig", ojson.Obj("config", config.Get("ble"))))
 	e.add(d.post(ctx, "Cloud.SetConfig", ojson.Obj("config", ojson.Obj("enable", config.Path("cloud", "enable").Bool()))))
+	// ShellyScanner 1.3.5 (AbstractG2Device.restoreCommonConfig): Modbus on or off, when the backup has it.
+	if en := config.Path("modbus", "enable"); en.Exists() {
+		e.add(d.post(ctx, "Modbus.SetConfig", ojson.Obj("config", ojson.Obj("enable", en.Bool()))))
+	}
 	sys := config.Get("sys")
 	dev := sys.Get("device").Clone()
 	if dev.Kind() != ojson.Object {

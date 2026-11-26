@@ -6,6 +6,12 @@ versions follow [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- Devices from ShellyScanner 1.3.5: the Shelly i4 Gen4 (inputs, Sensor Add-on, backup and restore as the i4 G3) and
+  the LOQED Gateway (listed, no modules); new BLU models (KB, B2, Door/Window Mini and Outdoor ZB, "Blu X"), and an
+  unknown BLU model takes the name its gateway gives instead of "Generic BTHome".
+- Restore sets Modbus on or off as in the backup (ShellyScanner 1.3.5).
+- MCP: `shelly_schedule_set` accepts the device's whole timespec grammar (5, 6 or 7 cron fields, `@daily`,
+  `@sunrise`/`@sunset` with an offset and days, `@random`) and refuses more than 5 calls with a clear message.
 - Settings → Firmware checks the addresses for phones and devices: when something else answers there than
   ShellyLanMan (Home Assistant on port 8123, for example), a warning shows ShellyLanMan's own port. With Home
   Assistant's port the QR code of the firmware wizard opened Home Assistant's start page.

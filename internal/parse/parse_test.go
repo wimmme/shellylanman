@@ -97,6 +97,8 @@ func TestGen2Fixtures(t *testing.T) {
 		{"gen3/DimmerG3", "DimmerG3", shape{[][]string{{W, V, I}}, []string{KindLight}, true}},
 		{"gen3/Dimmer0110VPMG3", "Dimmer0110VPMG3", shape{[][]string{{W, V, I}}, []string{KindLight}, true}},
 		{"gen3/I4G3", "I4G3", shape{nil, []string{KindInput, KindInput, KindInput, KindInput}, false}},
+		// i4 G4 (ShellyScanner 1.3.5 ShellyI4G4): the same components as the i4 G3; no recording of one yet.
+		{"gen3/I4G3", "S4SN-0A24X", shape{nil, []string{KindInput, KindInput, KindInput, KindInput}, false}},
 		// Plus UNI: counter set; its integrated add-on has no peripherals configured.
 		{"gen2/PlusUni", "PlusUni", shape{[][]string{{NUM, FREQ}}, []string{KindRelay, KindRelay}, false}},
 		// Profile "light": four lights with W/V/I each.
@@ -219,5 +221,23 @@ func TestEveryRegistryTypeHasAParser(t *testing.T) {
 	two := Gen2(Gen2Input{TypeID: "ProDimmerx", Config: []byte(`{"light:0":{},"light:1":{}}`), Status: []byte(`{"light:0":{},"light:1":{}}`)})
 	if len(two.Modules) != 2 {
 		t.Fatalf("Pro Dimmer 2PM modules %+v", two.Modules)
+	}
+}
+
+// ShellyScanner 1.3.4/1.3.5 "2pm 24v dc fix": a 2PM on DC reports no pf (and may leave out
+// voltage); the readings must still come, missing values as 0.
+func TestGen2TwoPMOnDC(t *testing.T) {
+	cfg := []byte(`{"sys":{"device":{"profile":"switch"}},"switch:0":{"name":"A"},"switch:1":{"name":"B"}}`)
+	st := []byte(`{"sys":{"uptime":5},"wifi":{"rssi":-50},"switch:0":{"output":true,"apower":12.5,"current":0.5},"switch:1":{"output":false,"apower":0,"voltage":24.1,"current":0}}`)
+	for _, typ := range []string{"Plus2PM", "S2PMG3", "S4SW-002P16EU"} {
+		r := Gen2(Gen2Input{TypeID: typ, Config: cfg, Status: st})
+		if len(r.Meters) != 2 || len(r.Modules) != 2 {
+			t.Fatalf("%s: meters %+v modules %d", typ, r.Meters, len(r.Modules))
+		}
+		for _, v := range r.Meters[0].Values {
+			if (v.Type == W && v.Value != 12.5) || ((v.Type == PF || v.Type == V) && v.Value != 0) {
+				t.Fatalf("%s: switch:0 %+v", typ, r.Meters[0].Values)
+			}
+		}
 	}
 }

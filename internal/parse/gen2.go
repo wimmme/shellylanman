@@ -480,7 +480,7 @@ var gen2Models = map[string]modelFn{
 		c.temp("cover:0")
 	},
 	// inputs
-	"PlusI4": inputs(4), "I4G3": inputs(4),
+	"PlusI4": inputs(4), "I4G3": inputs(4), "S4SN-0A24X": inputs(4),
 	"PlusUni": func(c *g2ctx) {
 		c.modules(c.relay(0, "input:0"), c.relay(1, "input:1"))
 		in2 := c.st.Get("input:2")
@@ -572,6 +572,7 @@ var addonModels = map[string]bool{
 	"ProEM": true, "ProEMProAddon": true,
 	"S1G3": true, "S1PMG3": true, "S2PMG3": true, "S2PMG3Shutter": true, "Dimmer0110VPMG3": true, "DimmerG3": true, "EMG3": true, "I4G3": true, "XMOD1": true,
 	"S4SW-001X16EU": true, "S4SW-001P16EU": true, "S4SW-002P16EU": true, "S4DM-0A101WWL": true, "S4DM-0010WW": true, "S4EM-002CXCEU": true,
+	"S4SN-0A24X": true,
 }
 
 // addon: SensorAddOn / SensorAddOnPro — DHT22 (T, H), DS18B20 (T..T4),
